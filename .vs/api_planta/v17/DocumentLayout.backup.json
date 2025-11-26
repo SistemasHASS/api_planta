@@ -1,0 +1,232 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\proyectos\\apps\\app_planta\\api_planta\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\infraestructure\\controller\\plantacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:infraestructure\\controller\\plantacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\infraestructure\\repositoryimpl\\plantarepositoryimpl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:infraestructure\\repositoryimpl\\plantarepositoryimpl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\domain\\usecase\\iplantausecase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:domain\\usecase\\iplantausecase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\application\\usecaseimpl\\plantausecaseimpl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:application\\usecaseimpl\\plantausecaseimpl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\api_planta.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:api_planta.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\infraestructure\\shared\\exceptions\\exceptionmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:infraestructure\\shared\\exceptions\\exceptionmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\infraestructure\\repositoryimpl\\baserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:infraestructure\\repositoryimpl\\baserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\infraestructure\\persistence\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:infraestructure\\persistence\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\domain\\repository\\iplantarepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:domain\\repository\\iplantarepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|c:\\proyectos\\apps\\app_planta\\api_planta\\domain\\repository\\imantenedoresrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AD0F2B2A-7BE7-43D4-9AF4-CA90B478B689}|api_planta.csproj|solutionrelative:domain\\repository\\imantenedoresrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PlantaController.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\Controller\\PlantaController.cs",
+              "RelativeDocumentMoniker": "Infraestructure\\Controller\\PlantaController.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\Controller\\PlantaController.cs",
+              "RelativeToolTip": "Infraestructure\\Controller\\PlantaController.cs",
+              "ViewState": "AgIAAGcAAAAAAAAAAADwv28AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T14:04:39.976Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IPlantaUseCase.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Domain\\UseCase\\IPlantaUseCase.cs",
+              "RelativeDocumentMoniker": "Domain\\UseCase\\IPlantaUseCase.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Domain\\UseCase\\IPlantaUseCase.cs",
+              "RelativeToolTip": "Domain\\UseCase\\IPlantaUseCase.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T14:03:12.95Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "PlantaUseCaseImpl.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Application\\UseCaseImpl\\PlantaUseCaseImpl.cs",
+              "RelativeDocumentMoniker": "Application\\UseCaseImpl\\PlantaUseCaseImpl.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Application\\UseCaseImpl\\PlantaUseCaseImpl.cs",
+              "RelativeToolTip": "Application\\UseCaseImpl\\PlantaUseCaseImpl.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAABOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T13:49:57.208Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T13:48:00.478Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "api_planta.http",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\api_planta.http",
+              "RelativeDocumentMoniker": "api_planta.http",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\api_planta.http",
+              "RelativeToolTip": "api_planta.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2025-11-26T13:47:41.188Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-11-26T13:47:14.079Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PlantaRepositoryImpl.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\RepositoryImpl\\PlantaRepositoryImpl.cs",
+              "RelativeDocumentMoniker": "Infraestructure\\RepositoryImpl\\PlantaRepositoryImpl.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\RepositoryImpl\\PlantaRepositoryImpl.cs",
+              "RelativeToolTip": "Infraestructure\\RepositoryImpl\\PlantaRepositoryImpl.cs",
+              "ViewState": "AgIAAHAAAAAAAAAAAADwvwwAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T13:40:40.164Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ExceptionMiddleware.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\Shared\\Exceptions\\ExceptionMiddleware.cs",
+              "RelativeDocumentMoniker": "Infraestructure\\Shared\\Exceptions\\ExceptionMiddleware.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\Shared\\Exceptions\\ExceptionMiddleware.cs",
+              "RelativeToolTip": "Infraestructure\\Shared\\Exceptions\\ExceptionMiddleware.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T13:46:44Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "BaseRepository.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\RepositoryImpl\\BaseRepository.cs",
+              "RelativeDocumentMoniker": "Infraestructure\\RepositoryImpl\\BaseRepository.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\RepositoryImpl\\BaseRepository.cs",
+              "RelativeToolTip": "Infraestructure\\RepositoryImpl\\BaseRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAABGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T13:45:41.785Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\Persistence\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Infraestructure\\Persistence\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Infraestructure\\Persistence\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Infraestructure\\Persistence\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T13:45:10.199Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "IMantenedoresRepository.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Domain\\Repository\\IMantenedoresRepository.cs",
+              "RelativeDocumentMoniker": "Domain\\Repository\\IMantenedoresRepository.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Domain\\Repository\\IMantenedoresRepository.cs",
+              "RelativeToolTip": "Domain\\Repository\\IMantenedoresRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T13:41:51.201Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "IPlantaRepository.cs",
+              "DocumentMoniker": "C:\\proyectos\\apps\\app_planta\\api_planta\\Domain\\Repository\\IPlantaRepository.cs",
+              "RelativeDocumentMoniker": "Domain\\Repository\\IPlantaRepository.cs",
+              "ToolTip": "C:\\proyectos\\apps\\app_planta\\api_planta\\Domain\\Repository\\IPlantaRepository.cs",
+              "RelativeToolTip": "Domain\\Repository\\IPlantaRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T13:41:18.31Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
