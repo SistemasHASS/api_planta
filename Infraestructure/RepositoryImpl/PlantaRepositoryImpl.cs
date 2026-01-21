@@ -11,10 +11,10 @@ namespace api_planta.Infraestructure.RepositoryImpl
         public PlantaRepositoryImpl(ApplicationDbContext context) : base(context) {
             this.context = context;
         }
-        public async Task<List<JsonElement>> ListarVehiculosAsync(string json)
+        public async Task<List<JsonElement>> ListarClientesAsync(string json)
         {
             var lista = await EjecutarStoredProcedureAsync<JsonElement>(
-                "TRANS_listado_vehiculos",
+                "MAESTRO_importarClientes",
                 json,
                 result =>
                 {
@@ -26,10 +26,10 @@ namespace api_planta.Infraestructure.RepositoryImpl
             return lista;
         }
 
-        public async Task<List<JsonElement>> ListarLocalidadAsync(string json)
+        public async Task<List<JsonElement>> ListarMercadoDestinoAsync(string json)
         {
             var lista = await EjecutarStoredProcedureAsync<JsonElement>(
-                "TRANS_listado_localidades",
+                "MAESTRO_importarMercadoDestinos",
                 json,
                 result =>
                 {
@@ -40,10 +40,10 @@ namespace api_planta.Infraestructure.RepositoryImpl
 
             return lista;
         }
-        public async Task<List<JsonElement>> ListarConductoresAsync(string json)
+        public async Task<List<JsonElement>> ListarFormatosAsync(string json)
         {
             var lista = await EjecutarStoredProcedureAsync<JsonElement>(
-                "TRANS_listado_conductor",
+                "MAESTRO_importarEnvase",
                 json,
                 result =>
                 {
@@ -54,80 +54,5 @@ namespace api_planta.Infraestructure.RepositoryImpl
 
             return lista;
         }
-
-        public async Task<List<JsonElement>> GuardarViajesAsync(string json)
-        {
-            var lista = await EjecutarStoredProcedureAsync<JsonElement>(
-                "TRANSPORTE_registrarviajes",
-                json,
-                result =>
-                {
-                    var jsonString = result.GetString(0);
-                    return JsonSerializer.Deserialize<JsonElement>(jsonString);
-                },
-                parametrosRequeridos: true);
-
-            return lista;
-        }
-
-        public async Task<List<JsonElement>> ReporteViajesAsync(string json)
-        {
-            var lista = await EjecutarStoredProcedureAsync<JsonElement>(
-                "TRANSPORTE_reporteviajes",
-                json,
-                result =>
-                {
-                    var jsonString = result.GetString(0);
-                    return JsonSerializer.Deserialize<JsonElement>(jsonString);
-                },
-                parametrosRequeridos: true);
-
-            return lista;
-        }
-
-        public async Task<List<JsonElement>> ReporteViajesDetalladoAsync(string json)
-        {
-            var lista = await EjecutarStoredProcedureAsync<JsonElement>(
-                "TRANSPORTE_reporteviajesdetallado",
-                json,
-                result =>
-                {
-                    var jsonString = result.GetString(0);
-                    return JsonSerializer.Deserialize<JsonElement>(jsonString);
-                },
-                parametrosRequeridos: true);
-
-            return lista;
-        }
-
-        public async Task<List<JsonElement>> RecuperarViajeAsync(string json)
-        {
-            var lista = await EjecutarStoredProcedureAsync<JsonElement>(
-                "TRANSPORTE_recuperarviajes",
-                json,
-                result =>
-                {
-                    var jsonString = result.GetString(0);
-                    return JsonSerializer.Deserialize<JsonElement>(jsonString);
-                },
-                parametrosRequeridos: true);
-
-            return lista;
-        }
-        public async Task<List<JsonElement>> RecuperarViajeControladorAsync(string json)
-        {
-            var lista = await EjecutarStoredProcedureAsync<JsonElement>(
-                "TRANSPORTE_recuperarviajescontrolador",
-                json,
-                result =>
-                {
-                    var jsonString = result.GetString(0);
-                    return JsonSerializer.Deserialize<JsonElement>(jsonString);
-                },
-                parametrosRequeridos: true);
-
-            return lista;
-        }
-
     }
 }

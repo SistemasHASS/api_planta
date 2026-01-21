@@ -11,42 +11,19 @@ namespace api_planta.Application.UseCaseImpl
         {
             this.transporteRepository = transporteRepository;
         }
-        public async Task<List<JsonElement>> ListarVehiculosAsync(string json)
+
+        public async Task<List<JsonElement>> ListarClientesAsync(string json)
         {
-            return await this.transporteRepository.ListarVehiculosAsync(json);
+            return await this.transporteRepository.ListarClientesAsync(json);
+        }
+        public async Task<List<JsonElement>> ListarMercadoDestinoAsync(string json)
+        {
+            return await this.transporteRepository.ListarMercadoDestinoAsync(json);
+        }
+        public async Task<List<JsonElement>> ListarFormatosAsync(string json)
+        {
+            return await this.transporteRepository.ListarFormatosAsync(json);
         }
 
-        public async Task<List<JsonElement>> ListarLocalidadAsync(string json)
-        {
-            return await this.transporteRepository.ListarLocalidadAsync(json);
-        }
-
-        public async Task<List<JsonElement>> ListarConductoresAsync(string json)
-        {
-            return await this.transporteRepository.ListarConductoresAsync(json);
-        }
-
-        public async Task<List<JsonElement>> GuardarViajesAsync(string json)
-        {
-            return await this.transporteRepository.GuardarViajesAsync(json);
-        }
-        public async Task<List<JsonElement>> ReporteViajesAsync(string json)
-        {
-            return await this.transporteRepository.ReporteViajesAsync(json);
-        }
-
-        public async Task<List<JsonElement>> ReporteViajesDetalladoAsync(string json)
-        {
-            return await this.transporteRepository.ReporteViajesDetalladoAsync(json);
-        }
-
-        public async Task<List<JsonElement>> RecuperarViajeAsync(string json)
-        {
-            return await this.transporteRepository.RecuperarViajeAsync(json);
-        }
-        public async Task<List<JsonElement>> RecuperarViajeControladorAsync(string json)
-        {
-            return await this.transporteRepository.RecuperarViajeControladorAsync(json);
-        }
     }
 }

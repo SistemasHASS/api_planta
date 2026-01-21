@@ -4,111 +4,52 @@ using System.Text.Json;
 
 namespace api_planta.Infraestructure.Controller
 {
-    [Route("transporte")]
+    [Route("planta")]
     [ApiController]
     public class PlantaController : ControllerBase
     {
-        private readonly IPlantaUseCase transporteUseCase;
+        private readonly IPlantaUseCase plantaUseCase;
 
-        public PlantaController(IPlantaUseCase transporteUseCase)
+        public PlantaController(IPlantaUseCase plantaUseCase)
         {
-            this.transporteUseCase = transporteUseCase;
+            this.plantaUseCase = plantaUseCase;
         }
 
-        [HttpPost("vehiculos/listado")]
+        [HttpPost("clientes/listado")]
         [ProducesResponseType(typeof(JsonElement), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<dynamic>> ListarVehiculos([FromBody] JsonElement? body = null)
+        public async Task<ActionResult<dynamic>> ListarClientes([FromBody] JsonElement? body = null)
         {
             string json = body.HasValue && body.Value.ValueKind != JsonValueKind.Null ? body.Value.ToString() : "[]";
-            var resultado = await this.transporteUseCase.ListarVehiculosAsync(json);
+            var resultado = await this.plantaUseCase.ListarClientesAsync(json);
             return Ok(resultado.FirstOrDefault());
         }
 
-        [HttpPost("localidad/listado")]
+        [HttpPost("mercadodestino/listado")]
         [ProducesResponseType(typeof(JsonElement), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<dynamic>> ListarLocalidad([FromBody] JsonElement? body = null)
+        public async Task<ActionResult<dynamic>> ListarMercadoDestino([FromBody] JsonElement? body = null)
         {
             string json = body.HasValue && body.Value.ValueKind != JsonValueKind.Null ? body.Value.ToString() : "[]";
-            var resultado = await this.transporteUseCase.ListarLocalidadAsync(json);
+            var resultado = await this.plantaUseCase.ListarMercadoDestinoAsync(json);
             return Ok(resultado.FirstOrDefault());
         }
 
-        [HttpPost("conductor/listado")]
+        [HttpPost("formato/listado")]
         [ProducesResponseType(typeof(JsonElement), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<dynamic>> ListarConductores([FromBody] JsonElement? body = null)
+        public async Task<ActionResult<dynamic>> ListarFormatos([FromBody] JsonElement? body = null)
         {
             string json = body.HasValue && body.Value.ValueKind != JsonValueKind.Null ? body.Value.ToString() : "[]";
-            var resultado = await this.transporteUseCase.ListarConductoresAsync(json);
+            var resultado = await this.plantaUseCase.ListarFormatosAsync(json);
             return Ok(resultado.FirstOrDefault());
         }
 
-        [HttpPost("viajes/guardar-viajes")]
-        [ProducesResponseType(typeof(JsonElement), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<dynamic>> GuardarViajes([FromBody] JsonElement? body = null)
-        {
-            string json = body.HasValue && body.Value.ValueKind != JsonValueKind.Null ? body.Value.ToString() : "[]";
-            var resultado = await this.transporteUseCase.GuardarViajesAsync(json);
-            return Ok(resultado.FirstOrDefault());
-        }
-
-        [HttpPost("viajes/reporte-viajes")]
-        [ProducesResponseType(typeof(JsonElement), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<dynamic>> ReporteViajes([FromBody] JsonElement? body = null)
-        {
-            string json = body.HasValue && body.Value.ValueKind != JsonValueKind.Null ? body.Value.ToString() : "[]";
-            var resultado = await this.transporteUseCase.ReporteViajesAsync(json);
-            return Ok(resultado.FirstOrDefault());
-        }
-
-        [HttpPost("viajes/reporte-viajes-detallado")]
-        [ProducesResponseType(typeof(JsonElement), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<dynamic>> ReporteViajesDetallado([FromBody] JsonElement? body = null)
-        {
-            string json = body.HasValue && body.Value.ValueKind != JsonValueKind.Null ? body.Value.ToString() : "[]";
-            var resultado = await this.transporteUseCase.ReporteViajesDetalladoAsync(json);
-            return Ok(resultado.FirstOrDefault());
-        }
-
-        [HttpPost("viajes/recuperar-viaje")]
-        [ProducesResponseType(typeof(JsonElement), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<dynamic>> RecuperarViaje([FromBody] JsonElement? body = null)
-        {
-            string json = body.HasValue && body.Value.ValueKind != JsonValueKind.Null ? body.Value.ToString() : "[]";
-            var resultado = await this.transporteUseCase.RecuperarViajeAsync(json);
-            return Ok(resultado.FirstOrDefault());
-        }
-
-        [HttpPost("viajes/recuperar-viaje-controlador")]
-        [ProducesResponseType(typeof(JsonElement), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<dynamic>> RecuperarViajeControlador([FromBody] JsonElement? body = null)
-        {
-            string json = body.HasValue && body.Value.ValueKind != JsonValueKind.Null ? body.Value.ToString() : "[]";
-            var resultado = await this.transporteUseCase.RecuperarViajeControladorAsync(json);
-            return Ok(resultado.FirstOrDefault());
-        }
     }
 }

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("api_planta")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ce340e3863f60238d74c05283934bbee0a786bd7")]
 [assembly: System.Reflection.AssemblyProductAttribute("api_planta")]
 [assembly: System.Reflection.AssemblyTitleAttribute("api_planta")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
