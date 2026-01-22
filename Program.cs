@@ -25,6 +25,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IPlantaRepository, PlantaRepositoryImpl>();
 builder.Services.AddScoped<IPlantaUseCase, PlantaUseCaseImpl>();
+builder.Services.AddScoped<IMantenedoresRepository, MantenedoresRepositoryImpl>();
+builder.Services.AddScoped<IMantenedoresUseCase, MantenedoresUseCaseImpl>();
 
 var app = builder.Build();
 

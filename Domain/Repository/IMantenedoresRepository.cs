@@ -1,8 +1,11 @@
-﻿
+﻿using System.Text.Json;
+
 namespace api_planta.Domain.Repository
 {
     public interface IMantenedoresRepository
     {
         Task<bool> EliminarVehiculoAsync(int id);
+        Task<List<JsonElement>> ListarLineasProduccionAsync(string json);
+        Task<List<JsonElement>> CrudLineaProduccionAsync(string json);
     }
 }
