@@ -47,5 +47,35 @@ namespace api_planta.Infraestructure.RepositoryImpl
 
             return lista;
         }
+
+        public async Task<List<JsonElement>> SincronizarConfiguracionLineasAsync(string json)
+        {
+            var lista = await EjecutarStoredProcedureAsync<JsonElement>(
+                "PLANTA_sincronizarconfiguracionlineasproduccion",
+                json,
+                result =>
+                {
+                    var jsonString = result.GetString(0);
+                    return JsonSerializer.Deserialize<JsonElement>(jsonString);
+                },
+                parametrosRequeridos: true);
+
+            return lista;
+        }
+
+        public async Task<List<JsonElement>> ListarConfiguracionLineasProduccionAsync(string json)
+        {
+            var lista = await EjecutarStoredProcedureAsync<JsonElement>(
+                "PLANTA_listarconfiguracionlineasproduccion",
+                json,
+                result =>
+                {
+                    var jsonString = result.GetString(0);
+                    return JsonSerializer.Deserialize<JsonElement>(jsonString);
+                },
+                parametrosRequeridos: true);
+
+            return lista;
+        }
     }
 }

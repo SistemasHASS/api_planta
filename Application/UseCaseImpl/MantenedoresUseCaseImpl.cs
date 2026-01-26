@@ -27,5 +27,15 @@ namespace api_planta.Application.UseCaseImpl
         {
             return await this.mantenedoresRepository.CrudLineaProduccionAsync(json);
         }
+
+        public async Task<List<JsonElement>> SincronizarConfiguracionLineasAsync(string json)
+        {
+            return await this.mantenedoresRepository.SincronizarConfiguracionLineasAsync(json);
+        }
+
+        public async Task<List<JsonElement>> ListarConfiguracionLineasProduccionAsync(string json)
+        {
+            return await this.mantenedoresRepository.ListarConfiguracionLineasProduccionAsync(json);
+        }
     }
 }

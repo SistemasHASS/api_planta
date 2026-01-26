@@ -7,5 +7,7 @@ namespace api_planta.Domain.UseCase
         Task<bool> EliminarVehiculoAsync(int id);
         Task<List<JsonElement>> ListarLineasProduccionAsync(string json);
         Task<List<JsonElement>> CrudLineaProduccionAsync(string json);
+        Task<List<JsonElement>> SincronizarConfiguracionLineasAsync(string json);
+        Task<List<JsonElement>> ListarConfiguracionLineasProduccionAsync(string json);
     }
 }
