@@ -70,7 +70,7 @@ Reemplaza la clave secreta con un valor aleatorio seguro (mínimo 32 caracteres)
 
 ### 3. Logs
 
-Los logs se escriben en `C:\LogPaletsAPI\log-.txt` (configurable en `Program.cs`). Asegúrate de que el directorio exista o ajusta la ruta.
+Los logs se escriben en `LogPaletsAPI\log-.txt` (configurable en `Program.cs`). Asegúrate de que el directorio exista o ajusta la ruta.
 
 ## Ejecución
 

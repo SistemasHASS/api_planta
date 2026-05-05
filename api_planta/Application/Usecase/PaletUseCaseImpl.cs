@@ -108,10 +108,6 @@ namespace api_planta.Application.Usecase
             return await _service.ObtenerVariedadesPorConsignatarioAsync(json);
         }
 
-        public async Task<List<JsonElement>> ObtenerCatalogosAsync(string json)
-        {
-            return await _service.ObtenerCatalogosAsync(json);
-        }
 
         public async Task<List<JsonElement>> ObtenerConfigTipoProcesoAsync(string json)
         {

@@ -2,7 +2,7 @@ using api_planta.Domain.UseCase;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
-namespace api_planta.Infraestructure.Controllers
+namespace api_planta.Api.Controllers
 {
     [Route("api/palets")]
     [ApiController]

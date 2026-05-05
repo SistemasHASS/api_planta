@@ -2,22 +2,27 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Data.SqlClient;
+using System.IO;
 using System.Text;
-using api_planta.Infraestructure.Persistence;
+using api_planta.Infrastructure.Persistence;
 using api_planta.Domain.Repository;
 using api_planta.Domain.Services;
 using api_planta.Domain.UseCase;
-using api_planta.Infraestructure.RepositoryImpl;
-using api_planta.Infraestructure.ServiceImpl;
+using api_planta.Infrastructure.RepositoryImpl;
+using api_planta.Infrastructure.ServiceImpl;
 using api_planta.Application.Usecase;
-using api_planta.Infraestructure.Shared.Exceptions;
+using api_planta.Infrastructure.Shared.Exceptions;
 using Serilog;
 
 // ── Serilog ──
+var logDir = Path.Combine(AppContext.BaseDirectory, "LogPaletsApi");
+Directory.CreateDirectory(logDir);
+
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.File(
-        @"C:\LogPaletsAPI\log-.txt",
+        Path.Combine(logDir, "log-.txt"),
         rollingInterval: RollingInterval.Day,
         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {RequestPath} {Message:lj}{NewLine}{Exception}")
     .WriteTo.Console()
@@ -65,10 +70,16 @@ try
             options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
         });
 
+    var defaultConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(defaultConnectionString))
+    {
+        throw new InvalidOperationException("No se encontro la cadena de conexion 'DefaultConnection' en la configuracion.");
+    }
+
     // DbContext con retry
     builder.Services.AddDbContextPool<SistemaPaletsDbContext>(options =>
         options.UseSqlServer(
-            builder.Configuration.GetConnectionString("DefaultConnection"),
+            defaultConnectionString,
             sql => sql.EnableRetryOnFailure()));
 
     // JWT Authentication
@@ -90,8 +101,11 @@ try
 
     // Inyección de dependencias - Clean Architecture
     builder.Services.AddScoped<IPaletRepository, PaletRepositoryImpl>();
+    builder.Services.AddScoped<ICatalogosRepository, CatalogosRepositoryImpl>();
     builder.Services.AddScoped<IPaletService, PaletServiceImpl>();
+    builder.Services.AddScoped<ICatalogosService, CatalogosServiceImpl>();
     builder.Services.AddScoped<IPaletUseCase, PaletUseCaseImpl>();
+    builder.Services.AddScoped<ICatalogosUsaCase, CatalogosUseCaseImpl>();
 
     // Swagger con soporte JWT Bearer
     builder.Services.AddEndpointsApiExplorer();
@@ -153,6 +167,8 @@ try
 
     app.MapControllers();
 
+    await ProbarConexionBaseDatosAsync(app.Services, defaultConnectionString);
+
     // Endpoint minimal API para personal disponible
     app.MapGet("/api/procesos/personal-disponible", async (
         string fecha, 
@@ -211,4 +227,43 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
+}
+
+static async Task ProbarConexionBaseDatosAsync(IServiceProvider services, string connectionString)
+{
+    var (server, database) = ObtenerDatosConexion(connectionString);
+    using var scope = services.CreateScope();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DatabaseConnection");
+
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<SistemaPaletsDbContext>();
+        await dbContext.Database.OpenConnectionAsync();
+        await dbContext.Database.CloseConnectionAsync();
+
+        var mensajeOk = $"Se conecto a la BD {database} en {server}.";
+        Console.WriteLine(mensajeOk);
+        logger.LogInformation(mensajeOk);
+    }
+    catch (Exception ex)
+    {
+        var mensajeError = $"Error al conectar a la BD {database} en {server}. Error: {ex.Message}";
+        Console.WriteLine(mensajeError);
+        logger.LogError(ex, "Error al conectar a la BD {Database} en {Server}", database, server);
+    }
+}
+
+static (string Server, string Database) ObtenerDatosConexion(string connectionString)
+{
+    try
+    {
+        var builder = new SqlConnectionStringBuilder(connectionString);
+        var server = string.IsNullOrWhiteSpace(builder.DataSource) ? "servidor no especificado" : builder.DataSource;
+        var database = string.IsNullOrWhiteSpace(builder.InitialCatalog) ? "base de datos no especificada" : builder.InitialCatalog;
+        return (server, database);
+    }
+    catch
+    {
+        return ("servidor no especificado", "base de datos no especificada");
+    }
 }

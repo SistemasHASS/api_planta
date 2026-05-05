@@ -23,7 +23,6 @@ namespace api_planta.Domain.Repository
         Task<List<JsonElement>> ObtenerCodigosRanchoAsync(string json);
         Task<List<JsonElement>> VerificarDriscollAsync(string json);
         Task<List<JsonElement>> ObtenerVariedadesPorConsignatarioAsync(string json);
-        Task<List<JsonElement>> ObtenerCatalogosAsync(string json);
         Task<List<JsonElement>> ObtenerConfigTipoProcesoAsync(string json);
 
         // Procesos

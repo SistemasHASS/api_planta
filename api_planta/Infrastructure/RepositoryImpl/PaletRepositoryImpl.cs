@@ -1,8 +1,8 @@
 using api_planta.Domain.Repository;
-using api_planta.Infraestructure.Persistence;
+using api_planta.Infrastructure.Persistence;
 using System.Text.Json;
 
-namespace api_planta.Infraestructure.RepositoryImpl
+namespace api_planta.Infrastructure.RepositoryImpl
 {
     public class PaletRepositoryImpl : BaseRepository, IPaletRepository
     {
@@ -179,14 +179,6 @@ namespace api_planta.Infraestructure.RepositoryImpl
             });
         }
 
-        public async Task<List<JsonElement>> ObtenerCatalogosAsync(string json)
-        {
-            return await EjecutarStoredProcedureAsync("PALET_ObtenerCatalogos", json, result =>
-            {
-                var jsonString = result.GetString(0);
-                return JsonSerializer.Deserialize<JsonElement>(jsonString);
-            });
-        }
 
         public async Task<List<JsonElement>> ObtenerConfigTipoProcesoAsync(string json)
         {

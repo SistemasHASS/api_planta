@@ -2,7 +2,7 @@ using api_planta.Domain.Services;
 using api_planta.Domain.Repository;
 using System.Text.Json;
 
-namespace api_planta.Infraestructure.ServiceImpl
+namespace api_planta.Infrastructure.ServiceImpl
 {
     public class PaletServiceImpl : IPaletService
     {
@@ -106,11 +106,6 @@ namespace api_planta.Infraestructure.ServiceImpl
         public async Task<List<JsonElement>> ObtenerVariedadesPorConsignatarioAsync(string json)
         {
             return await _repository.ObtenerVariedadesPorConsignatarioAsync(json);
-        }
-
-        public async Task<List<JsonElement>> ObtenerCatalogosAsync(string json)
-        {
-            return await _repository.ObtenerCatalogosAsync(json);
         }
 
         public async Task<List<JsonElement>> ObtenerConfigTipoProcesoAsync(string json)

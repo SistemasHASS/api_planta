@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
 
-namespace api_planta.Infraestructure.Shared.Exceptions
+namespace api_planta.Infrastructure.Shared.Exceptions
 {
     public class ExceptionMiddleware
     {

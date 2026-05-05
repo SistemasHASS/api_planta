@@ -1,9 +1,9 @@
-using api_planta.Infraestructure.Persistence;
+using api_planta.Infrastructure.Persistence;
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
-namespace api_planta.Infraestructure.RepositoryImpl
+namespace api_planta.Infrastructure.RepositoryImpl
 {
     public abstract class BaseRepository
     {

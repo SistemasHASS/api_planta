@@ -4,10 +4,10 @@ using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using api_planta.Infraestructure.Persistence;
+using api_planta.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace api_planta.Controllers
+namespace api_planta.Api.Controllers
 {
     [Route("api/auth")]
     [ApiController]
