@@ -279,6 +279,34 @@ namespace api_planta.Api.Controllers
                 return StatusCode(500, new { success = false, message = "Error al obtener campaña activa", details = ex.Message });
             }
         }
+
+        public class SincronizarCatalogoRequest
+        {
+            public string? Tabla { get; set; }
+            public JsonElement? Json { get; set; }
+        }
+
+        [HttpPost("sincronizar")]
+        public async Task<IActionResult> SincronizarCategoriasAsync([FromBody] SincronizarCatalogoRequest request)
+        {
+            var tabla = request?.Tabla;
+            var json = ControllerJsonHelper.ExtractJson(request?.Json);
+            _logger.LogInformation("[Catalogos/sincronizar] Tabla: {Tabla} JSON: {Json}", tabla, json);
+
+            if (string.IsNullOrWhiteSpace(tabla))
+                return BadRequest(new { success = false, message = "El campo 'tabla' es requerido." });
+
+            try
+            {
+                var resultado = await _catalogosUseCase.SincronizarCategoriasAsync(tabla, json);
+                return ControllerJsonHelper.UnwrapSpResult(this, resultado, _logger, "sincronizar");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[Catalogos/sincronizar] Error");
+                return StatusCode(500, new { success = false, message = "Error al sincronizar catálogo", details = ex.Message });
+            }
+        }
     }
 
     [Route("api/catalogos/operarios")]

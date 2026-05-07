@@ -22,5 +22,10 @@ namespace api_planta.Application.Usecase
         {
             return await _service.ObtenerCatalogosOperariosAsync(json);
         }
+
+        public async Task<List<JsonElement>> SincronizarCategoriasAsync(string tabla, string json)
+        {
+            return await _service.SincronizarCategoriasAsync(tabla, json);
+        }
     }
 }

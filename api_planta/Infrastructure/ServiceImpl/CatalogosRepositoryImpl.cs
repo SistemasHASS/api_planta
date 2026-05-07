@@ -23,5 +23,10 @@ namespace api_planta.Infrastructure.ServiceImpl
         {
             return await _repository.ObtenerCatalogosOperariosAsync(json);
         }
+
+        public async Task<List<JsonElement>> SincronizarCategoriasAsync(string tabla, string json)
+        {
+            return await _repository.SincronizarCategoriasAsync(tabla, json);
+        }
     }
 }
