@@ -1,11 +1,6 @@
+using api_planta.Api.DTOs;
+using api_planta.Domain.UseCase;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.Data;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using api_planta.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace api_planta.Api.Controllers
 {
@@ -13,104 +8,65 @@ namespace api_planta.Api.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly SistemaPaletsDbContext _context;
         private readonly ILogger<AuthController> _logger;
+        private readonly IAuthUseCase _authUseCase;
 
-        public AuthController(IConfiguration configuration, SistemaPaletsDbContext context, ILogger<AuthController> logger)
+        public AuthController(ILogger<AuthController> logger, IAuthUseCase authUseCase)
         {
-            _configuration = configuration;
-            _context = context;
             _logger = logger;
+            _authUseCase = authUseCase;
         }
 
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             try
             {
-                await _context.Database.OpenConnectionAsync();
-                var command = _context.Database.GetDbConnection().CreateCommand();
-                command.CommandText = "SP_Auth_Login";
-                command.CommandType = CommandType.StoredProcedure;
-
-                var param = command.CreateParameter();
-                param.ParameterName = "@Usuario";
-                param.DbType = DbType.String;
-                param.Value = request.Usuario;
-                command.Parameters.Add(param);
-
-                using var reader = await command.ExecuteReaderAsync();
-                if (!await reader.ReadAsync())
+                var result = await _authUseCase.LoginAsync(request.Usuario, request.Password);
+                Response.Cookies.Append("access_token", result.Token, new CookieOptions
                 {
-                    await _context.Database.CloseConnectionAsync();
-                    return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
-                }
-
-                var storedPassword = reader["Password"].ToString();
-                var userId = Convert.ToInt32(reader["Id"]);
-                var usuario = reader["Usuario"].ToString();
-                var nombreCompleto = reader["NombreCompleto"].ToString();
-                var perfil = reader["Perfil"].ToString();
-                var acopioId = reader["AcopioId"] == DBNull.Value ? (int?)null : Convert.ToInt32(reader["AcopioId"]);
-                var acopioCodigo = reader["AcopioCodigo"]?.ToString();
-                var acopioNombre = reader["AcopioNombre"]?.ToString();
-
-                await _context.Database.CloseConnectionAsync();
-
-                // Validate password using BCrypt
-                if (!BCrypt.Net.BCrypt.Verify(request.Password, storedPassword))
-                {
-                    return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
-                }
-
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.NameIdentifier, userId.ToString()),
-                    new(ClaimTypes.Name, usuario ?? ""),
-                    new("NombreCompleto", nombreCompleto ?? ""),
-                    new(ClaimTypes.Role, perfil ?? ""),
-                };
-
-                if (acopioId.HasValue)
-                    claims.Add(new Claim("AcopioId", acopioId.Value.ToString()));
-
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["Jwt:Issuer"],
-                    audience: _configuration["Jwt:Audience"],
-                    claims: claims,
-                    expires: DateTime.Now.AddHours(8),
-                    signingCredentials: creds
-                );
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTimeOffset.UtcNow.AddHours(8)
+                });
 
                 return Ok(new
                 {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    user = new
-                    {
-                        id = userId,
-                        usuario,
-                        nombreCompleto,
-                        perfil,
-                        acopioId,
-                        acopioCodigo,
-                        acopioNombre
-                    }
+                    user = result.User
                 });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", request.Usuario);
+                return Unauthorized(new { message = ex.Message });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error interno en login");
                 return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
             }
         }
-    }
 
-    public class LoginRequest
-    {
-        public string Usuario { get; set; } = "";
-        public string Password { get; set; } = "";
+        [HttpPost("logout")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("access_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false, // true en producción HTTPS
+                SameSite = SameSiteMode.Lax
+            });
+
+            return Ok(new
+            {
+                message = "Sesión cerrada correctamente"
+            });
+        }
     }
 }

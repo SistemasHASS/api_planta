@@ -12,6 +12,7 @@ using api_planta.Domain.UseCase;
 using api_planta.Infrastructure.RepositoryImpl;
 using api_planta.Infrastructure.ServiceImpl;
 using api_planta.Application.Usecase;
+using api_planta.Api.Security;
 using api_planta.Infrastructure.Shared.Exceptions;
 using Serilog;
 
@@ -55,11 +56,12 @@ try
     // CORS
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowAll", policy =>
+        options.AddPolicy("AngularPolicy", policy =>
         {
-            policy.AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
+            policy.WithOrigins("http://localhost:4200")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
         });
     });
 
@@ -95,17 +97,47 @@ try
                 ValidIssuer = builder.Configuration["Jwt:Issuer"],
                 ValidAudience = builder.Configuration["Jwt:Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                    Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+                ClockSkew = TimeSpan.Zero
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    if (string.IsNullOrEmpty(context.Token)
+                        && context.Request.Cookies.TryGetValue("access_token", out var cookieToken)
+                        && !string.IsNullOrWhiteSpace(cookieToken))
+                    {
+                        context.Token = cookieToken;
+                    }
+
+                    return Task.CompletedTask;
+                }
             };
         });
+
+    builder.Services.AddHttpClient();
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
     // Inyección de dependencias - Clean Architecture
     builder.Services.AddScoped<IPaletRepository, PaletRepositoryImpl>();
     builder.Services.AddScoped<ICatalogosRepository, CatalogosRepositoryImpl>();
+    builder.Services.AddScoped<IAdministracionRepository, AdministracionRepositoryImpl>();
     builder.Services.AddScoped<IPaletService, PaletServiceImpl>();
     builder.Services.AddScoped<ICatalogosService, CatalogosServiceImpl>();
+    builder.Services.AddScoped<IAdministracionService, AdministracionServiceImpl>();
     builder.Services.AddScoped<IPaletUseCase, PaletUseCaseImpl>();
     builder.Services.AddScoped<ICatalogosUsaCase, CatalogosUseCaseImpl>();
+    builder.Services.AddScoped<IAdministracionUseCase, AdministracionUseCaseImpl>();
+
+    builder.Services.AddScoped<IMaestrosAuthService, MaestrosServiceImpl>();
+    builder.Services.AddScoped<ITokenService, JwtTokenServiceImpl>();
+    builder.Services.AddScoped<IAuthUseCase, AuthUseCaseImpl>();
+    builder.Services.AddScoped<IAuthService, AuthServiceImpl>();
+    builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+
 
     // Swagger con soporte JWT Bearer
     builder.Services.AddEndpointsApiExplorer();
@@ -147,7 +179,7 @@ try
     var app = builder.Build();
 
     // CORS antes que autenticación
-    app.UseCors("AllowAll");
+    app.UseCors("AngularPolicy");
 
     // Middleware de excepciones globales
     app.UseMiddleware<ExceptionMiddleware>();

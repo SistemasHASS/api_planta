@@ -1,0 +1,8 @@
+using api_planta.Domain.DTOs.Auth;
+
+namespace api_planta.Domain.Services;
+
+public interface ITokenService
+{
+    string CrearToken(UsuarioAcopioDto user);
+}
