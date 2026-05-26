@@ -1,0 +1,13 @@
+
+using System.Text.Json;
+
+namespace Planta.Application.Administracion.Abstractions;
+
+public interface IAdministracionUseCase
+{
+    Task<List<JsonElement>> SincronizarReglasSobrepesoAsync(string json, string idempresa, string ruc, string usuario);
+    Task<List<JsonElement>> ListarReglasSobrepesoAsync(string idempresa, string ruc, string? idProyecto = null, string? idCultivo = null);
+    Task<List<JsonElement>> SincronizarMatrizCompatibilidadAsync(string json, string idempresa, string ruc, string usuario);
+    Task<List<JsonElement>> ListarMatricesCompatibilidadAsync(string idempresa, string ruc, string? idProyecto = null, string? idCultivo = null);
+    Task<List<JsonElement>> SincronizarUsuariosAsync(string json, string idempresa, string ruc, string usuario);
+}

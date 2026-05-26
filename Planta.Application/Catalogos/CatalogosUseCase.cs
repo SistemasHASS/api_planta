@@ -1,0 +1,146 @@
+using Planta.Application.Catalogos.Models;
+using Planta.Application.Catalogos.Abstractions;
+using Planta.Application.Maestros.Abstractions;
+using System.Text.Json;
+
+namespace Planta.Application.Catalogos;
+
+public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogosService catalogosService) : Planta.Application.Catalogos.Abstractions.ICatalogosUseCase
+{   
+
+    public async Task<List<JsonElement>> SincronizarCatalogosAsync(string tabla, string json, string idempresa, string ruc, string usuario)
+    {
+        return await catalogosService.SincronizarCatalogosAsync(tabla, json, idempresa, ruc, usuario);
+    }
+
+    public async Task<CatalogosResponse<List<UsuariosAcopio>>> GetListaUsuariosAsync(string usuario, string ruc)
+    {
+        var resp= await maestrosService.GetListaUsuariosAsync(usuario, ruc);
+
+        if (resp is null)
+        {
+            throw new UnauthorizedAccessException("Credenciales inválidas.");
+        }
+
+        var usuariosAcopio= await catalogosService.GetUsuarioAcopioAsync(JsonSerializer.Serialize(resp));
+
+        return usuariosAcopio;
+    }
+    public async Task<CatalogosResponse<List<PersonalLogistico>>> GetPersonalLogisticoAsync(string idempresa, string ruc, string idproyecto)
+    {
+        return await catalogosService.GetPersonalLogisticoAsync(idempresa, ruc, idproyecto);
+    }
+    
+    public async Task<CatalogosResponse<List<Supervisor>>> GetSupervisoresAsync(string idempresa, string ruc, string idproyecto)
+    {
+        return await catalogosService.GetSupervisoresAsync(idempresa, ruc, idproyecto);
+    }
+    
+    public async Task<CatalogosResponse<List<Transportista>>> GetTransportistasAsync(string idempresa, string ruc, string idproyecto)
+    {
+        return await catalogosService.GetTransportistasAsync(idempresa, ruc, idproyecto);
+    }
+    
+    public async Task<CatalogosResponse<List<Vehiculo>>> GetVehiculosAsync(string idempresa, string ruc, string idproyecto)
+    {
+        return await catalogosService.GetVehiculosAsync(idempresa, ruc, idproyecto);
+    }
+    
+    public async Task<CatalogosResponse<List<Conductores>>> GetConductoresAsync(string idempresa, string ruc, string idproyecto)
+    {
+        return await catalogosService.GetConductoresAsync(idempresa, ruc, idproyecto);
+    }
+    
+    public async Task<CatalogosResponse<List<LugaresProduccion>>> GetLugaresProduccionAsync(string idempresa, string ruc, string idproyecto)
+    {
+        return await catalogosService.GetLugaresProduccionAsync(idempresa, ruc, idproyecto);
+    }
+    
+    public async Task<CatalogosResponse<List<TipoCaja>>> GetTipoCajaAsync(string idempresa, string ruc, string codigoCultivo)
+    {
+        return await catalogosService.GetTipoCajaAsync(idempresa, ruc, codigoCultivo);
+    }
+    
+    public async Task<CatalogosResponse<List<Presentacion>>> GetPresentacionesAsync(string idempresa, string ruc, string codigoCultivo)
+    {
+        return await catalogosService.GetPresentacionesAsync(idempresa, ruc, codigoCultivo);
+    }
+    
+    public async Task<CatalogosResponse<List<TiposEmpaqueGuia>>> GetTiposEmpaqueGuiaAsync(string idempresa, string ruc, string codigoCultivo)
+    {
+        return await catalogosService.GetTiposEmpaqueGuiaAsync(idempresa, ruc, codigoCultivo);
+    }
+
+    public async Task<CatalogosResponse<List<Categoria>>> GetCategoriaAsync(string idempresa, string ruc,string codigoCultivo)
+    {
+        return await catalogosService.GetCategoriaAsync(idempresa, ruc,codigoCultivo);
+    }
+
+    public async Task<CatalogosResponse<List<TiposEmpaque>>> GetTiposEmpaquesAsync(string idempresa, string ruc, string codigoCultivo)
+    {
+        return await catalogosService.GetTiposEmpaquesAsync(idempresa, ruc, codigoCultivo);
+    }
+
+    public async Task<CatalogosResponse<List<Acopios>>> GetAcopiosAsync(string idempresa)
+    {
+        var resp= maestrosService.GetAcopiosAsync(idempresa);
+
+        var respAcopios = await catalogosService.GetAcopiosSeriesAsync(idempresa,JsonSerializer.Serialize(resp.Result));
+        
+        return respAcopios;
+    }
+
+    public Task<IReadOnlyList<FundoExterno>?> GetFundosAsync(string idempresa)
+    {
+        return maestrosService.GetFundosAsync(idempresa);
+    }
+
+    public async Task<CatalogosResponse<List<Formato>>> GetFormatosAsync(string idempresa, string ruc, string codigoCultivo)
+    {
+        return await catalogosService.GetFormatosAsync(idempresa, ruc, codigoCultivo);
+    }
+
+    public Task<IReadOnlyList<ClienteExterno>?> GetClientesAsync(string idempresa)
+    {
+        return maestrosService.GetClientesAsync(idempresa);
+    }
+
+    public async  Task<CatalogosResponse<List<VariedadRepository>>> GetVariedadesAsync(string idempresa,string ruc)
+    {
+        var resp= maestrosService.GetVariedadesAsync(idempresa);
+        
+        var respVariedades = await catalogosService.GetVariedadAuxiliarAsync(idempresa, ruc, JsonSerializer.Serialize(resp.Result));
+        
+        return respVariedades;
+    }
+
+    public Task<IReadOnlyList<CultivoExterno>?> GetCultivosAsync(string idempresa)
+    {
+        return maestrosService.GetCultivosAsync(idempresa);
+    }
+
+    public Task<IReadOnlyList<CampaniaExterna>?> GetCampaniasAsync(string ruc)
+    {
+        return maestrosService.GetCampaniasAsync(ruc);
+    }
+
+    public Task<IReadOnlyList<PaisExterno>?> GetPaisesAsync()
+    {
+        return maestrosService.GetPaisesAsync();
+    }
+
+    public Task<IReadOnlyList<CalibreExterno>?> GetCalibresAsync()
+    {
+        return maestrosService.GetCalibresAsync();
+    }
+
+    public Task<IReadOnlyList<TransporteExterno>?> GetTransportesAsync()
+    {
+        return maestrosService.GetTransportesAsync();
+    }
+
+    public Task<CatalogosResponse<List<TipoClamshell>>>GetTiposClamshellAsync(string idempresa,string ruc,string codigoCultivo)
+    {
+        return catalogosService.GetTiposClamshellAsync(idempresa, ruc, codigoCultivo);
+    }
+}
