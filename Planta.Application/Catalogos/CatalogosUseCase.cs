@@ -7,7 +7,11 @@ namespace Planta.Application.Catalogos;
 
 public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogosService catalogosService) : Planta.Application.Catalogos.Abstractions.ICatalogosUseCase
 {   
-
+    public async Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto)
+    {
+        return await catalogosService.GetTipoProcesoEmpacadoAsync(idempresa, ruc, idproyecto);
+    }
+    
     public async Task<List<JsonElement>> SincronizarCatalogosAsync(string tabla, string json, string idempresa, string ruc, string usuario)
     {
         return await catalogosService.SincronizarCatalogosAsync(tabla, json, idempresa, ruc, usuario);

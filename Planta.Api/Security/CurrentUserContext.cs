@@ -23,6 +23,6 @@ public class CurrentUserContext : ICurrentUserContext
     public string? IdEmpresa => Principal.FindFirstValue("IdEmpresa");
     public string? Ruc => Principal.FindFirstValue("Ruc");
     
-    public string? AcopioId => Principal.FindFirstValue("AcopioId");
+    public string? CodigoAcopio => Principal.FindFirstValue("codigoAcopio") ?? Principal.FindFirstValue("AcopioId");
     public string? SerieGuia => Principal.FindFirstValue("SerieGuia");
 }

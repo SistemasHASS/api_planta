@@ -6,6 +6,7 @@ namespace Planta.Application.Catalogos.Abstractions;
 
 public interface ICatalogosUseCase
 {
+    Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto);
     Task<List<JsonElement>> SincronizarCatalogosAsync(string tabla, string json, string idempresa, string ruc, string usuario);
     Task<CatalogosResponse<List<UsuariosAcopio>>> GetListaUsuariosAsync(string usuario, string ruc);
     Task<CatalogosResponse<List<PersonalLogistico>>> GetPersonalLogisticoAsync(string idempresa, string ruc, string idproyecto);

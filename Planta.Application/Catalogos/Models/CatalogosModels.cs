@@ -3,6 +3,7 @@
 using System.Text.Json.Serialization;
 
 namespace Planta.Application.Catalogos.Models;
+
 public sealed class Formato
 {
     [JsonPropertyName("id")]
@@ -28,6 +29,29 @@ public sealed class Formato
     
     [JsonPropertyName("fechaCreacion")]
     public string FechaCreacion { get; set; } = "";
+}
+
+public sealed class TipoProcesoEmpacado
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    
+    [JsonPropertyName("idproyecto")]
+    public string IdProyecto { get; set; } = "";
+    
+    [JsonPropertyName("codigo")]
+    public string Codigo { get; set; } = "";
+    
+    [JsonPropertyName("nombre")]
+    public string Nombre { get; set; } = "";
+    
+    [JsonPropertyName("activo")]
+    public bool Activo { get; set; }
+    
+    [JsonPropertyName("fechaCreacion")]
+    public string FechaCreacion { get; set; } = "";
+
+   
 }
 
 public sealed class TipoClamshell
@@ -410,27 +434,42 @@ public sealed class TiposEmpaque
 
 }
 
+public sealed class TipoProcesoEmpacadoDto
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("codigo")]
+    public string Codigo { get; set; } = "";
+
+    [JsonPropertyName("nombre")]
+    public string Nombre { get; set; } = "";
+
+    [JsonPropertyName("activo")]
+    public bool Activo { get; set; }
+    
+    [JsonPropertyName("fechaCreacion")]
+    public string FechaCreacion { get; set; } = "";
+}
+
 public sealed class Acopios
 {
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
-    [JsonPropertyName("idempresa")]
-    public string Idempresa { get; set; } = "";
-
-    [JsonPropertyName("ruc")]
-    public string Ruc { get; set; } = "";
-
-    [JsonPropertyName("acopioId")]
-    public string AcopioId { get; set; } = "";
+    [JsonPropertyName("codigoAcopio")]
+    public string CodigoAcopio { get; set; } = "";
 
     [JsonPropertyName("acopioNombre")]
     public string AcopioNombre { get; set; } = "";
 
     [JsonPropertyName("serieGuia")]
     public string SerieGuia { get; set; } = "";
-
+    
+    [JsonPropertyName("tiposProcesoEmpacado")]
+    public List<TipoProcesoEmpacadoDto> TiposProcesoEmpacado { get; set; } = new();
 }
+
 
 public sealed class AcopiosExterno
 {

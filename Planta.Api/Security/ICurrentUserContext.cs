@@ -13,7 +13,7 @@ public interface ICurrentUserContext
 
     string? IdEmpresa { get; }
     string? Ruc { get; }
-    string? AcopioId { get; }
+    string? CodigoAcopio { get; }
     string?SerieGuia{  get;}
 
 }

@@ -13,6 +13,45 @@ namespace Planta.Api.Controllers;
 [ApiController]
 public sealed class CatalogosController(ILogger<CatalogosController> logger, ICurrentUserContext _currentUser, ICatalogosUseCase catalogosUseCase) : ControllerBase
 {
+    [HttpGet("get-tipoProcesoEmpacado")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetTipoProcesoEmpacado([FromQuery] string json)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            var doc = JsonDocument.Parse(json); 
+            var root = doc.RootElement;
+
+            var idProyecto = root.TryGetProperty("idproyecto", out var proyectoProp)
+                ? proyectoProp.GetString()
+                : null;
+            var result = await catalogosUseCase.GetTipoProcesoEmpacadoAsync(_currentUser.IdEmpresa!, _currentUser.Ruc!, idProyecto!);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetTipoProcesoEmpacado");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
     [HttpGet("get-acopios")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

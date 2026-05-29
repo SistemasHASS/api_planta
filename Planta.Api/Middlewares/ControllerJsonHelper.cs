@@ -11,9 +11,23 @@ public static class ControllerJsonHelper
     /// </summary>
     public static string ExtractJson(JsonElement? body)
     {
-        return body.HasValue && body.Value.ValueKind != JsonValueKind.Null
-            ? body.Value.ToString()
-            : "{}";
+        if (!body.HasValue || body.Value.ValueKind == JsonValueKind.Null)
+            return "{}";
+
+        var value = body.Value;
+
+        if (value.ValueKind == JsonValueKind.Object && value.TryGetProperty("json", out var jsonProp))
+        {
+            if (jsonProp.ValueKind == JsonValueKind.String)
+                return jsonProp.GetString() ?? "{}";
+
+            if (jsonProp.ValueKind != JsonValueKind.Null)
+                return jsonProp.ToString();
+
+            return "{}";
+        }
+
+        return value.ToString();
     }
 
     /// <summary>

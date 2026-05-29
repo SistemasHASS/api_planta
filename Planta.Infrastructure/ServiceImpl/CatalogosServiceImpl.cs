@@ -9,6 +9,8 @@ namespace Planta.Infrastructure.ServiceImpl;
 
 public sealed class CatalogosServiceImpl(ICatalogosRepository catalogosRepository): ICatalogosService
 {
+    public Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto)
+        => catalogosRepository.GetTipoProcesoEmpacadoAsync(idempresa, ruc, idproyecto);
     
     public Task<CatalogosResponse<List<Formato>>> GetFormatosAsync(string idempresa, string ruc, string codigoCultivo)
         => catalogosRepository.GetFormatosAsync(idempresa, ruc, codigoCultivo);

@@ -13,6 +13,52 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
     {
     }
 
+    public async Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarTipoProcesoEmpacado",
+            new Dictionary<string, object?>
+            {
+                { "@idempresa", idempresa },
+                { "@ruc",  ruc },
+                { "@idproyecto", idproyecto }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<TipoProcesoEmpacado>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<TipoProcesoEmpacado>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<TipoProcesoEmpacado>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<TipoProcesoEmpacado>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
     public async Task<CatalogosResponse<List<Formato>>> GetFormatosAsync(string idempresa, string ruc, string codigoCultivo)
     {
         var resultado = await EjecutarStoredProcedureAsync(
@@ -701,7 +747,7 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
     {
 
         var resultado = await EjecutarStoredProcedureAsync(
-            "PLANTA_GetAcopio_SerieGuia",
+            "PLANTA_GETAcopio_Config",
             new Dictionary<string, object?>
             {
                 { "@json", json },
