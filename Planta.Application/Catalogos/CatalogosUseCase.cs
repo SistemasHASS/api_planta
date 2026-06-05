@@ -7,6 +7,17 @@ namespace Planta.Application.Catalogos;
 
 public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogosService catalogosService) : Planta.Application.Catalogos.Abstractions.ICatalogosUseCase
 {   
+
+    public async Task<List<JsonElement>> SincronizarDestinatariosAsync(string idempresa, string ruc, string usuario, string idRol, string json)
+    {
+        return await catalogosService.SincronizarDestinatariosAsync(idempresa, ruc, usuario, idRol, json);
+    }
+
+    public async Task<List<JsonElement>> SincronizarAcopiosAsync(string idempresa, string ruc, string usuario, string json, string json_detalle)
+    {
+        return await catalogosService.SincronizarAcopiosAsync(idempresa, ruc, usuario, json, json_detalle);
+    }
+
     public async Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto)
     {
         return await catalogosService.GetTipoProcesoEmpacadoAsync(idempresa, ruc, idproyecto);
@@ -85,6 +96,15 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
         return await catalogosService.GetTiposEmpaquesAsync(idempresa, ruc, codigoCultivo);
     }
 
+    public async Task<CatalogosResponse<List<Destinatarios>>> GetDestinatariosAsync(string idempresa, string ruc)
+    {
+        var resp= await maestrosService.GetClientesAsync(idempresa);
+
+        var respDestinatarios = await catalogosService.GetDestinatariosAsync(idempresa, ruc, JsonSerializer.Serialize(resp));
+
+        return respDestinatarios;
+    }
+
     public async Task<CatalogosResponse<List<Acopios>>> GetAcopiosAsync(string idempresa)
     {
         var resp= maestrosService.GetAcopiosAsync(idempresa);
@@ -146,5 +166,15 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
     public Task<CatalogosResponse<List<TipoClamshell>>>GetTiposClamshellAsync(string idempresa,string ruc,string codigoCultivo)
     {
         return catalogosService.GetTiposClamshellAsync(idempresa, ruc, codigoCultivo);
+    }
+
+    public Task<CatalogosResponse<List<CodigoRancho>>> GetCodigosRanchoAsync(string idempresa, string ruc, string idproyecto)
+    {
+        return catalogosService.GetCodigosRanchoAsync(idempresa, ruc, idproyecto);
+    }
+
+    public Task<CatalogosResponse<List<LugarProduccionConfig>>> GetLugaresProduccionConfigAsync(string idempresa, string ruc, string idproyecto)
+    {
+        return catalogosService.GetLugaresProduccionConfigAsync(idempresa, ruc, idproyecto);
     }
 }

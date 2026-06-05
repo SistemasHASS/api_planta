@@ -13,6 +13,8 @@ using Planta.Infrastructure.RepositoryImpl;
 using Planta.Infrastructure.ServiceImpl;
 using Planta.Application.Proceso.Abstractions;
 using Planta.Application.Proceso;
+using Planta.Application.GuiaRemision.Abstractions;
+using Planta.Application.GuiaRemision;
 
 namespace Planta.Infrastructure;
 
@@ -36,6 +38,10 @@ public static class DependencyInjection
         services.AddScoped<IProcesosService, ProcesosServiceImpl>();
         services.AddScoped<IProcesosUseCase, ProcesosUseCase>();
         services.AddScoped<IProcesosRepository, ProcesosRespository>();
+
+        services.AddScoped<IGuiasRemisionService, GuiasRemisionServiceImpl>();
+        services.AddScoped<IGuiasRemisionUseCase, GuiasRemisionUseCase>();
+        services.AddScoped<IGuiasRemisionRepository, GuiasRemisionRepository>();
 
         services.AddScoped<IMaestrosService, MaestrosServiceImpl>();
         services.AddScoped<ICatalogosService,CatalogosServiceImpl>();

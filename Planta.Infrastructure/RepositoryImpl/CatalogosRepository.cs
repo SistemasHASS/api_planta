@@ -13,6 +13,88 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
     {
     }
 
+    public async Task<CatalogosResponse<List<Destinatarios>>> GetDestinatariosAsync(string idempresa, string ruc, string json)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_GETDestinatarios",
+            new Dictionary<string, object?>
+            {   
+                {"@idempresa", idempresa},
+                {"@ruc", ruc},
+                { "@json", json }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<Destinatarios>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<Destinatarios>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<Destinatarios>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<Destinatarios>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<List<JsonElement>> SincronizarAcopiosAsync(string idempresa, string ruc, string usuario, string json, string json_detalle)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_SincronizarAcopio_Config",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@usuario", usuario },
+                { "@json", json },
+                { "@json_detalle", json_detalle}
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
     public async Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto)
     {
         var resultado = await EjecutarStoredProcedureAsync(
@@ -232,7 +314,7 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
                };
     }
 
-    public async Task<CatalogosResponse<List<PersonalLogistico>>> GetPersonalLogisticoAsync(string idempresa, string ruc,string idproyecto)
+    public async Task<CatalogosResponse<List<PersonalLogistico>>> GetPersonalLogisticoAsync(string idempresa, string ruc, string idproyecto)
     {
         var resultado = await EjecutarStoredProcedureAsync(
             "PLANTA_ListarPersonalLogistica",
@@ -278,7 +360,7 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
                };
     }
 
-    public async Task<CatalogosResponse<List<Supervisor>>> GetSupervisoresAsync(string idempresa, string ruc,string idproyecto)
+    public async Task<CatalogosResponse<List<Supervisor>>> GetSupervisoresAsync(string idempresa, string ruc, string idproyecto)
     {
         var resultado = await EjecutarStoredProcedureAsync(
             "PLANTA_ListarSupervisores",
@@ -370,7 +452,7 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
                };
     }
 
-    public async Task<CatalogosResponse<List<Vehiculo>>> GetVehiculosAsync(string idempresa, string ruc,string idproyecto)
+    public async Task<CatalogosResponse<List<Vehiculo>>> GetVehiculosAsync(string idempresa, string ruc, string idproyecto)
     {
         var resultado = await EjecutarStoredProcedureAsync(
             "PLANTA_ListarVehiculos",
@@ -836,6 +918,134 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
                    Mensaje = "Sin resultados"
                };
 
+    }
+
+    public async Task<CatalogosResponse<List<CodigoRancho>>> GetCodigosRanchoAsync(string idempresa, string ruc, string idproyecto)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarCodigosRancho",
+            new Dictionary<string, object?>
+            {
+                { "@idempresa", idempresa },
+                { "@ruc",  ruc },
+                { "@idproyecto", idproyecto }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<CodigoRancho>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<CodigoRancho>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<CodigoRancho>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<CodigoRancho>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<CatalogosResponse<List<LugarProduccionConfig>>> GetLugaresProduccionConfigAsync(string idempresa, string ruc, string idproyecto)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarLugaresProduccion_Confg",
+            new Dictionary<string, object?>
+            {
+                { "@idempresa", idempresa },
+                { "@ruc",  ruc },
+                { "@idproyecto", idproyecto }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<LugarProduccionConfig>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<LugarProduccionConfig>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<LugarProduccionConfig>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<LugarProduccionConfig>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<List<JsonElement>> SincronizarDestinatariosAsync(string idempresa, string ruc, string usuario, string idRol, string json)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_SincronizarDestinatarios",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@usuario", usuario },
+                { "@idRol", idRol },
+                { "@Json", json }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
     }
 
 }

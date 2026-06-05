@@ -6,6 +6,9 @@ namespace Planta.Application.Catalogos.Abstractions;
 
 public interface ICatalogosUseCase
 {
+    Task<CatalogosResponse<List<Destinatarios>>> GetDestinatariosAsync(string idempresa, string ruc);
+    Task<List<JsonElement>> SincronizarDestinatariosAsync(string idempresa, string ruc, string usuario, string idRol, string json);
+    Task<List<JsonElement>> SincronizarAcopiosAsync(string idempresa, string ruc, string usuario, string json, string json_detalle);
     Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto);
     Task<List<JsonElement>> SincronizarCatalogosAsync(string tabla, string json, string idempresa, string ruc, string usuario);
     Task<CatalogosResponse<List<UsuariosAcopio>>> GetListaUsuariosAsync(string usuario, string ruc);
@@ -31,4 +34,6 @@ public interface ICatalogosUseCase
     Task<IReadOnlyList<CalibreExterno>?> GetCalibresAsync();
     Task<IReadOnlyList<TransporteExterno>?> GetTransportesAsync();
     Task<CatalogosResponse<List<TipoClamshell>>> GetTiposClamshellAsync(string idempresa, string ruc, string codigoCultivo);
+    Task<CatalogosResponse<List<CodigoRancho>>> GetCodigosRanchoAsync(string idempresa, string ruc, string idproyecto);
+    Task<CatalogosResponse<List<LugarProduccionConfig>>> GetLugaresProduccionConfigAsync(string idempresa, string ruc, string idproyecto);
 }

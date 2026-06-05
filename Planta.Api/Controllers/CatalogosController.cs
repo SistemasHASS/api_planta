@@ -13,6 +13,224 @@ namespace Planta.Api.Controllers;
 [ApiController]
 public sealed class CatalogosController(ILogger<CatalogosController> logger, ICurrentUserContext _currentUser, ICatalogosUseCase catalogosUseCase) : ControllerBase
 {
+
+    public class SincronizarAcopiosRequest
+    {
+        public JsonElement? Json { get; set; }
+        public JsonElement? Json_detalle { get; set; }
+    }
+
+    public class SincronizarDestinatariosRequest
+    {
+        public JsonElement? Destinatarios { get; set; }
+    }
+
+    [HttpPost("sincronizar-destinatarios")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> SincronizarDestinatarios([FromBody] SincronizarDestinatariosRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Role))
+            {
+                return BadRequest("IdRol is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            var jsonDestinatarios = ControllerJsonHelper.ExtractJson(request?.Destinatarios);
+            var result = await catalogosUseCase.SincronizarDestinatariosAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                _currentUser.UserName!,
+                _currentUser.Role!,
+                jsonDestinatarios
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { error = true, mensaje = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en SincronizarDestinatarios");
+            return StatusCode(500, new { error = true, mensaje = ex.Message });
+        }
+    }
+
+    [HttpGet("get-destinatarios")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetDestinatarios()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            var result = await catalogosUseCase.GetDestinatariosAsync(_currentUser.IdEmpresa!, _currentUser.Ruc!);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetDestinatarios");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpPost("sincronizar-acopios")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> SincronizarAcopios([FromBody] SincronizarAcopiosRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("Idempresa is required");
+            }
+            Console.WriteLine("Json==============================================: " + request?.Json);
+            Console.WriteLine("Json_detalle==============================================: " + request?.Json_detalle);
+            var json = ControllerJsonHelper.ExtractJson(request?.Json);
+            var json_detalle = ControllerJsonHelper.ExtractJson(request?.Json_detalle);
+
+            var result = await catalogosUseCase.SincronizarAcopiosAsync(_currentUser.IdEmpresa, _currentUser.Ruc, _currentUser.UserName, json, json_detalle);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { error = true, mensaje = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en SincronizarAcopios");
+            return StatusCode(500, new { error = true, mensaje = ex.Message });
+        }
+    }
+
+
+
+    [HttpGet("get-lugares-produccion-config")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetLugaresProduccionConfig([FromQuery] string json)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            var idProyecto = root.TryGetProperty("idproyecto", out var proyectoProp)
+                ? proyectoProp.GetString()
+                : null;
+            var result = await catalogosUseCase.GetLugaresProduccionConfigAsync(_currentUser.IdEmpresa!, _currentUser.Ruc!, idProyecto!);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetLugaresProduccionConfig");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-codigos-rancho")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetCodigosRancho([FromQuery] string json)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            var idProyecto = root.TryGetProperty("idproyecto", out var proyectoProp)
+                ? proyectoProp.GetString()
+                : null;
+            var result = await catalogosUseCase.GetCodigosRanchoAsync(_currentUser.IdEmpresa!, _currentUser.Ruc!, idProyecto!);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetCodigosRancho");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
     [HttpGet("get-tipoProcesoEmpacado")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

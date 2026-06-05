@@ -83,6 +83,42 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
         });
     }
 
+    public async Task<List<JsonElement>> SincronizarDPaletsAsync(string idempresa, string ruc, string codigoAcopio, string usuario, string json)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_SincronizarDPalets",
+        new Dictionary<string, object?>
+        {
+            {"@idempresa", idempresa},
+            {"@ruc", ruc},
+            {"@codigoAcopio", codigoAcopio},
+            {"@usuario", usuario},
+            {"@json", json}
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
     public async Task<List<JsonElement>> SincronizarProcesoAsync(string idempresa, string ruc, string idProyecto, string codigoCultivo, string codigoAcopio, string usuario, string idRol, string jsonProceso, string jsonDprocesoLogisticos, string jsonDprocesoSupervisores, string? modo = null)
     {
         return await EjecutarStoredProcedureAsync("PLANTA_SincronizarProceso",
@@ -297,6 +333,366 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
             }
 
             var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarTiposClamshellPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarTiposClamshellPorMatriz",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@codigoCultivo", codigoCultivo },
+                { "@documentoConsignatario", documentoConsignatario },
+                { "@destinoId", destinoId },
+                { "@formatoId", formatoId },
+                { "@tipoEmpaqueGuiaId", tipoEmpaqueGuiaId }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarTiposCajaPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarTiposCajaPorMatriz",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@codigoCultivo", codigoCultivo },
+                { "@documentoConsignatario", documentoConsignatario },
+                { "@destinoId", destinoId },
+                { "@formatoId", formatoId },
+                { "@tipoEmpaqueGuiaId", tipoEmpaqueGuiaId }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarPresentacionesPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarPresentacionesPorMatriz",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@codigoCultivo", codigoCultivo },
+                { "@documentoConsignatario", documentoConsignatario },
+                { "@destinoId", destinoId },
+                { "@formatoId", formatoId },
+                { "@tipoEmpaqueGuiaId", tipoEmpaqueGuiaId }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarTiposEmpaqueGuiaPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarTiposEmpaqueGuiaPorMatriz",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@codigoCultivo", codigoCultivo },
+                { "@documentoConsignatario", documentoConsignatario },
+                { "@destinoId", destinoId },
+                { "@formatoId", formatoId }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarFormatosPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarFormatosPorMatriz",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@codigoCultivo", codigoCultivo },
+                { "@documentoConsignatario", documentoConsignatario },
+                { "@destinoId", destinoId }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarDestinosPorMatrizCompatibilidadAsync(string idempresa, string ruc, string idProyecto, string documentoConsignatario)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarDestinos_Por_MatrizCompatibilidad",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idProyecto", idProyecto },
+                { "@documentoConsignatario", documentoConsignatario }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarCodigosRanchoPorLugarProduccionAsync(string idempresa, string ruc, string idProyecto, int idLugaresDeProduccion)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarCodigosRanchoPorLugarProduccion",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idproyecto", idProyecto },
+                { "@idLugaresDeProduccion", idLugaresDeProduccion }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarDPaletsPorAcopioAsync(string idempresa, string ruc, string codigoAcopio)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarDPalets_Por_Acopio",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@codigoAcopio", codigoAcopio }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarTipoProcesoEmpacadoPorAcopioAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarTipoProcesoEmpacadoPorAcopio",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@idProyecto", idProyecto },
+                { "@codigoAcopio", codigoAcopio },
+                { "@ruc", ruc }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarProcesosAbiertosConPaletsCerradosAsync(string idempresa, string ruc, string codigoAcopio)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarProcesosAbiertosConPaletsCerrados",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@codigoAcopio", codigoAcopio }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            var mensaje = result.IsDBNull(1) ? null : Convert.ToString(result.GetValue(1));
+
+            JsonElement data;
+            if (result.IsDBNull(2))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(2));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
 
             var payload = new { error, data, mensaje };
             var payloadJson = JsonSerializer.Serialize(payload);

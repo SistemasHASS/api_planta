@@ -9,6 +9,15 @@ namespace Planta.Infrastructure.ServiceImpl;
 
 public sealed class CatalogosServiceImpl(ICatalogosRepository catalogosRepository): ICatalogosService
 {
+    public Task<CatalogosResponse<List<Destinatarios>>> GetDestinatariosAsync(string idempresa, string ruc, string json)
+        => catalogosRepository.GetDestinatariosAsync(idempresa, ruc, json);
+    
+    public Task<List<JsonElement>> SincronizarDestinatariosAsync(string idempresa, string ruc, string usuario, string idRol, string json)
+        => catalogosRepository.SincronizarDestinatariosAsync(idempresa, ruc, usuario, idRol, json);
+    
+    public Task<List<JsonElement>> SincronizarAcopiosAsync(string idempresa, string ruc, string usuario, string json, string json_detalle)
+        => catalogosRepository.SincronizarAcopiosAsync(idempresa, ruc, usuario, json, json_detalle);
+
     public Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto)
         => catalogosRepository.GetTipoProcesoEmpacadoAsync(idempresa, ruc, idproyecto);
     
@@ -63,4 +72,10 @@ public sealed class CatalogosServiceImpl(ICatalogosRepository catalogosRepositor
     
     public Task<CatalogosResponse<List<VariedadRepository>>> GetVariedadAuxiliarAsync(string idempresa, string ruc, string json)
         => catalogosRepository.GetVariedadAuxiliarAsync(idempresa, ruc, json);
+
+    public Task<CatalogosResponse<List<CodigoRancho>>> GetCodigosRanchoAsync(string idempresa, string ruc, string idproyecto)
+        => catalogosRepository.GetCodigosRanchoAsync(idempresa, ruc, idproyecto);
+
+    public Task<CatalogosResponse<List<LugarProduccionConfig>>> GetLugaresProduccionConfigAsync(string idempresa, string ruc, string idproyecto)
+        => catalogosRepository.GetLugaresProduccionConfigAsync(idempresa, ruc, idproyecto);
 }   

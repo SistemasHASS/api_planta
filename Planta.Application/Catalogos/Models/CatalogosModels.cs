@@ -88,6 +88,39 @@ public sealed class CatalogosResponse<T>
     public string Mensaje { get; set; } = "";
 }
 
+public sealed class Destinatarios
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    
+    [JsonPropertyName("idCliente")]
+    public int IdCliente { get; set; }
+    
+    [JsonPropertyName("documentoFiscal")]
+    public string DocumentoFiscal { get; set; } = "";
+    
+    [JsonPropertyName("documento")]
+    public string Documento { get; set; } = "";
+    
+    [JsonPropertyName("tipoDocumento")]
+    public string TipoDocumento { get; set; } = "";
+    
+    [JsonPropertyName("nombre")]
+    public string Nombre { get; set; } = "";
+    
+    [JsonPropertyName("esCliente")]
+    public string EsCliente { get; set; } = "";
+    
+    [JsonPropertyName("domicilioFiscal")]
+    public string DomicilioFiscal { get; set; } = "";
+    
+    [JsonPropertyName("puntoLlegada")]
+    public string PuntoLlegada { get; set; } = "";
+    
+    [JsonPropertyName("activo")]
+    public bool Activo { get; set; }
+}
+
 public sealed class UsuariosAcopio
 {
     public string id { get; set; } = "";
@@ -545,7 +578,10 @@ public sealed class ClienteExterno
 public sealed class VariedadRepository
 {
     [JsonPropertyName("id")]
-    public string Id { get; set; } = "";
+    public int Id { get; set; }
+
+    [JsonPropertyName("codigo")]
+    public string Codigo { get; set; } = "";
 
     [JsonPropertyName("idempresa")]
     public string IdEmpresa { get; set; } = "";
@@ -694,4 +730,43 @@ public sealed class TipoClamshellExterno
 
     [JsonPropertyName("peso")]
     public float Peso { get; set; }
+}
+
+public sealed class CodigoRancho
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("idproyecto")]
+    public string IdProyecto { get; set; } = "";
+
+    [JsonPropertyName("codigo")]
+    public string Codigo { get; set; } = "";
+
+    [JsonPropertyName("activo")]
+    public bool Activo { get; set; }
+
+    [JsonPropertyName("fechaCreacion")]
+    public string FechaCreacion { get; set; } = "";
+}
+
+public sealed class LugarProduccionConfig
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("idproyecto")]
+    public string IdProyecto { get; set; } = "";
+
+    [JsonPropertyName("idCodigoRancho")]
+    public int IdCodigoRancho { get; set; }
+
+    [JsonPropertyName("idLugaresDeProduccion")]
+    public int IdLugaresDeProduccion { get; set; }
+
+    [JsonPropertyName("activo")]
+    public bool Activo { get; set; }
+
+    [JsonPropertyName("fechaCreacion")]
+    public string FechaCreacion { get; set; } = "";
 }

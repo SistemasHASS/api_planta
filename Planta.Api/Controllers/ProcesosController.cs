@@ -308,6 +308,104 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
         public JsonElement? Palets { get; set; }
     }
 
+    public sealed class SincronizarDPaletsRequest
+    {
+        public JsonElement? DPalets { get; set; }
+    }
+
+    [HttpPost("sincronizar-dpalet")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> SincronizarDPalets([FromBody] SincronizarDPaletsRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            {
+                return BadRequest("CodigoAcopio is required");
+            }
+
+            var jsonDPalets = ControllerJsonHelper.ExtractJson(request?.DPalets);
+            var result = await procesosUseCase.SincronizarDPaletsAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                _currentUser.CodigoAcopio!,
+                _currentUser.UserName!,
+                jsonDPalets
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en SincronizarDPalets");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-dpalets-por-acopio")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetDPaletsPorAcopio()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            {
+                return BadRequest("CodigoAcopio is required");
+            }
+
+            var result = await procesosUseCase.ListarDPaletsPorAcopioAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                _currentUser.CodigoAcopio!
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetDPaletsPorAcopio");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
     [HttpPost("sincronizar")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -358,6 +456,423 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
         }
     }
 
+
+    [HttpGet("get-codigos-rancho-por-lugar-produccion")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetCodigosRanchoPorLugarProduccion([FromQuery] string idproyecto, [FromQuery] int idLugaresDeProduccion)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(idproyecto))
+                return BadRequest("idproyecto is required");
+
+            if (idLugaresDeProduccion <= 0)
+                return BadRequest("idLugaresDeProduccion must be greater than 0");
+
+            var result = await procesosUseCase.ListarCodigosRanchoPorLugarProduccionAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                idproyecto,
+                idLugaresDeProduccion
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetCodigosRanchoPorLugarProduccion");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-tipos-clamshell-por-matriz")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetTiposClamshellPorMatriz([FromQuery] string codigoCultivo, [FromQuery] string documentoConsignatario, [FromQuery] string destinoId, [FromQuery] int formatoId, [FromQuery] int tipoEmpaqueGuiaId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(codigoCultivo))
+                return BadRequest("codigoCultivo is required");
+
+            if (string.IsNullOrWhiteSpace(documentoConsignatario))
+                return BadRequest("documentoConsignatario is required");
+
+            if (string.IsNullOrWhiteSpace(destinoId))
+                return BadRequest("destinoId is required");
+
+            if (formatoId <= 0)
+                return BadRequest("formatoId must be greater than 0");
+
+            if (tipoEmpaqueGuiaId <= 0)
+                return BadRequest("tipoEmpaqueGuiaId must be greater than 0");
+
+            var result = await procesosUseCase.ListarTiposClamshellPorMatrizAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                codigoCultivo,
+                documentoConsignatario,
+                destinoId,
+                formatoId,
+                tipoEmpaqueGuiaId
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetTiposClamshellPorMatriz");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-tipos-caja-por-matriz")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetTiposCajaPorMatriz([FromQuery] string codigoCultivo, [FromQuery] string documentoConsignatario, [FromQuery] string destinoId, [FromQuery] int formatoId, [FromQuery] int tipoEmpaqueGuiaId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(codigoCultivo))
+                return BadRequest("codigoCultivo is required");
+
+            if (string.IsNullOrWhiteSpace(documentoConsignatario))
+                return BadRequest("documentoConsignatario is required");
+
+            if (string.IsNullOrWhiteSpace(destinoId))
+                return BadRequest("destinoId is required");
+
+            if (formatoId <= 0)
+                return BadRequest("formatoId must be greater than 0");
+
+            if (tipoEmpaqueGuiaId <= 0)
+                return BadRequest("tipoEmpaqueGuiaId must be greater than 0");
+
+            var result = await procesosUseCase.ListarTiposCajaPorMatrizAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                codigoCultivo,
+                documentoConsignatario,
+                destinoId,
+                formatoId,
+                tipoEmpaqueGuiaId
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetTiposCajaPorMatriz");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-presentaciones-por-matriz")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetPresentacionesPorMatriz([FromQuery] string codigoCultivo, [FromQuery] string documentoConsignatario, [FromQuery] string destinoId, [FromQuery] int formatoId, [FromQuery] int tipoEmpaqueGuiaId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(codigoCultivo))
+                return BadRequest("codigoCultivo is required");
+
+            if (string.IsNullOrWhiteSpace(documentoConsignatario))
+                return BadRequest("documentoConsignatario is required");
+
+            if (string.IsNullOrWhiteSpace(destinoId))
+                return BadRequest("destinoId is required");
+
+            if (formatoId <= 0)
+                return BadRequest("formatoId must be greater than 0");
+
+            if (tipoEmpaqueGuiaId <= 0)
+                return BadRequest("tipoEmpaqueGuiaId must be greater than 0");
+
+            var result = await procesosUseCase.ListarPresentacionesPorMatrizAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                codigoCultivo,
+                documentoConsignatario,
+                destinoId,
+                formatoId,
+                tipoEmpaqueGuiaId
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetPresentacionesPorMatriz");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-tipos-empaque-guia-por-matriz")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetTiposEmpaqueGuiaPorMatriz([FromQuery] string codigoCultivo, [FromQuery] string documentoConsignatario, [FromQuery] string destinoId, [FromQuery] int formatoId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(codigoCultivo))
+                return BadRequest("codigoCultivo is required");
+
+            if (string.IsNullOrWhiteSpace(documentoConsignatario))
+                return BadRequest("documentoConsignatario is required");
+
+            if (string.IsNullOrWhiteSpace(destinoId))
+                return BadRequest("destinoId is required");
+
+            if (formatoId <= 0)
+                return BadRequest("formatoId must be greater than 0");
+
+            var result = await procesosUseCase.ListarTiposEmpaqueGuiaPorMatrizAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                codigoCultivo,
+                documentoConsignatario,
+                destinoId,
+                formatoId
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetTiposEmpaqueGuiaPorMatriz");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-formatos-por-matriz")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetFormatosPorMatriz([FromQuery] string codigoCultivo, [FromQuery] string documentoConsignatario, [FromQuery] string destinoId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(codigoCultivo))
+                return BadRequest("codigoCultivo is required");
+
+            if (string.IsNullOrWhiteSpace(documentoConsignatario))
+                return BadRequest("documentoConsignatario is required");
+
+            if (string.IsNullOrWhiteSpace(destinoId))
+                return BadRequest("destinoId is required");
+
+            var result = await procesosUseCase.ListarFormatosPorMatrizAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                codigoCultivo,
+                documentoConsignatario,
+                destinoId
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetFormatosPorMatriz");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-destinos-por-matriz-compatibilidad")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetDestinosPorMatrizCompatibilidad([FromQuery] string idproyecto, [FromQuery] string documentoConsignatario)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(idproyecto))
+                return BadRequest("idproyecto is required");
+
+            if (string.IsNullOrWhiteSpace(documentoConsignatario))
+                return BadRequest("documentoConsignatario is required");
+
+            var result = await procesosUseCase.ListarDestinosPorMatrizCompatibilidadAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                idproyecto,
+                documentoConsignatario
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetDestinosPorMatrizCompatibilidad");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("getTipoProcesoEmpacado-Acopio")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetTipoProcesoEmpacadoPorAcopio([FromQuery] string idproyecto)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            {
+                return BadRequest("CodigoAcopio is required");
+            }
+            Console.WriteLine("idproyecto============================================: " + idproyecto);
+            if (string.IsNullOrWhiteSpace(idproyecto))
+                return BadRequest("idproyecto is required");
+
+            var result = await procesosUseCase.ListarTipoProcesoEmpacadoPorAcopioAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                idproyecto,
+                _currentUser.CodigoAcopio!
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetTipoProcesoEmpacadoPorAcopio");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
 
     [HttpGet("get-palets-por-proceso")]
     [ProducesResponseType(StatusCodes.Status200OK)]
