@@ -12,8 +12,7 @@ public interface IGuiasRemisionService
         string codigoAcopio,
         string usuario,
         string idRol,
-        string json,
-        string jsonDetalle);
+        string json);
 
     Task<List<JsonElement>> ListarGuiasRemisionAsync(
         string idempresa,
@@ -26,4 +25,40 @@ public interface IGuiasRemisionService
         string? fechaDesde,
         string? fechaHasta,
         string? texto);
+
+    Task<List<JsonElement>> GetGuiaRemisionAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string codigoGuiaRemision);
+
+    Task<List<JsonElement>> EliminarGuiaRemisionAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string codigoGuiaRemision,
+        string usuario,
+        string idRol);
+
+    Task<List<JsonElement>> EmitirGuiaRemisionAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string codigoGuiaRemision,
+        string usuario);
+
+    Task<List<JsonElement>> AnularGuiaRemisionAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string codigoGuiaRemision,
+        string usuario);
+
+    Task<List<JsonElement>> ListarCodigosCajaAsync(
+        string idempresa,
+        string ruc);
 }

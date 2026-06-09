@@ -24,11 +24,14 @@ builder.Host.UseSerilog();
 
 // Add services to the container.
 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? new[] { "http://localhost:4200" };
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
         policy
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());

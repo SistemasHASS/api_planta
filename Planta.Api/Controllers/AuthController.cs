@@ -6,7 +6,7 @@ namespace Planta.Api.Controllers;
 
 [Route("api/auth")]
 [ApiController]
-public sealed class AuthController(ILogger<AuthController> logger, IAuthUseCase authUseCase) : ControllerBase
+public sealed class AuthController(ILogger<AuthController> logger, IAuthUseCase authUseCase, IWebHostEnvironment env) : ControllerBase
 {
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -21,8 +21,8 @@ public sealed class AuthController(ILogger<AuthController> logger, IAuthUseCase 
             Response.Cookies.Append("access_token", result.Token, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Lax,
+                Secure = env.IsProduction(),
+                SameSite = env.IsProduction() ? SameSiteMode.None : SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddHours(8)
             });
 
@@ -50,8 +50,8 @@ public sealed class AuthController(ILogger<AuthController> logger, IAuthUseCase 
         Response.Cookies.Delete("access_token", new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax
+            Secure = env.IsProduction(),
+            SameSite = env.IsProduction() ? SameSiteMode.None : SameSiteMode.Lax
         });
 
         return Ok(new
