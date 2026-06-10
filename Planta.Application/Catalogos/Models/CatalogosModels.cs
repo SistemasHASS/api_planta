@@ -402,6 +402,8 @@ public sealed class TiposEmpaqueGuia
 
     [JsonPropertyName("nombre")]
     public string Nombre { get; set; } = "";
+    [JsonPropertyName("codigoTipoEmpaque")]
+    public string CodigoTipoEmpaque { get; set; } = "";
 
     [JsonPropertyName("activo")]
     public bool Activo { get; set; }
@@ -420,6 +422,8 @@ public sealed class Categoria
 
     // [JsonPropertyName("ruc")]
     // public string Ruc {get; set;} = "";
+       [JsonPropertyName("calibreId")]
+    public string CalibreId {get; set;} = "";
 
       [JsonPropertyName("codigoCultivo")]
     public string CodigoCultivo {get; set;} = "";
@@ -452,6 +456,9 @@ public sealed class TiposEmpaque
 
     [JsonPropertyName("codigoCultivo")]
     public string CodigoCultivo {get; set;} = "";
+        
+    [JsonPropertyName("codigoCategoria")]
+    public string CodigoCategoria {get; set;} = "";
 
     [JsonPropertyName("codigo")]
     public string Codigo { get; set; } = "";
@@ -589,11 +596,11 @@ public sealed class VariedadRepository
     [JsonPropertyName("ruc")]
     public string ruc { get; set; } = "";
 
+    [JsonPropertyName("cultivo")]
+    public string Cultivo { get; set; } = "";
+
     [JsonPropertyName("idcultivo")]
     public string IdCultivo { get; set; } = "";
-
-    [JsonPropertyName("idmodulo")]
-    public string IdModulo { get; set; } = "";
 
     [JsonPropertyName("idvariedad")]
     public string IdVariedad { get; set; } = "";
@@ -613,12 +620,13 @@ public sealed class VariedadExterna
 {
     [JsonPropertyName("id")]
     public string Id { get; set; } = "";
+    
+    [JsonPropertyName("cultivo")]
+    public string Cultivo { get; set; } = "";
+
 
     [JsonPropertyName("idcultivo")]
     public string IdCultivo { get; set; } = "";
-
-    [JsonPropertyName("idmodulo")]
-    public string IdModulo { get; set; } = "";
 
     [JsonPropertyName("idvariedad")]
     public string IdVariedad { get; set; } = "";

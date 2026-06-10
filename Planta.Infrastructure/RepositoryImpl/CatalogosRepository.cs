@@ -244,7 +244,7 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
                 { "@Ruc", ruc },
                 { "@Usuario", usuario }
             };
-
+        Console.WriteLine($"Parametros: {JsonSerializer.Serialize(parametros)}");
         return await EjecutarStoredProcedureAsync("PLANTA_SincronizarCatalogo", parametros, result =>
         {
             var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));

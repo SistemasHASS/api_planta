@@ -132,9 +132,9 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
     public async  Task<CatalogosResponse<List<VariedadRepository>>> GetVariedadesAsync(string idempresa,string ruc)
     {
         var resp= maestrosService.GetVariedadesAsync(idempresa);
-        
+
         var respVariedades = await catalogosService.GetVariedadAuxiliarAsync(idempresa, ruc, JsonSerializer.Serialize(resp.Result));
-        
+
         return respVariedades;
     }
 
