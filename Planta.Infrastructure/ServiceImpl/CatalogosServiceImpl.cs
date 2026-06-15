@@ -9,12 +9,24 @@ namespace Planta.Infrastructure.ServiceImpl;
 
 public sealed class CatalogosServiceImpl(ICatalogosRepository catalogosRepository): ICatalogosService
 {
+    public Task<List<JsonElement>> ListarConsignatariosAsync(string idempresa, string ruc, string json)
+        => catalogosRepository.ListarConsignatariosAsync(idempresa, ruc, json);
+    
+    public Task<CatalogosResponse<List<GrupoCliente>>> GetGrupoClienteAsync(string idempresa, string ruc)
+        => catalogosRepository.GetGrupoClienteAsync(idempresa, ruc);
+    
+    public Task<CatalogosResponse<List<Parametro>>> GetParametroEmpresaAsync(string idempresa, string ruc, string idparametro)
+        => catalogosRepository.GetParametroEmpresaAsync(idempresa, ruc, idparametro);
+    
     public Task<CatalogosResponse<List<Destinatarios>>> GetDestinatariosAsync(string idempresa, string ruc, string json)
         => catalogosRepository.GetDestinatariosAsync(idempresa, ruc, json);
     
     public Task<List<JsonElement>> SincronizarDestinatariosAsync(string idempresa, string ruc, string usuario, string idRol, string json)
         => catalogosRepository.SincronizarDestinatariosAsync(idempresa, ruc, usuario, idRol, json);
     
+    public Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json)
+        => catalogosRepository.SincronizarConsignatariosAsync(idempresa, ruc, usuario, json);
+
     public Task<List<JsonElement>> SincronizarAcopiosAsync(string idempresa, string ruc, string usuario, string json, string json_detalle)
         => catalogosRepository.SincronizarAcopiosAsync(idempresa, ruc, usuario, json, json_detalle);
 
@@ -67,8 +79,8 @@ public sealed class CatalogosServiceImpl(ICatalogosRepository catalogosRepositor
      public Task<CatalogosResponse<List<TiposEmpaque>>> GetTiposEmpaquesAsync(string idempresa, string ruc, string codigoCultivo)
         => catalogosRepository.GetTiposEmpaquesAsync(idempresa, ruc, codigoCultivo);
 
-    public Task<CatalogosResponse<List<Acopios>>> GetAcopiosSeriesAsync(string idempresa, string json)
-        => catalogosRepository.GetAcopiosSeriesAsync(idempresa, json);
+    public Task<CatalogosResponse<List<Acopios>>> GetAcopiosSeriesAsync(string idempresa, string idproyecto, string json)
+        => catalogosRepository.GetAcopiosSeriesAsync(idempresa, idproyecto, json);
     
     public Task<CatalogosResponse<List<VariedadRepository>>> GetVariedadAuxiliarAsync(string idempresa, string ruc, string json)
         => catalogosRepository.GetVariedadAuxiliarAsync(idempresa, ruc, json);
@@ -78,4 +90,7 @@ public sealed class CatalogosServiceImpl(ICatalogosRepository catalogosRepositor
 
     public Task<CatalogosResponse<List<LugarProduccionConfig>>> GetLugaresProduccionConfigAsync(string idempresa, string ruc, string idproyecto)
         => catalogosRepository.GetLugaresProduccionConfigAsync(idempresa, ruc, idproyecto);
+
+    public Task<CatalogosResponse<List<Parametro>>> ListarParametrosAsync(string idempresa, string ruc)
+        => catalogosRepository.ListarParametrosAsync(idempresa, ruc);
 }   

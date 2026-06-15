@@ -13,12 +13,137 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
     {
     }
 
+    public async Task<List<JsonElement>> ListarConsignatariosAsync(string idempresa, string ruc, string json)
+    {
+        return await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarConsignatarios",
+            new Dictionary<string, object?>
+            {
+                 { "@idempresa", idempresa },
+                { "@ruc",  ruc },
+                { "@json", json }
+            }, result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<CatalogosResponse<List<GrupoCliente>>> GetGrupoClienteAsync(string idempresa, string ruc)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarGrupoCliente",
+            new Dictionary<string, object?>
+            {
+                {"@idempresa", idempresa},
+                {"@ruc", ruc},
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<GrupoCliente>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<GrupoCliente>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<GrupoCliente>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<GrupoCliente>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<CatalogosResponse<List<Parametro>>> GetParametroEmpresaAsync(string idempresa, string ruc, string idparametro)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_GetParametro",
+            new Dictionary<string, object?>
+            {
+                {"@idempresa", idempresa},
+                {"@ruc", ruc},
+                { "@idparametro", idparametro }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<Parametro>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<Parametro>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<Parametro>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<Parametro>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
     public async Task<CatalogosResponse<List<Destinatarios>>> GetDestinatariosAsync(string idempresa, string ruc, string json)
     {
         var resultado = await EjecutarStoredProcedureAsync(
             "PLANTA_GETDestinatarios",
             new Dictionary<string, object?>
-            {   
+            {
                 {"@idempresa", idempresa},
                 {"@ruc", ruc},
                 { "@json", json }
@@ -825,7 +950,7 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
 
     }
 
-    public async Task<CatalogosResponse<List<Acopios>>> GetAcopiosSeriesAsync(string idempresa, string json)
+    public async Task<CatalogosResponse<List<Acopios>>> GetAcopiosSeriesAsync(string idempresa, string idproyecto, string json)
     {
 
         var resultado = await EjecutarStoredProcedureAsync(
@@ -833,6 +958,7 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
             new Dictionary<string, object?>
             {
                 { "@json", json },
+                {   "@idproyecto", idproyecto},
                 { "@idempresa", idempresa }
             },
             result =>
@@ -1010,6 +1136,87 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
                    Error = true,
                    Mensaje = "Sin resultados"
                };
+    }
+
+    public async Task<CatalogosResponse<List<Parametro>>> ListarParametrosAsync(string idempresa, string ruc)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarParametros",
+            new Dictionary<string, object?>
+            {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<Parametro>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<Parametro>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<Parametro>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<Parametro>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json)
+    {
+        return await EjecutarStoredProcedureAsync(
+            "PLANTA_SincronizarConsignatario",
+            new Dictionary<string, object?>
+            {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@usuario", usuario },
+                { "@json", json }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                JsonElement data;
+                if (result.IsDBNull(1))
+                {
+                    data = JsonSerializer.Deserialize<JsonElement>("null");
+                }
+                else
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+                    data = string.IsNullOrWhiteSpace(dataStr)
+                        ? JsonSerializer.Deserialize<JsonElement>("null")
+                        : JsonSerializer.Deserialize<JsonElement>(dataStr);
+                }
+
+                var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+                var payload = new { error, data, mensaje };
+                var payloadJson = JsonSerializer.Serialize(payload);
+                return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+            });
     }
 
     public async Task<List<JsonElement>> SincronizarDestinatariosAsync(string idempresa, string ruc, string usuario, string idRol, string json)

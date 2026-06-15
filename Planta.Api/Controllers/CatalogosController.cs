@@ -25,6 +25,11 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
         public JsonElement? Destinatarios { get; set; }
     }
 
+    public class SincronizarConsignatariosRequest
+    {
+        public JsonElement? Consignatarios { get; set; }
+    }
+
     [HttpPost("sincronizar-destinatarios")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,6 +76,51 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
         catch (Exception ex)
         {
             logger.LogError(ex, "Error interno en SincronizarDestinatarios");
+            return StatusCode(500, new { error = true, mensaje = ex.Message });
+        }
+    }
+
+    [HttpPost("sincronizar-consignatarios")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> SincronizarConsignatarios([FromBody] SincronizarConsignatariosRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            var jsonConsignatarios = ControllerJsonHelper.ExtractJson(request?.Consignatarios);
+            var result = await catalogosUseCase.SincronizarConsignatariosAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                _currentUser.UserName!,
+                jsonConsignatarios
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { error = true, mensaje = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en SincronizarConsignatarios");
             return StatusCode(500, new { error = true, mensaje = ex.Message });
         }
     }
@@ -276,7 +326,7 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> GetAcopios()
+    public async Task<IActionResult> GetAcopios([FromQuery] string json)
     {
         try
         {
@@ -284,7 +334,11 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
             {
                 return BadRequest("IdEmpresa is required");
             }
-            var result = await catalogosUseCase.GetAcopiosAsync(_currentUser.IdEmpresa!);
+            var root = JsonDocument.Parse(json).RootElement;
+            var idproyecto = root.TryGetProperty("idproyecto", out var proyectoProp)
+               ? proyectoProp.GetString()
+               : null;
+            var result = await catalogosUseCase.GetAcopiosAsync(_currentUser.IdEmpresa!, idproyecto!);
             return Ok(result);
         }
         catch (UnauthorizedAccessException ex)
@@ -385,7 +439,12 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
                 return BadRequest("IdEmpresa is required");
             }
 
-            var result = await catalogosUseCase.GetClientesAsync(_currentUser.IdEmpresa!);
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            var result = await catalogosUseCase.GetClientesAsync(_currentUser.IdEmpresa!,_currentUser.Ruc);
             return Ok(result);
         }
         catch (UnauthorizedAccessException ex)
@@ -396,6 +455,39 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
         catch (Exception ex)
         {
             logger.LogError(ex, "Error interno en GetClientes");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-consignatarios")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetConsignatarios()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            var result = await catalogosUseCase.GetConsignatariosAsync(_currentUser.IdEmpresa!, _currentUser.Ruc);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetConsignatarios");
             return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
         }
     }
@@ -1136,5 +1228,38 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
         }
     }
 
+    [HttpGet("listar-parametros")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ListarParametros()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            var result = await catalogosUseCase.ListarParametrosAsync(_currentUser.IdEmpresa!, _currentUser.Ruc!);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ListarParametros");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
 
 }

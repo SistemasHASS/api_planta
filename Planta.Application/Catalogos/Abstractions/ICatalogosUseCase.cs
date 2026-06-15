@@ -6,8 +6,10 @@ namespace Planta.Application.Catalogos.Abstractions;
 
 public interface ICatalogosUseCase
 {
+    Task<List<JsonElement>> GetConsignatariosAsync(string idempresa,string ruc);
     Task<CatalogosResponse<List<Destinatarios>>> GetDestinatariosAsync(string idempresa, string ruc);
     Task<List<JsonElement>> SincronizarDestinatariosAsync(string idempresa, string ruc, string usuario, string idRol, string json);
+    Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json);
     Task<List<JsonElement>> SincronizarAcopiosAsync(string idempresa, string ruc, string usuario, string json, string json_detalle);
     Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto);
     Task<List<JsonElement>> SincronizarCatalogosAsync(string tabla, string json, string idempresa, string ruc, string usuario);
@@ -23,10 +25,10 @@ public interface ICatalogosUseCase
     Task<CatalogosResponse<List<TiposEmpaqueGuia>>> GetTiposEmpaqueGuiaAsync(string idempresa, string ruc, string codigoCultivo);
     Task<CatalogosResponse<List<Categoria>>> GetCategoriaAsync(string idempresa, string ruc,string codigoCultivo);
     Task<CatalogosResponse<List<TiposEmpaque>>> GetTiposEmpaquesAsync(string idempresa, string ruc, string codigoCultivo);
-    Task<CatalogosResponse<List<Acopios>>> GetAcopiosAsync(string idempresa);
+    Task<CatalogosResponse<List<Acopios>>> GetAcopiosAsync(string idempresa,string idproyecto);
     Task<IReadOnlyList<FundoExterno>?> GetFundosAsync(string idempresa);
     Task<CatalogosResponse<List<Formato>>> GetFormatosAsync(string idempresa, string ruc, string codigoCultivo);
-    Task<IReadOnlyList<ClienteExterno>?> GetClientesAsync(string idempresa);
+    Task<CatalogosResponse<List<GrupoCliente>>> GetClientesAsync(string idempresa, string ruc);
     Task<CatalogosResponse<List<VariedadRepository>>> GetVariedadesAsync(string idempresa, string ruc);
     Task<IReadOnlyList<CultivoExterno>?> GetCultivosAsync(string idempresa);
     Task<IReadOnlyList<CampaniaExterna>?> GetCampaniasAsync(string ruc);
@@ -36,4 +38,5 @@ public interface ICatalogosUseCase
     Task<CatalogosResponse<List<TipoClamshell>>> GetTiposClamshellAsync(string idempresa, string ruc, string codigoCultivo);
     Task<CatalogosResponse<List<CodigoRancho>>> GetCodigosRanchoAsync(string idempresa, string ruc, string idproyecto);
     Task<CatalogosResponse<List<LugarProduccionConfig>>> GetLugaresProduccionConfigAsync(string idempresa, string ruc, string idproyecto);
+    Task<CatalogosResponse<List<Parametro>>> ListarParametrosAsync(string idempresa, string ruc);
 }

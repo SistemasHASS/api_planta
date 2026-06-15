@@ -88,6 +88,43 @@ public sealed class CatalogosResponse<T>
     public string Mensaje { get; set; } = "";
 }
 
+public sealed class GrupoCliente
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    
+    [JsonPropertyName("codigo")]
+    public string Codigo { get; set; } = "";
+    
+    [JsonPropertyName("nombre")]
+    public string Nombre { get; set; } = "";
+    
+    [JsonPropertyName("activo")]
+    public bool Activo { get; set; }
+    
+    [JsonPropertyName("fechaCreacion")]
+    public string FechaCreacion { get; set; } = "";
+}
+
+public sealed class Parametro
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    
+    [JsonPropertyName("idparametro")]
+    public string IdParametro { get; set; } = "";
+    
+    [JsonPropertyName("descripcion")]
+    public string Descripcion { get; set; } = "";
+    
+    [JsonPropertyName("valor")]
+    public string Valor { get; set; } = "";
+    
+    [JsonPropertyName("activo")]
+    public bool Activo { get; set; }
+}
+
+
 public sealed class Destinatarios
 {
     [JsonPropertyName("id")]
@@ -745,8 +782,8 @@ public sealed class CodigoRancho
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
-    [JsonPropertyName("idproyecto")]
-    public string IdProyecto { get; set; } = "";
+    // [JsonPropertyName("idproyecto")]
+    // public string IdProyecto { get; set; } = "";
 
     [JsonPropertyName("codigo")]
     public string Codigo { get; set; } = "";

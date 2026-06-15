@@ -13,6 +13,11 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
         return await catalogosService.SincronizarDestinatariosAsync(idempresa, ruc, usuario, idRol, json);
     }
 
+    public async Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json)
+    {
+        return await catalogosService.SincronizarConsignatariosAsync(idempresa, ruc, usuario, json);
+    }
+
     public async Task<List<JsonElement>> SincronizarAcopiosAsync(string idempresa, string ruc, string usuario, string json, string json_detalle)
     {
         return await catalogosService.SincronizarAcopiosAsync(idempresa, ruc, usuario, json, json_detalle);
@@ -105,11 +110,19 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
         return respDestinatarios;
     }
 
-    public async Task<CatalogosResponse<List<Acopios>>> GetAcopiosAsync(string idempresa)
+    public async Task<List<JsonElement>> GetConsignatariosAsync(string idempresa, string ruc)
+    {
+        var resp= await maestrosService.GetClientesAsync(idempresa);
+
+        var respConsignatarios = await catalogosService.ListarConsignatariosAsync(idempresa, ruc, JsonSerializer.Serialize(resp));
+        return respConsignatarios;
+    }
+
+    public async Task<CatalogosResponse<List<Acopios>>> GetAcopiosAsync(string idempresa, string idproyecto)
     {
         var resp= maestrosService.GetAcopiosAsync(idempresa);
 
-        var respAcopios = await catalogosService.GetAcopiosSeriesAsync(idempresa,JsonSerializer.Serialize(resp.Result));
+        var respAcopios = await catalogosService.GetAcopiosSeriesAsync(idempresa, idproyecto, JsonSerializer.Serialize(resp.Result));
         
         return respAcopios;
     }
@@ -124,9 +137,9 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
         return await catalogosService.GetFormatosAsync(idempresa, ruc, codigoCultivo);
     }
 
-    public Task<IReadOnlyList<ClienteExterno>?> GetClientesAsync(string idempresa)
+    public async Task<CatalogosResponse<List<GrupoCliente>>> GetClientesAsync(string idempresa, string ruc)
     {
-        return maestrosService.GetClientesAsync(idempresa);
+        return await catalogosService.GetGrupoClienteAsync(idempresa, ruc);
     }
 
     public async  Task<CatalogosResponse<List<VariedadRepository>>> GetVariedadesAsync(string idempresa,string ruc)
@@ -176,5 +189,10 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
     public Task<CatalogosResponse<List<LugarProduccionConfig>>> GetLugaresProduccionConfigAsync(string idempresa, string ruc, string idproyecto)
     {
         return catalogosService.GetLugaresProduccionConfigAsync(idempresa, ruc, idproyecto);
+    }
+
+    public Task<CatalogosResponse<List<Parametro>>> ListarParametrosAsync(string idempresa, string ruc)
+    {
+        return catalogosService.ListarParametrosAsync(idempresa, ruc);
     }
 }
