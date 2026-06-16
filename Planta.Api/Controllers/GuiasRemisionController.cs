@@ -395,6 +395,73 @@ public sealed class GuiasRemisionController(
         }
     }
 
+    public class EditarGuiasRemisionRequest
+    {
+        public string? IdProyecto { get; set; }
+        public JsonElement? Guias { get; set; }
+    }
+
+    [HttpPost("editar-guia-remision")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> EditarGuiaRemision([FromBody] EditarGuiasRemisionRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Role))
+            {
+                return BadRequest("IdRol is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            {
+                return BadRequest("CodigoAcopio is required");
+            }
+
+            if (string.IsNullOrEmpty(request?.IdProyecto))
+            {
+                return BadRequest("IdProyecto is required");
+            }
+
+            var json = ControllerJsonHelper.ExtractJson(request?.Guias);
+            var result = await guiasRemisionUseCase.EditarGuiaRemisionAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                request!.IdProyecto!,
+                _currentUser.CodigoAcopio!,
+                _currentUser.UserName!,
+                _currentUser.Role!,
+                json
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { error = true, mensaje = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en EditarGuiaRemision");
+            return StatusCode(500, new { error = true, mensaje = ex.Message });
+        }
+    }
+
     [HttpGet("listar-codigos-caja")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -83,6 +83,19 @@ public sealed class GuiasRemisionUseCase(IGuiasRemisionService guiasRemisionServ
             idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision, usuario);
     }
 
+    public async Task<List<JsonElement>> EditarGuiaRemisionAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string usuario,
+        string idRol,
+        string json)
+    {
+        return await guiasRemisionService.EditarGuiaRemisionAsync(
+            idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, json);
+    }
+
     public async Task<List<JsonElement>> ListarCodigosCajaAsync(
         string idempresa,
         string ruc)

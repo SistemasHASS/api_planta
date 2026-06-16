@@ -71,6 +71,17 @@ public sealed class GuiasRemisionServiceImpl(IGuiasRemisionRepository guiasRemis
         => guiasRemisionRepository.AnularGuiaRemisionAsync(
             idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision, usuario);
 
+    public Task<List<JsonElement>> EditarGuiaRemisionAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string usuario,
+        string idRol,
+        string json)
+        => guiasRemisionRepository.EditarGuiaRemisionAsync(
+            idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, json);
+
     public Task<List<JsonElement>> ListarCodigosCajaAsync(
         string idempresa,
         string ruc)

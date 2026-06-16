@@ -58,6 +58,15 @@ public interface IGuiasRemisionRepository
         string codigoGuiaRemision,
         string usuario);
 
+    Task<List<JsonElement>> EditarGuiaRemisionAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string usuario,
+        string idRol,
+        string json);
+
     Task<List<JsonElement>> ListarCodigosCajaAsync(
         string idempresa,
         string ruc);
