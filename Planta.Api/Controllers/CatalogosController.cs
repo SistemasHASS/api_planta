@@ -125,6 +125,51 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
         }
     }
 
+    [HttpPost("sincronizar-variedades-ensayo")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> SincronizarVariedadEsEnsayo([FromBody] JsonElement request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            var json = ControllerJsonHelper.ExtractJson(request);
+            var result = await catalogosUseCase.SincronizarVariedadEsEnsayoAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                _currentUser.UserName!,
+                json
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { error = true, mensaje = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en SincronizarVariedadEsEnsayo");
+            return StatusCode(500, new { error = true, mensaje = ex.Message });
+        }
+    }
+
     [HttpGet("get-destinatarios")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

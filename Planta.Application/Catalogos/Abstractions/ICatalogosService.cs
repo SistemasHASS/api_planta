@@ -13,6 +13,7 @@ public interface ICatalogosService
     Task<CatalogosResponse<List<Destinatarios>>> GetDestinatariosAsync(string idempresa, string ruc, string json);
     Task<List<JsonElement>> SincronizarDestinatariosAsync(string idempresa, string ruc, string usuario, string idRol, string json);
     Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json);
+    Task<List<JsonElement>> SincronizarVariedadEsEnsayoAsync(string idempresa, string ruc, string usuario, string json);
     Task<List<JsonElement>> SincronizarAcopiosAsync(string idempresa, string ruc, string usuario, string json, string json_detalle);
     Task<CatalogosResponse<List<TipoProcesoEmpacado>>> GetTipoProcesoEmpacadoAsync(string idempresa, string ruc, string idproyecto);
     Task<CatalogosResponse<List<Formato>>> GetFormatosAsync(string idempresa, string ruc, string codigoCultivo);

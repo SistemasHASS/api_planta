@@ -438,15 +438,12 @@ public sealed class GuiasRemisionController(
             }
 
             var json = ControllerJsonHelper.ExtractJson(request?.Guias);
-            var result = await guiasRemisionUseCase.EditarGuiaRemisionAsync(
-                _currentUser.IdEmpresa!,
-                _currentUser.Ruc!,
-                request!.IdProyecto!,
-                _currentUser.CodigoAcopio!,
-                _currentUser.UserName!,
-                _currentUser.Role!,
-                json
-            );
+            var result = await guiasRemisionUseCase.EditarGuiaRemisionAsync(_currentUser.IdEmpresa!,
+                                                                            _currentUser.Ruc!,
+                                                                            request!.IdProyecto!,
+                                                                            _currentUser.CodigoAcopio!,
+                                                                            _currentUser.UserName!,
+                                                                            _currentUser.Role!,json);
 
             return Ok(result);
         }

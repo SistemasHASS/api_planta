@@ -27,6 +27,9 @@ public sealed class CatalogosServiceImpl(ICatalogosRepository catalogosRepositor
     public Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json)
         => catalogosRepository.SincronizarConsignatariosAsync(idempresa, ruc, usuario, json);
 
+    public Task<List<JsonElement>> SincronizarVariedadEsEnsayoAsync(string idempresa, string ruc, string usuario, string json)
+        => catalogosRepository.SincronizarVariedadEsEnsayoAsync(idempresa, ruc, usuario, json);
+
     public Task<List<JsonElement>> SincronizarAcopiosAsync(string idempresa, string ruc, string usuario, string json, string json_detalle)
         => catalogosRepository.SincronizarAcopiosAsync(idempresa, ruc, usuario, json, json_detalle);
 

@@ -650,6 +650,8 @@ public sealed class VariedadRepository
 
     [JsonPropertyName("esEnsayo")]
     public bool EsEnsayo { get; set; }
+    [JsonPropertyName("eliminado")]
+    public bool Eliminado { get; set; }
 
 }
 
