@@ -271,4 +271,81 @@ public sealed class AdministracionController(ILogger<AdministracionController> l
         }
     }
 
+    [HttpGet("correlativos-documentos/listar")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ListarCorrelativosDocumentos()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("Idempresa is required");
+            }
+
+            var result = await administracionUseCase.ListarCorrelativosDocumentosAsync(_currentUser.IdEmpresa, _currentUser.Ruc);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ListarCorrelativosDocumentos");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpPost("correlativos-documentos/sincronizar")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> SincronizarCorrelativosDocumentos([FromBody] JsonElement? body = null)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("Idempresa is required");
+            }
+            
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+            
+            var json = ControllerJsonHelper.ExtractJson(body);
+            Console.WriteLine(json);
+            var result = await administracionUseCase.SincronizarCorrelativosDocumentosAsync(json, _currentUser.IdEmpresa, _currentUser.Ruc, _currentUser.UserName);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en SincronizarCorrelativosDocumentos");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
 }

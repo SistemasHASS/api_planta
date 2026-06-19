@@ -22,4 +22,10 @@ public sealed class AdministracionServiceImpl(IAdministracionRepository administ
 
     public Task<List<JsonElement>> ListarMatricesCompatibilidadAsync(string idempresa, string ruc, string idProyecto, string? idCultivo = null)
         => administracionRepository.ListarMatricesCompatibilidadAsync(idempresa,ruc, idProyecto, idCultivo);
+
+    public Task<List<JsonElement>> ListarCorrelativosDocumentosAsync(string idempresa, string ruc)
+        => administracionRepository.ListarCorrelativosDocumentosAsync(idempresa, ruc);
+
+    public Task<List<JsonElement>> SincronizarCorrelativosDocumentosAsync(string json, string idempresa, string ruc, string usuario)
+        => administracionRepository.SincronizarCorrelativosDocumentosAsync(json, idempresa, ruc, usuario);
 }

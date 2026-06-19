@@ -26,8 +26,18 @@ public sealed class AdministracionUseCase(IAdministracionService administracionS
         return administracionService.SincronizarUsuariosAsync(json, idempresa, ruc, usuario);
     }
     
-    public Task<List<JsonElement>> ListarMatricesCompatibilidadAsync(string idempresa, string ruc, string idProyecto, string? idCultivo = null)
+    public Task<List<JsonElement>> ListarMatricesCompatibilidadAsync(string idempresa, string ruc, string? idProyecto = null, string? idCultivo = null)
     {
         return administracionService.ListarMatricesCompatibilidadAsync(idempresa,ruc, idProyecto, idCultivo);
+    }
+
+    public Task<List<JsonElement>> ListarCorrelativosDocumentosAsync(string idempresa, string ruc)
+    {
+        return administracionService.ListarCorrelativosDocumentosAsync(idempresa, ruc);
+    }
+
+    public Task<List<JsonElement>> SincronizarCorrelativosDocumentosAsync(string json, string idempresa, string ruc, string usuario)
+    {
+        return administracionService.SincronizarCorrelativosDocumentosAsync(json, idempresa, ruc, usuario);
     }
 }
