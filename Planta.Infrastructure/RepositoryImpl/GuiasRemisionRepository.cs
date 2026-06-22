@@ -107,12 +107,7 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         });
     }
 
-    public async Task<List<JsonElement>> GetGuiaRemisionAsync(
-        string idempresa,
-        string ruc,
-        string idProyecto,
-        string codigoAcopio,
-        string codigoGuiaRemision)
+    public async Task<List<JsonElement>> GetGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision)
     {
         return await EjecutarStoredProcedureAsync("PLANTA_GetGuiaRemision",
         new Dictionary<string, object?>
