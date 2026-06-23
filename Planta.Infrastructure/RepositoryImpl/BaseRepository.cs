@@ -19,7 +19,8 @@ public abstract class BaseRepository
         Func<IDataReader, T> mapeo)
     {
         var lista = new List<T>();
-        var command = Context.Database.GetDbConnection().CreateCommand();
+
+        await using var command = Context.Database.GetDbConnection().CreateCommand();
         command.CommandText = spName;
         command.CommandType = CommandType.StoredProcedure;
         command.CommandTimeout = 120;
@@ -35,12 +36,10 @@ public abstract class BaseRepository
         try
         {
             await Context.Database.OpenConnectionAsync();
-            using (var result = await command.ExecuteReaderAsync())
+            await using var result = await command.ExecuteReaderAsync();
+            while (await result.ReadAsync())
             {
-                while (await result.ReadAsync())
-                {
-                    lista.Add(mapeo(result));
-                }
+                lista.Add(mapeo(result));
             }
         }
         finally
