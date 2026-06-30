@@ -13,6 +13,26 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
         return await catalogosService.SincronizarDestinatariosAsync(idempresa, ruc, usuario, idRol, json);
     }
 
+    public async Task<CatalogosResponse<List<UbigeoDepartamento>>> ListarDepartamentosAsync()
+    {
+        return await catalogosService.ListarDepartamentosAsync();
+    }
+
+    public async Task<CatalogosResponse<List<UbigeoProvincia>>> ListarProvinciasAsync(string codigoDepartamento)
+    {
+        return await catalogosService.ListarProvinciasAsync(codigoDepartamento);
+    }
+
+    public async Task<CatalogosResponse<List<UbigeoDistrito>>> ListarDistritosAsync(string codigoDepartamento, string codigoProvincia)
+    {
+        return await catalogosService.ListarDistritosAsync(codigoDepartamento, codigoProvincia);
+    }
+
+    public async Task<CatalogosResponse<List<MotivoTraslado>>> ListarMotivosTrasladoAsync()
+    {
+        return await catalogosService.ListarMotivosTrasladoAsync();
+    }
+
     public async Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json)
     {
         return await catalogosService.SincronizarConsignatariosAsync(idempresa, ruc, usuario, json);

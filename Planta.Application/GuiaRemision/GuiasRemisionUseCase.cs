@@ -247,7 +247,7 @@ public sealed class GuiasRemisionUseCase(
     public async Task<List<JsonElement>> EmitirGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario)
     {
         var result = await guiasRemisionService.EmitirGuiaRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision, usuario);
-
+        Console.WriteLine($"====================EmitirGuiaRemisionAsync: {JsonSerializer.Serialize(result)}");
         if (result.Count == 0)
         {
             return result;

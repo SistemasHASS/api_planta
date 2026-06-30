@@ -1183,6 +1183,177 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
                };
     }
 
+    public async Task<CatalogosResponse<List<UbigeoDepartamento>>> ListarDepartamentosAsync()
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarDepartamentos",
+            new Dictionary<string, object?>(),
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<UbigeoDepartamento>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<UbigeoDepartamento>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<UbigeoDepartamento>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<UbigeoDepartamento>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<CatalogosResponse<List<UbigeoProvincia>>> ListarProvinciasAsync(string codigoDepartamento)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarProvincias",
+            new Dictionary<string, object?>
+            {
+                { "@codigoDepartamento", codigoDepartamento }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<UbigeoProvincia>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<UbigeoProvincia>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<UbigeoProvincia>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<UbigeoProvincia>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<CatalogosResponse<List<UbigeoDistrito>>> ListarDistritosAsync(string codigoDepartamento, string codigoProvincia)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarDistritos",
+            new Dictionary<string, object?>
+            {
+                { "@codigoDepartamento", codigoDepartamento },
+                { "@codigoProvincia", codigoProvincia }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<UbigeoDistrito>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<UbigeoDistrito>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<UbigeoDistrito>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<UbigeoDistrito>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<CatalogosResponse<List<MotivoTraslado>>> ListarMotivosTrasladoAsync()
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarMotivosTraslado",
+            new Dictionary<string, object?>(),
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<MotivoTraslado>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<MotivoTraslado>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<MotivoTraslado>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<MotivoTraslado>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
     public async Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json)
     {
         return await EjecutarStoredProcedureAsync(

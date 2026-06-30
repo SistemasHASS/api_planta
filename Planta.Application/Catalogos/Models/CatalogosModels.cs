@@ -4,6 +4,66 @@ using System.Text.Json.Serialization;
 
 namespace Planta.Application.Catalogos.Models;
 
+public sealed class UbigeoDepartamento
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("codigoDepartamento")]
+    public string CodigoDepartamento { get; set; } = "";
+
+    [JsonPropertyName("nombreDepartamento")]
+    public string NombreDepartamento { get; set; } = "";
+}
+
+public sealed class UbigeoProvincia
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("codigoDepartamento")]
+    public string CodigoDepartamento { get; set; } = "";
+
+    [JsonPropertyName("codigoProvincia")]
+    public string CodigoProvincia { get; set; } = "";
+
+    [JsonPropertyName("nombreProvincia")]
+    public string NombreProvincia { get; set; } = "";
+}
+
+public sealed class UbigeoDistrito
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("codigoDepartamento")]
+    public string CodigoDepartamento { get; set; } = "";
+
+    [JsonPropertyName("codigoProvincia")]
+    public string CodigoProvincia { get; set; } = "";
+
+    [JsonPropertyName("codigoDistrito")]
+    public string CodigoDistrito { get; set; } = "";
+
+    [JsonPropertyName("nombreDistrito")]
+    public string NombreDistrito { get; set; } = "";
+
+    [JsonPropertyName("codigoUbigeo")]
+    public string CodigoUbigeo { get; set; } = "";
+}
+
+public sealed class MotivoTraslado
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("codigo")]
+    public string Codigo { get; set; } = "";
+
+    [JsonPropertyName("descripcion")]
+    public string Descripcion { get; set; } = "";
+}
+
 public sealed class Formato
 {
     [JsonPropertyName("id")]
@@ -153,6 +213,24 @@ public sealed class Destinatarios
     
     [JsonPropertyName("puntoLlegada")]
     public string PuntoLlegada { get; set; } = "";
+    
+    [JsonPropertyName("domicilioFiscalDepartamento")]
+    public string DomicilioFiscalDepartamento { get; set; } = "";
+    
+    [JsonPropertyName("domicilioFiscalProvincia")]
+    public string DomicilioFiscalProvincia { get; set; } = "";
+    
+    [JsonPropertyName("domicilioFiscalDistrito")]
+    public string DomicilioFiscalDistrito { get; set; } = "";
+    
+    [JsonPropertyName("puntoLlegadaDepartamento")]
+    public string PuntoLlegadaDepartamento { get; set; } = "";
+    
+    [JsonPropertyName("puntoLlegadaProvincia")]
+    public string PuntoLlegadaProvincia { get; set; } = "";
+    
+    [JsonPropertyName("puntoLlegadaDistrito")]
+    public string PuntoLlegadaDistrito { get; set; } = "";
     
     [JsonPropertyName("activo")]
     public bool Activo { get; set; }
@@ -331,14 +409,20 @@ public sealed class Conductores
     [JsonPropertyName("idproyecto")]
     public string Idproyecto {get; set;} = "";
 
+    [JsonPropertyName("tipoDocumentoIdentidad")]
+    public string TipoDocumentoIdentidad { get; set; } = "";
+
+    [JsonPropertyName("nombres")]
+    public string Nombres { get; set; } = "";
+
+    [JsonPropertyName("apellidos")]
+    public string Apellidos { get; set; } = "";
+
     [JsonPropertyName("documentoIdentidad")]
     public string DocumentoIdentidad { get; set; } = "";
 
     [JsonPropertyName("licenciaConducir")]
     public string LicenciaConducir { get; set; } = "";
-
-    [JsonPropertyName("nombreCompleto")]
-    public string NombreCompleto { get; set; } = "";
 
     [JsonPropertyName("activo")]
     public bool Activo { get; set; }

@@ -96,4 +96,16 @@ public sealed class CatalogosServiceImpl(ICatalogosRepository catalogosRepositor
 
     public Task<CatalogosResponse<List<Parametro>>> ListarParametrosAsync(string idempresa, string ruc)
         => catalogosRepository.ListarParametrosAsync(idempresa, ruc);
+
+    public Task<CatalogosResponse<List<UbigeoDepartamento>>> ListarDepartamentosAsync()
+        => catalogosRepository.ListarDepartamentosAsync();
+
+    public Task<CatalogosResponse<List<UbigeoProvincia>>> ListarProvinciasAsync(string codigoDepartamento)
+        => catalogosRepository.ListarProvinciasAsync(codigoDepartamento);
+
+    public Task<CatalogosResponse<List<UbigeoDistrito>>> ListarDistritosAsync(string codigoDepartamento, string codigoProvincia)
+        => catalogosRepository.ListarDistritosAsync(codigoDepartamento, codigoProvincia);
+
+    public Task<CatalogosResponse<List<MotivoTraslado>>> ListarMotivosTrasladoAsync()
+        => catalogosRepository.ListarMotivosTrasladoAsync();
 }   
