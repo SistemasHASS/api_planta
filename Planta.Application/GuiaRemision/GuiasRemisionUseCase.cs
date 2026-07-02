@@ -468,28 +468,39 @@ public sealed class GuiasRemisionUseCase(
 
                                 var apiResponse = await documentosElectronicosService.EnviarGuiaRemisionAsync(guiaElement, CancellationToken.None);
 
-                                string estadoGuia;
                                 string codigoEstadoSunat;
 
                                 if (apiResponse.Success && apiResponse.Data?.Exito == true)
                                 {
-                                    estadoGuia = "ENVIADA";
                                     codigoEstadoSunat = apiResponse.Data.EstadoSunat ?? "PE_02";
                                 }
                                 else if (apiResponse.Data != null)
                                 {
-                                    estadoGuia = "ERROR";
                                     codigoEstadoSunat = apiResponse.Data.EstadoSunat ?? "ERROR";
                                 }
                                 else
                                 {
-                                    estadoGuia = "ERROR";
                                     codigoEstadoSunat = "ERROR";
                                 }
 
                                 await guiasRemisionService.ActualizarEstadoSunatGuiaRemisionAsync(
                                     gIdempresa, gRuc, gIdProyecto, gCodigoAcopio, gCodigoGuiaRemision,
-                                    estadoGuia, codigoEstadoSunat, string.Empty, null, null, null, usuario);
+                                    string.Empty, codigoEstadoSunat, string.Empty,
+                                    apiResponse.Data?.PdfFileUrl,
+                                    apiResponse.Data?.XmlFileSignUrl,
+                                    apiResponse.Data?.XmlFileSunatUrl,
+                                    usuario);
+
+                                if (codigoEstadoSunat == "RC_05" || codigoEstadoSunat == "ERROR")
+                                {
+                                    var anulacionResult = await guiasRemisionService.AnularGuiaRemisionAsync(
+                                        gIdempresa, gRuc, gIdProyecto, gCodigoAcopio, gCodigoGuiaRemision, usuario);
+                                    if (anulacionResult.Count > 0 && anulacionResult[0].GetProperty("error").GetBoolean())
+                                    {
+                                        var mensajeAnulacion = anulacionResult[0].GetProperty("mensaje").GetString();
+                                        Console.WriteLine($"[EMITIR] Anulación automática no aplicada: {mensajeAnulacion}");
+                                    }
+                                }
 
                                 resultados.Add(apiResponse);
                             }
@@ -557,33 +568,40 @@ public sealed class GuiasRemisionUseCase(
 
         var apiResponse = await documentosElectronicosService.ConsultarEstadoGuiaRemisionAsync(gIdempresa, serie, numero);
 
-        string estadoGuia;
         string codigoEstadoSunat;
         string estadoSunat = string.Empty;
 
         if (apiResponse.Success && apiResponse.Data?.Exito == true)
         {
-            estadoGuia = "ENVIADA";
             codigoEstadoSunat = apiResponse.Data.EstadoSunat ?? "PE_02";
         }
         else if (apiResponse.Data != null)
         {
-            estadoGuia = apiResponse.Data.EstadoSunat == "NO_ENCONTRADO" ? "ERROR" : "ERROR";
             codigoEstadoSunat = apiResponse.Data.EstadoSunat ?? "ERROR";
         }
         else
         {
-            estadoGuia = "ERROR";
             codigoEstadoSunat = "ERROR";
         }
 
         await guiasRemisionService.ActualizarEstadoSunatGuiaRemisionAsync(
             idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision,
-            estadoGuia, codigoEstadoSunat, estadoSunat,
+            string.Empty, codigoEstadoSunat, estadoSunat,
             apiResponse.Data?.PdfFileUrl,
             apiResponse.Data?.XmlFileSignUrl,
             apiResponse.Data?.XmlFileSunatUrl,
             usuario);
+
+        if (codigoEstadoSunat == "RC_05" || codigoEstadoSunat == "ERROR")
+        {
+            var anulacionResult = await guiasRemisionService.AnularGuiaRemisionAsync(
+                idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision, usuario);
+            if (anulacionResult.Count > 0 && anulacionResult[0].GetProperty("error").GetBoolean())
+            {
+                var mensajeAnulacion = anulacionResult[0].GetProperty("mensaje").GetString();
+                Console.WriteLine($"[CONSULTAR] Anulación automática no aplicada: {mensajeAnulacion}");
+            }
+        }
 
         var mensaje = apiResponse.Data?.MensajeSunat ?? apiResponse.Data?.Mensaje ?? apiResponse.Message;
         var tieneError = !apiResponse.Success || apiResponse.Data?.Exito != true;

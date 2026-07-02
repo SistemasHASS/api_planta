@@ -7,7 +7,7 @@ using Planta.Application.GuiaRemision.Abstractions;
 
 namespace Planta.Infrastructure.ServiceImpl;
 
-public sealed class DocumentosElectronicosServiceImpl(IHttpClientFactory httpClientFactory, IConfiguration configuration) : IDocumentosElectronicosService
+public sealed class DocumentosElectronicosServiceImpl(IConfiguration configuration) : IDocumentosElectronicosService
 {
     private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
     {
@@ -28,7 +28,11 @@ public sealed class DocumentosElectronicosServiceImpl(IHttpClientFactory httpCli
 
         var url = $"{baseUrl.TrimEnd('/')}/api/documentos/guias-remision";
 
-        var client = httpClientFactory.CreateClient();
+        var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+        };
+        var client = new HttpClient(handler);
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -114,7 +118,11 @@ public sealed class DocumentosElectronicosServiceImpl(IHttpClientFactory httpCli
 
         var url = $"{baseUrl.TrimEnd('/')}/api/documentos/estado/{Uri.EscapeDataString(idempresa)}/{Uri.EscapeDataString(serie)}/{Uri.EscapeDataString(numero)}";
 
-        var client = httpClientFactory.CreateClient();
+        var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+        };
+        var client = new HttpClient(handler);
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
