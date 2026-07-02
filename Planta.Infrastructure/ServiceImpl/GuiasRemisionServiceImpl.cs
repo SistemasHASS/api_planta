@@ -21,6 +21,9 @@ public sealed class GuiasRemisionServiceImpl(IGuiasRemisionRepository guiasRemis
     public Task<List<JsonElement>> EmitirGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario)
         => guiasRemisionRepository.EmitirGuiaRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision, usuario);
 
+    public Task<List<JsonElement>> ActualizarEstadoSunatGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string estado,string codigoEstadoSunat,string estadoSunat,string? pdfFileUrl,string? xmlFileSignUrl,string? xmlFileSunatUrl,string usuario)
+        => guiasRemisionRepository.ActualizarEstadoSunatGuiaRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision, estado, codigoEstadoSunat, estadoSunat, pdfFileUrl, xmlFileSignUrl, xmlFileSunatUrl, usuario);
+
     public Task<List<JsonElement>> AnularGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario)
         => guiasRemisionRepository.AnularGuiaRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision, usuario);
 

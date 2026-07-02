@@ -50,6 +50,20 @@ public interface IGuiasRemisionRepository
         string codigoGuiaRemision,
         string usuario);
 
+    Task<List<JsonElement>> ActualizarEstadoSunatGuiaRemisionAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string codigoGuiaRemision,
+        string estado,
+        string codigoEstadoSunat,
+        string estadoSunat,
+        string? pdfFileUrl,
+        string? xmlFileSignUrl,
+        string? xmlFileSunatUrl,
+        string usuario);
+
     Task<List<JsonElement>> AnularGuiaRemisionAsync(
         string idempresa,
         string ruc,

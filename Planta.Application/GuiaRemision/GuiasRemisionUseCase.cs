@@ -10,8 +10,10 @@ namespace Planta.Application.GuiaRemision;
 public sealed class GuiasRemisionUseCase(
     IGuiasRemisionService guiasRemisionService,
     ICatalogosService catalogosService,
-    IMaestrosService maestrosService) : IGuiasRemisionUseCase
+    IMaestrosService maestrosService,
+    IDocumentosElectronicosService documentosElectronicosService) : IGuiasRemisionUseCase
 {
+
     public async Task<List<JsonElement>> SincronizarGuiasRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string usuario,string idRol,string json)
     {
         return await guiasRemisionService.SincronizarGuiasRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, json);
@@ -239,6 +241,138 @@ public sealed class GuiasRemisionUseCase(
         return null;
     }
 
+    private static readonly Dictionary<string, string> GuiaPascalCaseMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["id"] = "Id",
+        ["idempresa"] = "IdEmpresa",
+        ["numeroDocumentoRemitente"] = "NumeroDocumentoRemitente",
+        ["razonSocialRemitente"] = "RazonSocialRemitente",
+        ["idProyecto"] = "IdProyecto",
+        ["codigoAcopio"] = "CodigoAcopio",
+        ["codigoGuiaRemision"] = "CodigoGuiaRemision",
+        ["serie"] = "Serie",
+        ["numero"] = "Numero",
+        ["correoEmisor"] = "CorreoEmisor",
+        ["correoAdquiriente"] = "CorreoAdquiriente",
+        ["codigoProceso"] = "CodigoProceso",
+        ["nombreProceso"] = "NombreProceso",
+        ["documentoDestinatario"] = "DocumentoDestinatario",
+        ["nombreDestinatario"] = "NombreDestinatario",
+        ["tipoDocumentoRemitente"] = "TipoDocumentoRemitente",
+        ["tipoDocumentoDestinatario"] = "TipoDocumentoDestinatario",
+        ["puntoPartida"] = "PuntoPartida",
+        ["puntoLlegada"] = "PuntoLlegada",
+        ["ubigeoPartida"] = "UbigeoPartida",
+        ["ubigeoLlegada"] = "UbigeoLlegada",
+        ["fechaEmision"] = "FechaEmision",
+        ["idTransportista"] = "IdTransportista",
+        ["razonSocialTransportista"] = "RazonSocialTransportista",
+        ["RucTransportista"] = "RucTransportista",
+        ["ruc_Transportistas"] = "RucTransportista",
+        ["tipoDocumentoTransportista"] = "TipoDocumentoTransportista",
+        ["idConductor"] = "IdConductor",
+        ["NombreConductor"] = "NombreConductor",
+        ["ApellidoConductor"] = "ApellidoConductor",
+        ["nombreCompletoConductor"] = "NombreCompletoConductor",
+        ["DniConductor"] = "DniConductor",
+        ["numeroLicencia"] = "NumeroLicencia",
+        ["tipoDocumentoConductor"] = "TipoDocumentoConductor",
+        ["idVehiculo"] = "IdVehiculo",
+        ["placaPrincipalVehiculo"] = "PlacaPrincipalVehiculo",
+        ["placaRemolque"] = "PlacaRemolque",
+        ["certificadoInscripcion"] = "CertificadoInscripcion",
+        ["codigoSunatMotivoTraslado"] = "CodigoSunatMotivoTraslado",
+        ["descripcionMotivoTraslado"] = "DescripcionMotivoTraslado",
+        ["precinto"] = "Precinto",
+        ["inicioTraslado"] = "InicioTraslado",
+        ["observaciones"] = "Observaciones",
+        ["observacionGuia"] = "ObservacionGuia",
+        ["estado"] = "Estado",
+        ["estadoSunat"] = "EstadoSunat",
+        ["codigoEstadoSunat"] = "CodigoEstadoSunat",
+        ["pesoTotal"] = "PesoTotal",
+        ["unidadMedidaPesoBruto"] = "UnidadMedidaPesoBruto",
+        ["totalCajas"] = "TotalCajas",
+        ["cantidadPalets"] = "CantidadPalets",
+        ["usuarioEmision"] = "UsuarioEmision",
+        ["fechaCreacionWeb"] = "FechaCreacionWeb",
+        ["fechaCierre"] = "FechaCierre",
+        ["parihuelas"] = "Parihuelas",
+        ["observacionesUsuario"] = "ObservacionesUsuario",
+        ["esReposicion"] = "EsReposicion",
+        ["inspeccionTemperatura"] = "InspeccionTemperatura",
+        ["inspeccionLibreOlores"] = "InspeccionLibreOlores",
+        ["inspeccionLibreInsectos"] = "InspeccionLibreInsectos",
+        ["inspeccionLibreMateriasExtranas"] = "InspeccionLibreMateriasExtranas",
+        ["inspeccionUnidadLimpia"] = "InspeccionUnidadLimpia",
+        ["inspeccionObservaciones"] = "InspeccionObservaciones",
+        ["inspeccionMedidaCorrectiva"] = "InspeccionMedidaCorrectiva",
+        ["numeroViaje"] = "NumeroViaje",
+        ["fechaEntregaBienes"] = "FechaEntregaBienes",
+        ["esEnsayo"] = "EsEnsayo",
+        ["transactionId_uuid"] = "TransactionIdUuid",
+        ["fechaCreacion"] = "FechaCreacion",
+        ["usuarioCre"] = "UsuarioCre",
+        ["usuarioMod"] = "UsuarioMod",
+        ["fechaModificacion"] = "FechaModificacion",
+        ["modalidadTraslado"] = "ModalidadTraslado",
+        ["modalidadTrasladoDescripcion"] = "ModalidadTrasladoDescripcion",
+        ["detalle"] = "Detalle",
+        ["codigoPalet"] = "CodigoPalet",
+        ["codigoDPalet"] = "CodigoDPalet",
+        ["codigoItem"] = "CodigoItem",
+        ["codigoTipoProcesoEmpacado"] = "CodigoTipoProcesoEmpacado",
+        ["cantidadCajas"] = "CantidadCajas",
+        ["unidadMedida"] = "UnidadMedida",
+        ["documentoConsignatario"] = "DocumentoConsignatario",
+        ["idDestino"] = "IdDestino",
+        ["codigoFormato"] = "CodigoFormato",
+        ["codigoVariedad"] = "CodigoVariedad",
+        ["idTipoEmpaqueGuia"] = "IdTipoEmpaqueGuia",
+        ["idCodigoRancho"] = "IdCodigoRancho",
+        ["idLugarProduccion"] = "IdLugarProduccion",
+        ["idPresentacion"] = "IdPresentacion",
+        ["pesoPorCaja"] = "PesoPorCaja",
+        ["idTransporte"] = "IdTransporte",
+        ["nombreTipoProcesoEmpacado"] = "NombreTipoProcesoEmpacado",
+        ["nombrePresentacion"] = "NombrePresentacion",
+        ["nombreFormato"] = "NombreFormato",
+        ["nombreTipoEmpaqueGuia"] = "NombreTipoEmpaqueGuia",
+        ["codigoLugarProduccion"] = "CodigoLugarProduccion",
+        ["codigoRancho"] = "CodigoRancho",
+        ["nombreConsignatario"] = "NombreConsignatario",
+        ["nombreDestino"] = "NombreDestino",
+        ["nombreVariedad"] = "NombreVariedad",
+        ["nombreTransporte"] = "NombreTransporte",
+        ["detalleDescripcion"] = "DetalleDescripcion"
+    };
+
+    private static JsonNode? ConvertirANodoPascalCase(JsonNode? node)
+    {
+        if (node is JsonObject obj)
+        {
+            var result = new JsonObject();
+            foreach (var prop in obj)
+            {
+                var key = GuiaPascalCaseMap.TryGetValue(prop.Key, out var mapped) ? mapped : prop.Key;
+                result[key] = ConvertirANodoPascalCase(prop.Value);
+            }
+            return result;
+        }
+
+        if (node is JsonArray arr)
+        {
+            var result = new JsonArray();
+            foreach (var item in arr)
+            {
+                result.Add(ConvertirANodoPascalCase(item));
+            }
+            return result;
+        }
+
+        return node?.DeepClone();
+    }
+
     public async Task<List<JsonElement>> EliminarGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario,string idRol)
     {
         return await guiasRemisionService.EliminarGuiaRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision, usuario, idRol);
@@ -246,6 +380,7 @@ public sealed class GuiasRemisionUseCase(
 
     public async Task<List<JsonElement>> EmitirGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario)
     {
+        var resultados = new List<ApiDocumentosElectronicosResponse>();
         var result = await guiasRemisionService.EmitirGuiaRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision, usuario);
         Console.WriteLine($"====================EmitirGuiaRemisionAsync: {JsonSerializer.Serialize(result)}");
         if (result.Count == 0)
@@ -327,7 +462,36 @@ public sealed class GuiasRemisionUseCase(
                             if (guiaObj is not null)
                             {
                                 guiaObj.Remove("palets");
-                                Console.WriteLine(JsonSerializer.Serialize(guiaObj, new JsonSerializerOptions { WriteIndented = true }));
+
+                                var guiaPascalCase = ConvertirANodoPascalCase(guiaObj);
+                                var guiaElement = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(guiaPascalCase));
+
+                                var apiResponse = await documentosElectronicosService.EnviarGuiaRemisionAsync(guiaElement, CancellationToken.None);
+
+                                string estadoGuia;
+                                string codigoEstadoSunat;
+
+                                if (apiResponse.Success && apiResponse.Data?.Exito == true)
+                                {
+                                    estadoGuia = "ENVIADA";
+                                    codigoEstadoSunat = apiResponse.Data.EstadoSunat ?? "PE_02";
+                                }
+                                else if (apiResponse.Data != null)
+                                {
+                                    estadoGuia = "ERROR";
+                                    codigoEstadoSunat = apiResponse.Data.EstadoSunat ?? "ERROR";
+                                }
+                                else
+                                {
+                                    estadoGuia = "ERROR";
+                                    codigoEstadoSunat = "ERROR";
+                                }
+
+                                await guiasRemisionService.ActualizarEstadoSunatGuiaRemisionAsync(
+                                    gIdempresa, gRuc, gIdProyecto, gCodigoAcopio, gCodigoGuiaRemision,
+                                    estadoGuia, codigoEstadoSunat, string.Empty, null, null, null, usuario);
+
+                                resultados.Add(apiResponse);
                             }
                         }
                     }
@@ -339,11 +503,95 @@ public sealed class GuiasRemisionUseCase(
             Console.WriteLine($"[EMITIR] dataNode is NOT a JsonArray. dataNode type: {dataNode?.GetType().Name ?? "null"}");
         }
 
-        // Por ahora: respuesta fija para éxito
-        var okPayload = new { error = false, mensaje = "Se emitieron 3 guías del grupo correctamente.", data = Array.Empty<object>() };
-        var okJson = JsonSerializer.Serialize(okPayload);
-        var element = JsonSerializer.Deserialize<JsonElement>(okJson);
-        return new List<JsonElement> { element };
+        var mensaje = resultados.Count == 0
+            ? "No se procesaron guías."
+            : $"Se procesaron {resultados.Count} guía(s).";
+
+        var tieneError = resultados.Any(r => !r.Success || r.Data?.Exito != true);
+        var data = JsonSerializer.SerializeToElement(resultados);
+
+        var responsePayload = new { error = tieneError, mensaje, data };
+        var responseJson = JsonSerializer.Serialize(responsePayload);
+        return new List<JsonElement> { JsonSerializer.Deserialize<JsonElement>(responseJson) };
+    }
+
+    public async Task<List<JsonElement>> ConsultarEstadoSunatGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario)
+    {
+        var guiaDetalle = await GetGuiaRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision);
+
+        if (guiaDetalle.Count == 0)
+        {
+            var errorPayload = new { error = true, mensaje = "No se encontró la guía de remisión.", data = JsonSerializer.Deserialize<JsonElement>("null") };
+            return new List<JsonElement> { JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(errorPayload)) };
+        }
+
+        var gdWrapper = guiaDetalle[0];
+        var gdError = gdWrapper.GetProperty("error").GetBoolean();
+        if (gdError)
+        {
+            return guiaDetalle;
+        }
+
+        if (!gdWrapper.TryGetProperty("data", out var gdData) || gdData.ValueKind != JsonValueKind.Array || gdData.GetArrayLength() == 0)
+        {
+            var errorPayload = new { error = true, mensaje = "No se encontró data de la guía de remisión.", data = JsonSerializer.Deserialize<JsonElement>("null") };
+            return new List<JsonElement> { JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(errorPayload)) };
+        }
+
+        var guiaObj = JsonNode.Parse(gdData[0].GetRawText())?.AsObject();
+        if (guiaObj is null)
+        {
+            var errorPayload = new { error = true, mensaje = "No se pudo parsear la guía de remisión.", data = JsonSerializer.Deserialize<JsonElement>("null") };
+            return new List<JsonElement> { JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(errorPayload)) };
+        }
+
+        var gIdempresa = guiaObj["idempresa"]?.GetValue<string>() ?? idempresa;
+        var serie = guiaObj["serie"]?.GetValue<string>() ?? string.Empty;
+        var numero = guiaObj["numero"]?.GetValue<string>() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(serie) || string.IsNullOrWhiteSpace(numero))
+        {
+            var errorPayload = new { error = true, mensaje = "La guía no tiene serie o número asignado.", data = JsonSerializer.Deserialize<JsonElement>("null") };
+            return new List<JsonElement> { JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(errorPayload)) };
+        }
+
+        var apiResponse = await documentosElectronicosService.ConsultarEstadoGuiaRemisionAsync(gIdempresa, serie, numero);
+
+        string estadoGuia;
+        string codigoEstadoSunat;
+        string estadoSunat = string.Empty;
+
+        if (apiResponse.Success && apiResponse.Data?.Exito == true)
+        {
+            estadoGuia = "ENVIADA";
+            codigoEstadoSunat = apiResponse.Data.EstadoSunat ?? "PE_02";
+        }
+        else if (apiResponse.Data != null)
+        {
+            estadoGuia = apiResponse.Data.EstadoSunat == "NO_ENCONTRADO" ? "ERROR" : "ERROR";
+            codigoEstadoSunat = apiResponse.Data.EstadoSunat ?? "ERROR";
+        }
+        else
+        {
+            estadoGuia = "ERROR";
+            codigoEstadoSunat = "ERROR";
+        }
+
+        await guiasRemisionService.ActualizarEstadoSunatGuiaRemisionAsync(
+            idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision,
+            estadoGuia, codigoEstadoSunat, estadoSunat,
+            apiResponse.Data?.PdfFileUrl,
+            apiResponse.Data?.XmlFileSignUrl,
+            apiResponse.Data?.XmlFileSunatUrl,
+            usuario);
+
+        var mensaje = apiResponse.Data?.MensajeSunat ?? apiResponse.Data?.Mensaje ?? apiResponse.Message;
+        var tieneError = !apiResponse.Success || apiResponse.Data?.Exito != true;
+        var data = JsonSerializer.SerializeToElement(apiResponse);
+
+        var responsePayload = new { error = tieneError, mensaje, data };
+        var responseJson = JsonSerializer.Serialize(responsePayload);
+        return new List<JsonElement> { JsonSerializer.Deserialize<JsonElement>(responseJson) };
     }
     
     public async Task<List<JsonElement>> AnularGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario)

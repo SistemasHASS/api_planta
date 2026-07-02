@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IGuiasRemisionService, GuiasRemisionServiceImpl>();
         services.AddScoped<IGuiasRemisionUseCase, GuiasRemisionUseCase>();
         services.AddScoped<IGuiasRemisionRepository, GuiasRemisionRepository>();
+        services.AddScoped<IDocumentosElectronicosService, DocumentosElectronicosServiceImpl>();
 
         services.AddScoped<IMaestrosService, MaestrosServiceImpl>();
         services.AddScoped<ICatalogosService,CatalogosServiceImpl>();

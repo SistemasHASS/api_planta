@@ -15,6 +15,8 @@ public interface IGuiasRemisionService
 
     Task<List<JsonElement>> EmitirGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario);
 
+    Task<List<JsonElement>> ActualizarEstadoSunatGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string estado,string codigoEstadoSunat,string estadoSunat,string? pdfFileUrl,string? xmlFileSignUrl,string? xmlFileSunatUrl,string usuario);
+
     Task<List<JsonElement>> AnularGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario);
 
     Task<List<JsonElement>> EditarGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string usuario,string idRol,string json);

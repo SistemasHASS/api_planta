@@ -333,6 +333,68 @@ public sealed class GuiasRemisionController(
         }
     }
 
+    [HttpGet("consultar-estado-sunat")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ConsultarEstadoSunatGuiaRemision([FromQuery] string idProyecto, [FromQuery] string codigoGuiaRemision)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Role))
+            {
+                return BadRequest("IdRol is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            {
+                return BadRequest("CodigoAcopio is required");
+            }
+            if (string.IsNullOrEmpty(idProyecto))
+            {
+                return BadRequest("IdProyecto is required");
+            }
+            if (string.IsNullOrEmpty(codigoGuiaRemision))
+            {
+                return BadRequest("CodigoGuiaRemision is required");
+            }
+
+            var result = await guiasRemisionUseCase.ConsultarEstadoSunatGuiaRemisionAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                idProyecto,
+                _currentUser.CodigoAcopio!,
+                codigoGuiaRemision,
+                _currentUser.UserName!
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { error = true, mensaje = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ConsultarEstadoSunatGuiaRemision");
+            return StatusCode(500, new { error = true, mensaje = ex.Message });
+        }
+    }
+
     [HttpDelete("anular-guia-remision")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

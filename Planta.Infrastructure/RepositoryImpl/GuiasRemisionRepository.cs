@@ -260,6 +260,47 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         return emitirResult;
     }
 
+    public async Task<List<JsonElement>> ActualizarEstadoSunatGuiaRemisionAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string codigoGuiaRemision,
+        string estado,
+        string codigoEstadoSunat,
+        string estadoSunat,
+        string? pdfFileUrl,
+        string? xmlFileSignUrl,
+        string? xmlFileSunatUrl,
+        string usuario)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ActualizarEstadoSunatGuiaRemision",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idProyecto", idProyecto },
+                { "@codigoAcopio", codigoAcopio },
+                { "@codigoGuiaRemision", codigoGuiaRemision },
+                { "@estado", estado },
+                { "@codigoEstadoSunat", codigoEstadoSunat },
+                { "@estadoSunat", estadoSunat },
+                { "@pdfFileUrl", pdfFileUrl },
+                { "@xmlFileSignUrl", xmlFileSignUrl },
+                { "@xmlFileSunatUrl", xmlFileSunatUrl },
+                { "@usuario", usuario }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+            var mensaje = result.FieldCount > 1 && !result.IsDBNull(1) ? Convert.ToString(result.GetValue(1)) : null;
+
+            var payload = new { error, data = JsonSerializer.Deserialize<JsonElement>("null"), mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
     public async Task<List<JsonElement>> AnularGuiaRemisionAsync(
         string idempresa,
         string ruc,
