@@ -72,14 +72,14 @@ public sealed class ProcesosUseCase(IProcesosService procesosService) : IProceso
         return await procesosService.ListarPresentacionesPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId, formatoId, tipoEmpaqueGuiaId);
     }
     
-    public async Task<List<JsonElement>> ListarTiposCajaPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId)
+    public async Task<List<JsonElement>> ListarTiposCajaPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId, int? presentacionId = null)
     {
-        return await procesosService.ListarTiposCajaPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId, formatoId, tipoEmpaqueGuiaId);
+        return await procesosService.ListarTiposCajaPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId, formatoId, tipoEmpaqueGuiaId, presentacionId);
     }
     
-    public async Task<List<JsonElement>> ListarTiposClamshellPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId)
+    public async Task<List<JsonElement>> ListarTiposClamshellPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId, int? tipoCajaId = null, int? presentacionId = null)
     {
-        return await procesosService.ListarTiposClamshellPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId, formatoId, tipoEmpaqueGuiaId);
+        return await procesosService.ListarTiposClamshellPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId, formatoId, tipoEmpaqueGuiaId, tipoCajaId, presentacionId);
     }
     
     public async Task<List<JsonElement>> ListarCodigosRanchoPorLugarProduccionAsync(string idempresa, string ruc, string idProyecto, int idLugaresDeProduccion)
@@ -90,6 +90,11 @@ public sealed class ProcesosUseCase(IProcesosService procesosService) : IProceso
     public async Task<List<JsonElement>> ListarDPaletsPorAcopioAsync(string idempresa, string ruc, string codigoAcopio)
     {
         return await procesosService.ListarDPaletsPorAcopioAsync(idempresa, ruc, codigoAcopio);
+    }
+
+    public async Task<List<JsonElement>> ListarDPaletsPorPaletAsync(string idempresa, string ruc, string idPalet)
+    {
+        return await procesosService.ListarDPaletsPorPaletAsync(idempresa, ruc, idPalet);
     }
     
     public async Task<List<JsonElement>> ListarProcesosAbiertosConPaletsCerradosAsync(string idempresa, string ruc, string codigoAcopio)

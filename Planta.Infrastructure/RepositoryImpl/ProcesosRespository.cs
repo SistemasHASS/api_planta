@@ -340,7 +340,7 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
         });
     }
 
-    public async Task<List<JsonElement>> ListarTiposClamshellPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId)
+    public async Task<List<JsonElement>> ListarTiposClamshellPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId, int? tipoCajaId = null, int? presentacionId = null)
     {
         return await EjecutarStoredProcedureAsync("PLANTA_ListarTiposClamshellPorMatriz",
         new Dictionary<string, object?>
@@ -351,7 +351,9 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
                 { "@documentoConsignatario", documentoConsignatario },
                 { "@destinoId", destinoId },
                 { "@formatoId", formatoId },
-                { "@tipoEmpaqueGuiaId", tipoEmpaqueGuiaId }
+                { "@tipoEmpaqueGuiaId", tipoEmpaqueGuiaId },
+                { "@tipoCajaId", tipoCajaId },
+                { "@presentacionId", presentacionId }
         }
         , result =>
         {
@@ -378,7 +380,7 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
         });
     }
 
-    public async Task<List<JsonElement>> ListarTiposCajaPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId)
+    public async Task<List<JsonElement>> ListarTiposCajaPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId, int? presentacionId = null)
     {
         return await EjecutarStoredProcedureAsync("PLANTA_ListarTiposCajaPorMatriz",
         new Dictionary<string, object?>
@@ -389,7 +391,8 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
                 { "@documentoConsignatario", documentoConsignatario },
                 { "@destinoId", destinoId },
                 { "@formatoId", formatoId },
-                { "@tipoEmpaqueGuiaId", tipoEmpaqueGuiaId }
+                { "@tipoEmpaqueGuiaId", tipoEmpaqueGuiaId },
+                { "@presentacionId", presentacionId }
         }
         , result =>
         {
@@ -605,6 +608,40 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
                 { "@idempresa", idempresa },
                 { "@ruc", ruc },
                 { "@codigoAcopio", codigoAcopio }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ListarDPaletsPorPaletAsync(string idempresa, string ruc, string idPalet)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarDPalets_Por_Palet",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idPalet", idPalet }
         }
         , result =>
         {

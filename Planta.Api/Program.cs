@@ -7,6 +7,9 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using Serilog;
 using Planta.Api.HostedServices;
+using OfficeOpenXml;
+
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()

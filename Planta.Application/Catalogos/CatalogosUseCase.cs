@@ -33,6 +33,11 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
         return await catalogosService.ListarMotivosTrasladoAsync();
     }
 
+    public async Task<CatalogosResponse<List<UnidadMedida>>> ListarUnidadesMedidaAsync()
+    {
+        return await catalogosService.ListarUnidadesMedidaAsync();
+    }
+
     public async Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json)
     {
         return await catalogosService.SincronizarConsignatariosAsync(idempresa, ruc, usuario, json);

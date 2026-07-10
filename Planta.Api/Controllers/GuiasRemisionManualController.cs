@@ -1,38 +1,32 @@
-
-
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Planta.Api.Middlewares;
 using Planta.Api.Security;
-using Planta.Application.Proceso.Abstractions;
-using Planta.Application.GuiaRemision.Abstractions;
-using OfficeOpenXml;
+using Planta.Application.GuiaRemisionManual.Abstractions;
 
 namespace Planta.Api.Controllers;
 
-[Route("api/guias-remision")]
+[Route("api/guias-remision-manual")]
 [ApiController]
-public sealed class GuiasRemisionController(
-    ILogger<GuiasRemisionController> logger,
+public sealed class GuiasRemisionManualController(
+    ILogger<GuiasRemisionManualController> logger,
     ICurrentUserContext _currentUser,
-    IProcesosUseCase procesosUseCase,
-    IGuiasRemisionUseCase guiasRemisionUseCase) : ControllerBase
+    IGuiasRemisionManualUseCase guiasRemisionManualUseCase) : ControllerBase
 {
-    public class SincronizarGuiasRemisionRequest
+    public class SincronizarGuiasRemisionManualRequest
     {
         public string? IdProyecto { get; set; }
         public JsonElement? Guias { get; set; }
-        public JsonElement? Detalles { get; set; }
     }
 
-    [HttpPost("sincronizar-guias-remision")]
+    [HttpPost("sincronizar-guia-remision-manual")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> SincronizarGuiasRemision([FromBody] SincronizarGuiasRemisionRequest request)
+    public async Task<IActionResult> SincronizarGuiasRemisionManual([FromBody] SincronizarGuiasRemisionManualRequest request)
     {
         try
         {
@@ -63,7 +57,7 @@ public sealed class GuiasRemisionController(
 
             var jsonGuias = ControllerJsonHelper.ExtractJson(request?.Guias);
 
-            var result = await guiasRemisionUseCase.SincronizarGuiasRemisionAsync(
+            var result = await guiasRemisionManualUseCase.SincronizarGuiasRemisionManualAsync(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
                 request!.IdProyecto!,
@@ -82,18 +76,23 @@ public sealed class GuiasRemisionController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error interno en SincronizarGuiasRemision");
+            logger.LogError(ex, "Error interno en SincronizarGuiasRemisionManual");
             return StatusCode(500, new { error = true, mensaje = ex.Message });
         }
     }
 
-    [HttpGet("listar-guias-remision")]
+    [HttpGet("listar-guias-remision-manual")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> ListarGuiasRemision([FromQuery] string idProyecto,[FromQuery] string? estado = null,[FromQuery] string? fechaDesde = null,[FromQuery] string? fechaHasta = null,[FromQuery] string? texto = null)
+    public async Task<IActionResult> ListarGuiasRemisionManual(
+        [FromQuery] string idProyecto,
+        [FromQuery] string? estado = null,
+        [FromQuery] string? fechaDesde = null,
+        [FromQuery] string? fechaHasta = null,
+        [FromQuery] string? texto = null)
     {
         try
         {
@@ -113,20 +112,12 @@ public sealed class GuiasRemisionController(
             {
                 return BadRequest("Ruc is required");
             }
-            var esAdmin = !string.IsNullOrEmpty(_currentUser.Role) && 
-                          (_currentUser.Role.Equals("ADPLA", StringComparison.OrdinalIgnoreCase) || 
-                           _currentUser.Role.Equals("ADMINISTRADOR", StringComparison.OrdinalIgnoreCase));
-
-            if (!esAdmin && string.IsNullOrEmpty(_currentUser.CodigoAcopio))
-            {
-                return BadRequest("CodigoAcopio is required");
-            }
             if (string.IsNullOrEmpty(idProyecto))
             {
                 return BadRequest("IdProyecto is required");
             }
 
-            var result = await guiasRemisionUseCase.ListarGuiasRemisionAsync(
+            var result = await guiasRemisionManualUseCase.ListarGuiasRemisionManualAsync(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
                 idProyecto,
@@ -148,19 +139,20 @@ public sealed class GuiasRemisionController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error interno en ListarGuiasRemision");
+            logger.LogError(ex, "Error interno en ListarGuiasRemisionManual");
             return StatusCode(500, new { error = true, mensaje = ex.Message });
         }
     }
 
-    [HttpGet("exportar-guias-remision-excel")]
+    [HttpGet("get-guia-remision-manual")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> ExportarGuiasRemisionExcel([FromQuery] string idProyecto,[FromQuery] string? estado = null,[FromQuery] string? fechaDesde = null,[FromQuery] string? fechaHasta = null,[FromQuery] string? texto = null)
+    public async Task<IActionResult> GetGuiaRemisionManual(
+        [FromQuery] string idProyecto,
+        [FromQuery] string codigoGuiaRemision)
     {
         try
         {
@@ -180,133 +172,6 @@ public sealed class GuiasRemisionController(
             {
                 return BadRequest("Ruc is required");
             }
-            var esAdmin = !string.IsNullOrEmpty(_currentUser.Role) && 
-                          (_currentUser.Role.Equals("ADPLA", StringComparison.OrdinalIgnoreCase) || 
-                           _currentUser.Role.Equals("ADMINISTRADOR", StringComparison.OrdinalIgnoreCase));
-
-            if (!esAdmin)
-            {
-                return StatusCode(403, new { error = true, mensaje = "Solo el rol administrador puede exportar a Excel." });
-            }
-            if (string.IsNullOrEmpty(idProyecto))
-            {
-                return BadRequest("IdProyecto is required");
-            }
-
-            var result = await guiasRemisionUseCase.ListarGuiasRemisionExcelAsync(
-                _currentUser.IdEmpresa!,
-                _currentUser.Ruc!,
-                idProyecto,
-                _currentUser.CodigoAcopio ?? string.Empty,
-                _currentUser.UserName!,
-                _currentUser.Role!,
-                estado,
-                fechaDesde,
-                fechaHasta,
-                texto
-            );
-
-            if (result.Count == 0)
-            {
-                return StatusCode(500, new { error = true, mensaje = "No se obtuvo respuesta del SP." });
-            }
-
-            var wrapper = result[0];
-            var error = wrapper.GetProperty("error").GetBoolean();
-            if (error)
-            {
-                var mensaje = wrapper.TryGetProperty("mensaje", out var m) ? m.GetString() : "Error al listar guías para Excel.";
-                return BadRequest(new { error = true, mensaje });
-            }
-
-            if (!wrapper.TryGetProperty("data", out var dataElement) || dataElement.ValueKind == JsonValueKind.Null || dataElement.ValueKind == JsonValueKind.Undefined)
-            {
-                return BadRequest(new { error = true, mensaje = "No se encontraron datos para exportar." });
-            }
-
-            using var package = new ExcelPackage();
-            var worksheet = package.Workbook.Worksheets.Add("Guías de Remisión");
-
-            var data = dataElement.Deserialize<List<Dictionary<string, object>>>();
-            if (data == null || data.Count == 0)
-            {
-                worksheet.Cells[1, 1].Value = "No se encontraron guías para exportar.";
-                worksheet.Cells[1, 1].AutoFitColumns();
-                var emptyBytes = await package.GetAsByteArrayAsync();
-                return File(emptyBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "guias-remision.xlsx");
-            }
-
-            var columns = data[0].Keys.ToList();
-
-            // Encabezados
-            for (int i = 0; i < columns.Count; i++)
-            {
-                worksheet.Cells[1, i + 1].Value = columns[i];
-                worksheet.Cells[1, i + 1].Style.Font.Bold = true;
-                worksheet.Cells[1, i + 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                worksheet.Cells[1, i + 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(31, 78, 121));
-                worksheet.Cells[1, i + 1].Style.Font.Color.SetColor(System.Drawing.Color.White);
-                worksheet.Cells[1, i + 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-            }
-
-            // Datos
-            for (int row = 0; row < data.Count; row++)
-            {
-                for (int col = 0; col < columns.Count; col++)
-                {
-                    var key = columns[col];
-                    var value = data[row].ContainsKey(key) ? data[row][key] : null;
-                    worksheet.Cells[row + 2, col + 1].Value = value?.ToString() ?? string.Empty;
-                }
-            }
-
-            worksheet.Cells[1, 1, data.Count + 1, columns.Count].AutoFilter = true;
-            worksheet.Cells[1, 1, data.Count + 1, columns.Count].AutoFitColumns();
-
-            var fileBytes = await package.GetAsByteArrayAsync();
-            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "guias-remision.xlsx");
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
-            return Unauthorized(new { error = true, mensaje = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error interno en ExportarGuiasRemisionExcel");
-            return StatusCode(500, new { error = true, mensaje = ex.Message });
-        }
-    }
-
-    [HttpGet("get-guia-remision")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize]
-    public async Task<IActionResult> GetGuiaRemision([FromQuery] string idProyecto,[FromQuery] string codigoGuiaRemision){
-        try
-        {
-            if (string.IsNullOrEmpty(_currentUser.UserName))
-            {
-                return BadRequest("UserName is required");
-            }
-            if (string.IsNullOrEmpty(_currentUser.Role))
-            {
-                return BadRequest("IdRol is required");
-            }
-            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
-            {
-                return BadRequest("IdEmpresa is required");
-            }
-            if (string.IsNullOrEmpty(_currentUser.Ruc))
-            {
-                return BadRequest("Ruc is required");
-            }
-            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
-            {
-                return BadRequest("CodigoAcopio is required");
-            }
             if (string.IsNullOrEmpty(idProyecto))
             {
                 return BadRequest("IdProyecto is required");
@@ -316,11 +181,12 @@ public sealed class GuiasRemisionController(
                 return BadRequest("CodigoGuiaRemision is required");
             }
 
-            var result = await guiasRemisionUseCase.GetGuiaRemisionAsync(
+            var result = await guiasRemisionManualUseCase.GetGuiaRemisionManualAsync(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
                 idProyecto,
-                _currentUser.CodigoAcopio!,
+                _currentUser.CodigoAcopio ?? string.Empty,
+                _currentUser.Role!,
                 codigoGuiaRemision
             );
 
@@ -333,18 +199,20 @@ public sealed class GuiasRemisionController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error interno en GetGuiaRemision");
+            logger.LogError(ex, "Error interno en GetGuiaRemisionManual");
             return StatusCode(500, new { error = true, mensaje = ex.Message });
         }
     }
 
-    [HttpPost("eliminar-guia-remision")]
+    [HttpPost("editar-guia-remision-manual")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> EliminarGuiaRemision([FromQuery] string idProyecto, [FromQuery] string codigoGuiaRemision)
+    public async Task<IActionResult> EditarGuiaRemisionManual(
+        [FromQuery] string idProyecto,
+        [FromBody] object json)
     {
         try
         {
@@ -364,9 +232,68 @@ public sealed class GuiasRemisionController(
             {
                 return BadRequest("Ruc is required");
             }
-            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            if (string.IsNullOrEmpty(idProyecto))
             {
-                return BadRequest("CodigoAcopio is required");
+                return BadRequest("IdProyecto is required");
+            }
+            if (json == null)
+            {
+                return BadRequest("Json is required");
+            }
+
+            var jsonString = System.Text.Json.JsonSerializer.Serialize(json);
+
+            var result = await guiasRemisionManualUseCase.EditarGuiaRemisionManualAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                idProyecto,
+                _currentUser.CodigoAcopio ?? string.Empty,
+                _currentUser.UserName!,
+                _currentUser.Role!,
+                jsonString
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { error = true, mensaje = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en EditarGuiaRemisionManual");
+            return StatusCode(500, new { error = true, mensaje = ex.Message });
+        }
+    }
+
+    [HttpGet("eliminar-guia-remision-manual")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> EliminarGuiaRemisionManual(
+        [FromQuery] string idProyecto,
+        [FromQuery] string codigoGuiaRemision)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Role))
+            {
+                return BadRequest("IdRol is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
             }
             if (string.IsNullOrEmpty(idProyecto))
             {
@@ -377,11 +304,11 @@ public sealed class GuiasRemisionController(
                 return BadRequest("CodigoGuiaRemision is required");
             }
 
-            var result = await guiasRemisionUseCase.EliminarGuiaRemisionAsync(
+            var result = await guiasRemisionManualUseCase.EliminarGuiaRemisionManualAsync(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
                 idProyecto,
-                _currentUser.CodigoAcopio!,
+                _currentUser.CodigoAcopio ?? string.Empty,
                 codigoGuiaRemision,
                 _currentUser.UserName!,
                 _currentUser.Role!
@@ -396,18 +323,20 @@ public sealed class GuiasRemisionController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error interno en EliminarGuiaRemision");
+            logger.LogError(ex, "Error interno en EliminarGuiaRemisionManual");
             return StatusCode(500, new { error = true, mensaje = ex.Message });
         }
     }
 
-    [HttpGet("emitir-guia-remision")]
+    [HttpGet("emitir-guia-remision-manual")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> EmitirGuiaRemision([FromQuery] string idProyecto, [FromQuery] string codigoGuiaRemision)
+    public async Task<IActionResult> EmitirGuiaRemisionManual(
+        [FromQuery] string idProyecto,
+        [FromQuery] string codigoGuiaRemision)
     {
         try
         {
@@ -440,7 +369,7 @@ public sealed class GuiasRemisionController(
                 return BadRequest("CodigoGuiaRemision is required");
             }
 
-            var result = await guiasRemisionUseCase.EmitirGuiaRemisionAsync(
+            var result = await guiasRemisionManualUseCase.EmitirGuiaRemisionManualAsync(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
                 idProyecto,
@@ -458,18 +387,20 @@ public sealed class GuiasRemisionController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error interno en EmitirGuiaRemision");
+            logger.LogError(ex, "Error interno en EmitirGuiaRemisionManual");
             return StatusCode(500, new { error = true, mensaje = ex.Message });
         }
     }
 
-    [HttpGet("consultar-estado-sunat")]
+    [HttpGet("reenviar-guia-remision-manual")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> ConsultarEstadoSunatGuiaRemision([FromQuery] string idProyecto, [FromQuery] string codigoGuiaRemision)
+    public async Task<IActionResult> ReenviarGuiaRemisionManual(
+        [FromQuery] string idProyecto,
+        [FromQuery] string codigoGuiaRemision)
     {
         try
         {
@@ -502,7 +433,7 @@ public sealed class GuiasRemisionController(
                 return BadRequest("CodigoGuiaRemision is required");
             }
 
-            var result = await guiasRemisionUseCase.ConsultarEstadoSunatGuiaRemisionAsync(
+            var result = await guiasRemisionManualUseCase.ReenviarGuiaRemisionManualAsync(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
                 idProyecto,
@@ -520,18 +451,20 @@ public sealed class GuiasRemisionController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error interno en ConsultarEstadoSunatGuiaRemision");
+            logger.LogError(ex, "Error interno en ReenviarGuiaRemisionManual");
             return StatusCode(500, new { error = true, mensaje = ex.Message });
         }
     }
 
-    [HttpGet("anular-guia-remision")]
+    [HttpGet("consultar-estado-sunat-guia-remision-manual")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> AnularGuiaRemision([FromQuery] string idProyecto, [FromQuery] string codigoGuiaRemision)
+    public async Task<IActionResult> ConsultarEstadoSunatGuiaRemisionManual(
+        [FromQuery] string idProyecto,
+        [FromQuery] string codigoGuiaRemision)
     {
         try
         {
@@ -564,7 +497,7 @@ public sealed class GuiasRemisionController(
                 return BadRequest("CodigoGuiaRemision is required");
             }
 
-            var result = await guiasRemisionUseCase.AnularGuiaRemisionAsync(
+            var result = await guiasRemisionManualUseCase.ConsultarEstadoSunatGuiaRemisionManualAsync(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
                 idProyecto,
@@ -582,24 +515,18 @@ public sealed class GuiasRemisionController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error interno en AnularGuiaRemision");
+            logger.LogError(ex, "Error interno en ConsultarEstadoSunatGuiaRemisionManual");
             return StatusCode(500, new { error = true, mensaje = ex.Message });
         }
     }
 
-    public class EditarGuiasRemisionRequest
-    {
-        public string? IdProyecto { get; set; }
-        public JsonElement? Guias { get; set; }
-    }
-
-    [HttpPost("editar-guia-remision")]
+    [HttpGet("anular-guia-remision-manual")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> EditarGuiaRemision([FromBody] EditarGuiasRemisionRequest request)
+    public async Task<IActionResult> AnularGuiaRemisionManual([FromQuery] string idProyecto, [FromQuery] string codigoGuiaRemision)
     {
         try
         {
@@ -623,120 +550,35 @@ public sealed class GuiasRemisionController(
             {
                 return BadRequest("CodigoAcopio is required");
             }
-
-            if (string.IsNullOrEmpty(request?.IdProyecto))
+            if (string.IsNullOrEmpty(idProyecto))
             {
                 return BadRequest("IdProyecto is required");
             }
-
-            var json = ControllerJsonHelper.ExtractJson(request?.Guias);
-            var result = await guiasRemisionUseCase.EditarGuiaRemisionAsync(_currentUser.IdEmpresa!,
-                                                                            _currentUser.Ruc!,
-                                                                            request!.IdProyecto!,
-                                                                            _currentUser.CodigoAcopio!,
-                                                                            _currentUser.UserName!,
-                                                                            _currentUser.Role!,json);
-
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
-            return Unauthorized(new { error = true, mensaje = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error interno en EditarGuiaRemision");
-            return StatusCode(500, new { error = true, mensaje = ex.Message });
-        }
-    }
-
-    [HttpGet("listar-codigos-caja")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize]
-    public async Task<IActionResult> ListarCodigosCaja()
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(_currentUser.UserName))
+            if (string.IsNullOrEmpty(codigoGuiaRemision))
             {
-                return BadRequest("UserName is required");
-            }
-            if (string.IsNullOrEmpty(_currentUser.Role))
-            {
-                return BadRequest("IdRol is required");
-            }
-            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
-            {
-                return BadRequest("IdEmpresa is required");
-            }
-            if (string.IsNullOrEmpty(_currentUser.Ruc))
-            {
-                return BadRequest("Ruc is required");
+                return BadRequest("CodigoGuiaRemision is required");
             }
 
-            var result = await guiasRemisionUseCase.ListarCodigosCajaAsync(
-                _currentUser.IdEmpresa!,
-                _currentUser.Ruc!
-            );
-
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
-            return Unauthorized(new { error = true, mensaje = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error interno en ListarCodigosCaja");
-            return StatusCode(500, new { error = true, mensaje = ex.Message });
-        }
-    }
-
-    [HttpGet("get-procesos-guia")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize]
-    public async Task<IActionResult> GetProcesosGuia()
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
-            {
-                return BadRequest("IdEmpresa is required");
-            }
-            if (string.IsNullOrEmpty(_currentUser.Ruc))
-            {
-                return BadRequest("Ruc is required");
-            }
-            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
-            {
-                return BadRequest("CodigoAcopio is required");
-            }
-
-            var result = await procesosUseCase.ListarProcesosAbiertosConPaletsCerradosAsync(
+            var result = await guiasRemisionManualUseCase.AnularGuiaRemisionManualAsync(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
-                _currentUser.CodigoAcopio!
+                idProyecto,
+                _currentUser.CodigoAcopio!,
+                codigoGuiaRemision,
+                _currentUser.UserName!
             );
 
             return Ok(result);
         }
         catch (UnauthorizedAccessException ex)
         {
-            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
-            return Unauthorized(new { message = ex.Message });
+            logger.LogWarning(ex, "Acceso no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { error = true, mensaje = ex.Message });
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error interno en GetProcesosGuia");
-            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+            logger.LogError(ex, "Error interno en AnularGuiaRemisionManual");
+            return StatusCode(500, new { error = true, mensaje = ex.Message });
         }
     }
 }

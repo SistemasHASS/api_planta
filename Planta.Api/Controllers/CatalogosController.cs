@@ -301,6 +301,30 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
         }
     }
 
+    [HttpGet("unidades-medida")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ListarUnidadesMedida()
+    {
+        try
+        {
+            var result = await catalogosUseCase.ListarUnidadesMedidaAsync();
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ListarUnidadesMedida");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
     [HttpPost("sincronizar-acopios")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

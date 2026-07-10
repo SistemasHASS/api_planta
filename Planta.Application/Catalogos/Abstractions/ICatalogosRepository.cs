@@ -40,4 +40,5 @@ public interface ICatalogosRepository
     Task<CatalogosResponse<List<UbigeoProvincia>>> ListarProvinciasAsync(string codigoDepartamento);
     Task<CatalogosResponse<List<UbigeoDistrito>>> ListarDistritosAsync(string codigoDepartamento, string codigoProvincia);
     Task<CatalogosResponse<List<MotivoTraslado>>> ListarMotivosTrasladoAsync();
+    Task<CatalogosResponse<List<UnidadMedida>>> ListarUnidadesMedidaAsync();
 }

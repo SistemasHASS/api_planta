@@ -1,17 +1,16 @@
-
 using System.Text.Json;
-using Planta.Application.GuiaRemision.Abstractions;
+using Planta.Application.GuiaRemisionManual.Abstractions;
 using Planta.Infrastructure.Persistence;
 
 namespace Planta.Infrastructure.RepositoryImpl;
 
-public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepository
+public sealed class GuiasRemisionManualRepository : BaseRepository, IGuiasRemisionManualRepository
 {
-    public GuiasRemisionRepository(SistemaPaletsDbContext context) : base(context)
+    public GuiasRemisionManualRepository(SistemaPaletsDbContext context) : base(context)
     {
     }
 
-    public async Task<List<JsonElement>> SincronizarGuiasRemisionAsync(
+    public async Task<List<JsonElement>> SincronizarGuiasRemisionManualAsync(
         string idempresa,
         string ruc,
         string idProyecto,
@@ -20,7 +19,7 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         string idRol,
         string json)
     {
-        return await EjecutarStoredProcedureAsync("PLANTA_SincronizarGuiasRemision",
+        return await EjecutarStoredProcedureAsync("PLANTA_GuardarGuiaRemisionManual",
         new Dictionary<string, object?>
         {
                 { "@idempresa", idempresa },
@@ -56,7 +55,7 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         });
     }
 
-    public async Task<List<JsonElement>> ListarGuiasRemisionAsync(
+    public async Task<List<JsonElement>> ListarGuiasRemisionManualAsync(
         string idempresa,
         string ruc,
         string idProyecto,
@@ -68,7 +67,7 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         string? fechaHasta,
         string? texto)
     {
-        return await EjecutarStoredProcedureAsync("PLANTA_ListarGuiasRemision",
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarGuiasRemisionManual",
         new Dictionary<string, object?>
         {
                 { "@idempresa", idempresa },
@@ -77,10 +76,10 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
                 { "@codigoAcopio", codigoAcopio },
                 { "@usuario", usuario },
                 { "@idRol", idRol },
-                { "@estado", estado },
-                { "@fechaDesde", fechaDesde },
-                { "@fechaHasta", fechaHasta },
-                { "@texto", texto }
+                { "@estado", estado ?? (object)DBNull.Value },
+                { "@fechaDesde", fechaDesde ?? (object)DBNull.Value },
+                { "@fechaHasta", fechaHasta ?? (object)DBNull.Value },
+                { "@texto", texto ?? (object)DBNull.Value }
         }
         , result =>
         {
@@ -107,66 +106,22 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         });
     }
 
-    public async Task<List<JsonElement>> ListarGuiasRemisionExcelAsync(
+    public async Task<List<JsonElement>> GetGuiaRemisionManualAsync(
         string idempresa,
         string ruc,
         string idProyecto,
         string codigoAcopio,
-        string usuario,
         string idRol,
-        string? estado,
-        string? fechaDesde,
-        string? fechaHasta,
-        string? texto)
+        string codigoGuiaRemision)
     {
-        return await EjecutarStoredProcedureAsync("PLANTA_ListarGuiasRemisionExcel",
+        return await EjecutarStoredProcedureAsync("PLANTA_GetGuiaRemisionManual",
         new Dictionary<string, object?>
         {
                 { "@idempresa", idempresa },
                 { "@ruc", ruc },
                 { "@idProyecto", idProyecto },
                 { "@codigoAcopio", codigoAcopio },
-                { "@usuario", usuario },
                 { "@idRol", idRol },
-                { "@estado", estado },
-                { "@fechaDesde", fechaDesde },
-                { "@fechaHasta", fechaHasta },
-                { "@texto", texto }
-        }
-        , result =>
-        {
-            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
-
-            JsonElement data;
-            if (result.IsDBNull(1))
-            {
-                data = JsonSerializer.Deserialize<JsonElement>("null");
-            }
-            else
-            {
-                var dataStr = Convert.ToString(result.GetValue(1));
-                data = string.IsNullOrWhiteSpace(dataStr)
-                    ? JsonSerializer.Deserialize<JsonElement>("null")
-                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
-            }
-
-            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
-
-            var payload = new { error, data, mensaje };
-            var payloadJson = JsonSerializer.Serialize(payload);
-            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
-        });
-    }
-
-    public async Task<List<JsonElement>> GetGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision)
-    {
-        return await EjecutarStoredProcedureAsync("PLANTA_GetGuiaRemision",
-        new Dictionary<string, object?>
-        {
-                { "@idempresa", idempresa },
-                { "@ruc", ruc },
-                { "@idProyecto", idProyecto },
-                { "@codigoAcopio", codigoAcopio },
                 { "@codigoGuiaRemision", codigoGuiaRemision }
         }
         , result =>
@@ -194,7 +149,52 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         });
     }
 
-    public async Task<List<JsonElement>> EliminarGuiaRemisionAsync(
+    public async Task<List<JsonElement>> EditarGuiaRemisionManualAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string usuario,
+        string idRol,
+        string json)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_EditarGuiaRemisionManual",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idProyecto", idProyecto },
+                { "@codigoAcopio", codigoAcopio },
+                { "@usuario", usuario },
+                { "@idRol", idRol },
+                { "@Json", json }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> EliminarGuiaRemisionManualAsync(
         string idempresa,
         string ruc,
         string idProyecto,
@@ -203,7 +203,7 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         string usuario,
         string idRol)
     {
-        return await EjecutarStoredProcedureAsync("PLANTA_DeleteGuiaRemision",
+        return await EjecutarStoredProcedureAsync("PLANTA_EliminarGuiaRemisionManual",
         new Dictionary<string, object?>
         {
                 { "@idempresa", idempresa },
@@ -217,142 +217,29 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         , result =>
         {
             var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
-            var mensaje = result.FieldCount > 1 && !result.IsDBNull(1) ? Convert.ToString(result.GetValue(1)) : null;
 
-            var payload = new { error, data = JsonSerializer.Deserialize<JsonElement>("null"), mensaje };
-            var payloadJson = JsonSerializer.Serialize(payload);
-            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
-        });
-    }
-
-    public async Task<List<JsonElement>> EmitirGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario)
-    {
-        var parametros = new Dictionary<string, object?>
-        {
-            { "@idempresa", idempresa },
-            { "@ruc", ruc },
-            { "@idProyecto", idProyecto },
-            { "@codigoAcopio", codigoAcopio },
-            { "@codigoGuiaRemision", codigoGuiaRemision },
-            { "@usuario", usuario }
-        };
-
-        var emitirResult = await EjecutarStoredProcedureAsync("PLANTA_EmitirGuiaRemision",
-            parametros,
-            result =>
+            JsonElement data;
+            if (result.IsDBNull(1))
             {
-                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
 
-                JsonElement data;
-                if (result.IsDBNull(1))
-                {
-                    data = JsonSerializer.Deserialize<JsonElement>("null");
-                }
-                else
-                {
-                    var dataStr = Convert.ToString(result.GetValue(1));
-                    data = string.IsNullOrWhiteSpace(dataStr)
-                        ? JsonSerializer.Deserialize<JsonElement>("null")
-                        : JsonSerializer.Deserialize<JsonElement>(dataStr);
-                }
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
 
-                var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
-
-                var payload = new { error, data, mensaje };
-                var payloadJson = JsonSerializer.Serialize(payload);
-                return JsonSerializer.Deserialize<JsonElement>(payloadJson);
-            });
-
-        if (emitirResult.Count == 0)
-        {
-            var fallback = new { error = true, data = JsonSerializer.Deserialize<JsonElement>("null"), mensaje = "No se obtuvo respuesta del SP de emisión." };
-            return new List<JsonElement> { JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(fallback)) };
-        }
-
-        if (emitirResult[0].GetProperty("error").GetBoolean())
-        {
-            return emitirResult;
-        }
-
-        // Cálculo de sobrepeso: ejecutar síncrono para no competir con el DbContext scoped
-        try
-        {
-            await EjecutarStoredProcedureAsync("PLANTA_CalcularSobrepesoPorGuiaRemision",
-                parametros,
-                result =>
-                {
-                    var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
-
-                    JsonElement data;
-                    if (result.IsDBNull(1))
-                    {
-                        data = JsonSerializer.Deserialize<JsonElement>("null");
-                    }
-                    else
-                    {
-                        var dataStr = Convert.ToString(result.GetValue(1));
-                        data = string.IsNullOrWhiteSpace(dataStr)
-                            ? JsonSerializer.Deserialize<JsonElement>("null")
-                            : JsonSerializer.Deserialize<JsonElement>(dataStr);
-                    }
-
-                    var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
-
-                    var payload = new { error, data, mensaje };
-                    var payloadJson = JsonSerializer.Serialize(payload);
-                    return JsonSerializer.Deserialize<JsonElement>(payloadJson);
-                });
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[WARN] Error en PLANTA_CalcularSobrepesoPorGuiaRemision: {ex.Message}");
-        }
-
-        return emitirResult;
-    }
-
-    public async Task<List<JsonElement>> ActualizarEstadoSunatGuiaRemisionAsync(
-        string idempresa,
-        string ruc,
-        string idProyecto,
-        string codigoAcopio,
-        string codigoGuiaRemision,
-        string estado,
-        string codigoEstadoSunat,
-        string estadoSunat,
-        string? pdfFileUrl,
-        string? xmlFileSignUrl,
-        string? xmlFileSunatUrl,
-        string usuario)
-    {
-        return await EjecutarStoredProcedureAsync("PLANTA_ActualizarEstadoSunatGuiaRemision",
-        new Dictionary<string, object?>
-        {
-                { "@idempresa", idempresa },
-                { "@ruc", ruc },
-                { "@idProyecto", idProyecto },
-                { "@codigoAcopio", codigoAcopio },
-                { "@codigoGuiaRemision", codigoGuiaRemision },
-                { "@estado", estado },
-                { "@codigoEstadoSunat", codigoEstadoSunat },
-                { "@estadoSunat", estadoSunat },
-                { "@pdfFileUrl", pdfFileUrl },
-                { "@xmlFileSignUrl", xmlFileSignUrl },
-                { "@xmlFileSunatUrl", xmlFileSunatUrl },
-                { "@usuario", usuario }
-        }
-        , result =>
-        {
-            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
-            var mensaje = result.FieldCount > 1 && !result.IsDBNull(1) ? Convert.ToString(result.GetValue(1)) : null;
-
-            var payload = new { error, data = JsonSerializer.Deserialize<JsonElement>("null"), mensaje };
+            var payload = new { error, data, mensaje };
             var payloadJson = JsonSerializer.Serialize(payload);
             return JsonSerializer.Deserialize<JsonElement>(payloadJson);
         });
     }
 
-    public async Task<List<JsonElement>> AnularGuiaRemisionAsync(
+    public async Task<List<JsonElement>> EmitirGuiaRemisionManualAsync(
         string idempresa,
         string ruc,
         string idProyecto,
@@ -360,7 +247,7 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         string codigoGuiaRemision,
         string usuario)
     {
-        return await EjecutarStoredProcedureAsync("PLANTA_AnularGuiaRemision",
+        return await EjecutarStoredProcedureAsync("PLANTA_EmitirGuiaRemisionManual",
         new Dictionary<string, object?>
         {
                 { "@idempresa", idempresa },
@@ -395,61 +282,66 @@ public sealed class GuiasRemisionRepository : BaseRepository, IGuiasRemisionRepo
         });
     }
 
-    public async Task<List<JsonElement>> EditarGuiaRemisionAsync(
+    public async Task<List<JsonElement>> ActualizarEstadoSunatGuiaRemisionManualAsync(
         string idempresa,
         string ruc,
         string idProyecto,
         string codigoAcopio,
-        string usuario,
-        string idRol,
-        string json)
+        string codigoGuiaRemision,
+        string? codigoEstadoSunat,
+        string? estadoSunat,
+        string? pdfFileUrl,
+        string? xmlFileSignUrl,
+        string? xmlFileSunatUrl,
+        bool? enviadoBizlinks,
+        string? respuestaBizlinks,
+        string usuario)
     {
-        return await EjecutarStoredProcedureAsync(
-            "PLANTA_EditarGuiaRemision",
-            new Dictionary<string, object?>
-            {
+        return await EjecutarStoredProcedureAsync("PLANTA_ActualizarEstadoSunatGuiaRemisionManual",
+        new Dictionary<string, object?>
+        {
                 { "@idempresa", idempresa },
                 { "@ruc", ruc },
                 { "@idProyecto", idProyecto },
                 { "@codigoAcopio", codigoAcopio },
-                { "@usuario", usuario },
-                { "@idRol", idRol },
-                { "@Json", json }
-            },
-            result =>
-            {
-                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+                { "@codigoGuiaRemision", codigoGuiaRemision },
+                { "@codigoEstadoSunat", codigoEstadoSunat },
+                { "@estadoSunat", estadoSunat },
+                { "@pdfFileUrl", pdfFileUrl },
+                { "@xmlFileSignUrl", xmlFileSignUrl },
+                { "@xmlFileSunatUrl", xmlFileSunatUrl },
+                { "@enviadoBizlinks", enviadoBizlinks },
+                { "@respuestaBizlinks", respuestaBizlinks },
+                { "@usuario", usuario }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+            var mensaje = result.IsDBNull(1) ? null : Convert.ToString(result.GetValue(1));
 
-                JsonElement data;
-                if (result.IsDBNull(1))
-                {
-                    data = JsonSerializer.Deserialize<JsonElement>("null");
-                }
-                else
-                {
-                    var dataStr = Convert.ToString(result.GetValue(1));
-                    data = string.IsNullOrWhiteSpace(dataStr)
-                        ? JsonSerializer.Deserialize<JsonElement>("null")
-                        : JsonSerializer.Deserialize<JsonElement>(dataStr);
-                }
-
-                var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
-
-                var payload = new { error, data, mensaje };
-                var payloadJson = JsonSerializer.Serialize(payload);
-                return JsonSerializer.Deserialize<JsonElement>(payloadJson);
-            });
+            var payload = new { error, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
     }
 
-    public async Task<List<JsonElement>> ListarCodigosCajaAsync(
+    public async Task<List<JsonElement>> AnularGuiaRemisionManualAsync(
         string idempresa,
-        string ruc)
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string codigoGuiaRemision,
+        string usuario)
     {
-        return await EjecutarStoredProcedureAsync("PLANTA_ListarCodigosCaja",
+        return await EjecutarStoredProcedureAsync("PLANTA_AnularGuiaRemisionManual",
         new Dictionary<string, object?>
         {
                 { "@idempresa", idempresa },
-                { "@ruc", ruc }
+                { "@ruc", ruc },
+                { "@idProyecto", idProyecto },
+                { "@codigoAcopio", codigoAcopio },
+                { "@codigoGuiaRemision", codigoGuiaRemision },
+                { "@usuario", usuario }
         }
         , result =>
         {

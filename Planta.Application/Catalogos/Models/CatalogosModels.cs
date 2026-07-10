@@ -64,6 +64,27 @@ public sealed class MotivoTraslado
     public string Descripcion { get; set; } = "";
 }
 
+public sealed class UnidadMedida
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("codigo")]
+    public string Codigo { get; set; } = "";
+
+    [JsonPropertyName("descripcion")]
+    public string Descripcion { get; set; } = "";
+
+    [JsonPropertyName("simboloComercial")]
+    public string SimboloComercial { get; set; } = "";
+    
+    [JsonPropertyName("activo")]
+    public bool Activo { get; set; }
+    
+    [JsonPropertyName("eliminado")]
+    public bool Eliminado { get; set; }
+}
+
 public sealed class Formato
 {
     [JsonPropertyName("id")]

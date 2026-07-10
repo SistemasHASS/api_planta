@@ -1462,10 +1462,45 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
         });
     }
 
+    public async Task<CatalogosResponse<List<UnidadMedida>>> ListarUnidadesMedidaAsync()
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarUnidadesMedida",
+            new Dictionary<string, object?>(),
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<UnidadMedida>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<UnidadMedida>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<UnidadMedida>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<UnidadMedida>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
 }
-
-
-
-
-
-

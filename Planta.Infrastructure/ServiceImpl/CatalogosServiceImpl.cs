@@ -108,4 +108,7 @@ public sealed class CatalogosServiceImpl(ICatalogosRepository catalogosRepositor
 
     public Task<CatalogosResponse<List<MotivoTraslado>>> ListarMotivosTrasladoAsync()
         => catalogosRepository.ListarMotivosTrasladoAsync();
+
+    public Task<CatalogosResponse<List<UnidadMedida>>> ListarUnidadesMedidaAsync()
+        => catalogosRepository.ListarUnidadesMedidaAsync();
 }   

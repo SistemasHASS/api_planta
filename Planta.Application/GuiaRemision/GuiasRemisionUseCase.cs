@@ -24,6 +24,11 @@ public sealed class GuiasRemisionUseCase(
         return await guiasRemisionService.ListarGuiasRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, estado, fechaDesde, fechaHasta, texto);
     }
 
+    public async Task<List<JsonElement>> ListarGuiasRemisionExcelAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string usuario,string idRol,string? estado,string? fechaDesde,string? fechaHasta,string? texto)
+    {
+        return await guiasRemisionService.ListarGuiasRemisionExcelAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, estado, fechaDesde, fechaHasta, texto);
+    }
+
     public async Task<List<JsonElement>> GetGuiaRemisionAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio, string codigoGuiaRemision)
     {
         var guiaResult = await guiasRemisionService.GetGuiaRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, codigoGuiaRemision);

@@ -406,6 +406,49 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
         }
     }
 
+    [HttpGet("get-dpalets-por-palet")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetDPaletsPorPalet([FromQuery] string idPalet)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrWhiteSpace(idPalet))
+            {
+                return BadRequest("idPalet is required");
+            }
+
+            var result = await procesosUseCase.ListarDPaletsPorPaletAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                idPalet
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetDPaletsPorPalet");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
     [HttpPost("sincronizar")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -509,7 +552,7 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> GetTiposClamshellPorMatriz([FromQuery] string codigoCultivo, [FromQuery] string documentoConsignatario, [FromQuery] string destinoId, [FromQuery] int formatoId, [FromQuery] int tipoEmpaqueGuiaId)
+    public async Task<IActionResult> GetTiposClamshellPorMatriz([FromQuery] string codigoCultivo, [FromQuery] string documentoConsignatario, [FromQuery] string destinoId, [FromQuery] int formatoId, [FromQuery] int tipoEmpaqueGuiaId, [FromQuery] int? tipoCajaId = null, [FromQuery] int? presentacionId = null)
     {
         try
         {
@@ -544,7 +587,9 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
                 documentoConsignatario,
                 destinoId,
                 formatoId,
-                tipoEmpaqueGuiaId
+                tipoEmpaqueGuiaId,
+                tipoCajaId,
+                presentacionId
             );
 
             return Ok(result);
@@ -567,7 +612,7 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> GetTiposCajaPorMatriz([FromQuery] string codigoCultivo, [FromQuery] string documentoConsignatario, [FromQuery] string destinoId, [FromQuery] int formatoId, [FromQuery] int tipoEmpaqueGuiaId)
+    public async Task<IActionResult> GetTiposCajaPorMatriz([FromQuery] string codigoCultivo, [FromQuery] string documentoConsignatario, [FromQuery] string destinoId, [FromQuery] int formatoId, [FromQuery] int tipoEmpaqueGuiaId, [FromQuery] int? presentacionId = null)
     {
         try
         {
@@ -602,7 +647,8 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
                 documentoConsignatario,
                 destinoId,
                 formatoId,
-                tipoEmpaqueGuiaId
+                tipoEmpaqueGuiaId,
+                presentacionId
             );
 
             return Ok(result);

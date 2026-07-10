@@ -9,6 +9,8 @@ public interface IGuiasRemisionUseCase
 
     Task<List<JsonElement>> ListarGuiasRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string usuario,string idRol,string? estado,string? fechaDesde,string? fechaHasta,string? texto);
 
+    Task<List<JsonElement>> ListarGuiasRemisionExcelAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string usuario,string idRol,string? estado,string? fechaDesde,string? fechaHasta,string? texto);
+
     Task<List<JsonElement>> GetGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision);
 
     Task<List<JsonElement>> EliminarGuiaRemisionAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string codigoGuiaRemision,string usuario,string idRol);
