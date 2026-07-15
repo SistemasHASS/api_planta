@@ -67,4 +67,7 @@ public sealed class ProcesosServiceImpl (IProcesosRepository procesosRepository)
   
   public Task<List<JsonElement>> BuscarProcesoAsync(string idempresa, string ruc, string idProyecto, string codigoCultivo, string codigoAcopio, string turno, string fecha)
     => procesosRepository.BuscarProcesoAsync(idempresa, ruc, idProyecto, codigoCultivo, codigoAcopio, turno, fecha);
+
+  public Task<List<JsonElement>> ObtenerReporteDiarioAsync(string idempresa, string ruc, string fecha, string acopios, string idCampana)
+    => procesosRepository.ObtenerReporteDiarioAsync(idempresa, ruc, fecha, acopios, idCampana);
 }

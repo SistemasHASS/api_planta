@@ -962,8 +962,62 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
         }
     }
 
-  
+    [HttpGet("reporte-diario")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ObtenerReporteDiario([FromQuery] string fecha, [FromQuery] string? acopios = null, [FromQuery] string? idCampana = null)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.UserName))
+            {
+                return BadRequest("UserName is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Role))
+            {
+                return BadRequest("IdRol is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrWhiteSpace(fecha))
+            {
+                return BadRequest("Fecha is required");
+            }
+            if (string.IsNullOrWhiteSpace(idCampana))
+            {
+                return BadRequest("IdCampana is required");
+            }
 
+            var result = await procesosUseCase.ObtenerReporteDiarioAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                fecha,
+                acopios ?? string.Empty,
+                idCampana
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ObtenerReporteDiario");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
 
 }
 

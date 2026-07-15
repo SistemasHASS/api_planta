@@ -160,7 +160,7 @@ public sealed class GuiasRemisionController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> ExportarGuiasRemisionExcel([FromQuery] string idProyecto,[FromQuery] string? estado = null,[FromQuery] string? fechaDesde = null,[FromQuery] string? fechaHasta = null,[FromQuery] string? texto = null)
+    public async Task<IActionResult> ExportarGuiasRemisionExcel([FromQuery] string idProyecto,[FromQuery] string? estado = null,[FromQuery] string? fechaDesde = null,[FromQuery] string? fechaHasta = null,[FromQuery] string? texto = null,[FromQuery] string? codigoCultivo = null)
     {
         try
         {
@@ -203,7 +203,8 @@ public sealed class GuiasRemisionController(
                 estado,
                 fechaDesde,
                 fechaHasta,
-                texto
+                texto,
+                codigoCultivo
             );
 
             if (result.Count == 0)
@@ -230,10 +231,7 @@ public sealed class GuiasRemisionController(
             var data = dataElement.Deserialize<List<Dictionary<string, object>>>();
             if (data == null || data.Count == 0)
             {
-                worksheet.Cells[1, 1].Value = "No se encontraron guías para exportar.";
-                worksheet.Cells[1, 1].AutoFitColumns();
-                var emptyBytes = await package.GetAsByteArrayAsync();
-                return File(emptyBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "guias-remision.xlsx");
+                return BadRequest(new { error = true, mensaje = "No se encontraron guías para exportar." });
             }
 
             var columns = data[0].Keys.ToList();
@@ -256,7 +254,17 @@ public sealed class GuiasRemisionController(
                 {
                     var key = columns[col];
                     var value = data[row].ContainsKey(key) ? data[row][key] : null;
-                    worksheet.Cells[row + 2, col + 1].Value = value?.ToString() ?? string.Empty;
+                    var cell = worksheet.Cells[row + 2, col + 1];
+
+                    if (key == "SOBRE PESO" && value is JsonElement jsonValue && jsonValue.ValueKind == JsonValueKind.Number && jsonValue.TryGetDecimal(out var sobrePeso))
+                    {
+                        cell.Value = sobrePeso;
+                        cell.Style.Numberformat.Format = "0.00";
+                    }
+                    else
+                    {
+                        cell.Value = value?.ToString() ?? string.Empty;
+                    }
                 }
             }
 

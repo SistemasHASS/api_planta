@@ -24,9 +24,171 @@ public sealed class GuiasRemisionUseCase(
         return await guiasRemisionService.ListarGuiasRemisionAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, estado, fechaDesde, fechaHasta, texto);
     }
 
-    public async Task<List<JsonElement>> ListarGuiasRemisionExcelAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string usuario,string idRol,string? estado,string? fechaDesde,string? fechaHasta,string? texto)
+    public async Task<List<JsonElement>> ListarGuiasRemisionExcelAsync(string idempresa,string ruc,string idProyecto,string codigoAcopio,string usuario,string idRol,string? estado,string? fechaDesde,string? fechaHasta,string? texto,string? codigoCultivo)
     {
-        return await guiasRemisionService.ListarGuiasRemisionExcelAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, estado, fechaDesde, fechaHasta, texto);
+        var result = await guiasRemisionService.ListarGuiasRemisionExcelAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, estado, fechaDesde, fechaHasta, texto);
+
+        if (result.Count == 0)
+            return result;
+
+        var wrapper = result[0];
+        var error = wrapper.GetProperty("error").GetBoolean();
+        if (error)
+            return result;
+
+        if (!wrapper.TryGetProperty("data", out var dataElement) || dataElement.ValueKind != JsonValueKind.Array || dataElement.GetArrayLength() == 0)
+            return result;
+
+        try
+        {
+            var campanias = await maestrosService.GetCampaniasAsync(ruc) ?? new List<CampaniaExterna>();
+            var paises = await maestrosService.GetPaisesAsync() ?? new List<PaisExterno>();
+            var transportes = await maestrosService.GetTransportesAsync() ?? new List<TransporteExterno>();
+            var clientes = await maestrosService.GetClientesAsync(idempresa) ?? new List<ClienteExterno>();
+            var acopios = await maestrosService.GetAcopiosAsync(idempresa) ?? new List<AcopiosExterno>();
+
+            var variedadesResponse = string.IsNullOrWhiteSpace(codigoCultivo)
+                ? null
+                : await GetVariedadesFromMaestrosAsync(idempresa, ruc);
+            var variedades = variedadesResponse?.Data ?? new List<VariedadRepository>();
+
+            var calibres = string.IsNullOrWhiteSpace(codigoCultivo)
+                ? new List<CalibreExterno>()
+                : (await maestrosService.GetCalibresAsync() ?? new List<CalibreExterno>());
+
+            var enrichedArray = new JsonArray();
+
+            foreach (var item in dataElement.EnumerateArray())
+            {
+                var node = JsonNode.Parse(item.GetRawText());
+                if (node is not JsonObject row) continue;
+
+                // PLANTA DE EMPAQUE
+                if (row.TryGetPropertyValue("codigoAcopio_codigo", out var codigoAcopioNode))
+                {
+                    var codigoAcopioFila = codigoAcopioNode?.GetValue<string>();
+                    var acopio = acopios.FirstOrDefault(a =>
+                        !string.IsNullOrWhiteSpace(a.codigo_acopio) &&
+                        a.codigo_acopio.Trim().Equals(codigoAcopioFila ?? "", StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrWhiteSpace(a.Ruc) &&
+                        a.Ruc.Trim().Equals(ruc, StringComparison.OrdinalIgnoreCase));
+
+                    row["PLANTA DE EMPAQUE"] = acopio?.Acopio ?? codigoAcopioFila;
+                }
+
+                // CAMPAÑA
+                if (row.TryGetPropertyValue("idProyecto_codigo", out var idProyectoCodigoNode))
+                {
+                    var idProyectoCodigo = idProyectoCodigoNode?.GetValue<string>();
+                    var campania = campanias.FirstOrDefault(c =>
+                        !string.IsNullOrWhiteSpace(c.IdProyecto) &&
+                        c.IdProyecto.Trim().Equals(idProyectoCodigo ?? "", StringComparison.OrdinalIgnoreCase) &&
+                        (string.IsNullOrWhiteSpace(codigoCultivo) ||
+                         (!string.IsNullOrWhiteSpace(c.CodCultivo) &&
+                          c.CodCultivo.Trim().Equals(codigoCultivo, StringComparison.OrdinalIgnoreCase))));
+
+                    row["CAMPAÑA"] = campania is not null
+                        ? $"{campania.FechaInicio:yyyy-MM-dd} - {campania.FechaFin:yyyy-MM-dd}"
+                        : idProyectoCodigo;
+                }
+
+                // VARIEDAD
+                if (!string.IsNullOrWhiteSpace(codigoCultivo) && row.TryGetPropertyValue("variedad_codigo", out var variedadCodigoNode))
+                {
+                    var variedadCodigo = variedadCodigoNode?.GetValue<string>();
+                    var variedad = variedades.FirstOrDefault(v =>
+                        !string.IsNullOrWhiteSpace(v.IdVariedad) &&
+                        v.IdVariedad.Trim().Equals(variedadCodigo ?? "", StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrWhiteSpace(v.IdCultivo) &&
+                        v.IdCultivo.Trim().Equals(codigoCultivo, StringComparison.OrdinalIgnoreCase));
+
+                    row["VARIEDAD"] = variedad?.Variedad ?? variedadCodigo;
+                }
+
+                // DESTINO
+                if (row.TryGetPropertyValue("destinoId_codigo", out var destinoIdCodigoNode))
+                {
+                    var destinoIdCodigo = destinoIdCodigoNode?.GetValue<string>();
+                    var pais = paises.FirstOrDefault(p =>
+                        !string.IsNullOrWhiteSpace(p.Id) &&
+                        p.Id.Trim().Equals(destinoIdCodigo ?? "", StringComparison.OrdinalIgnoreCase));
+
+                    row["DESTINO"] = pais?.Pais ?? pais?.Nacionalidad ?? destinoIdCodigo;
+                }
+
+                // DESTINATARIO
+                if (row.TryGetPropertyValue("documentoDestinatario_codigo", out var docDestNode))
+                {
+                    var docDest = docDestNode?.GetValue<string>();
+                    var cliente = clientes.FirstOrDefault(c =>
+                        (!string.IsNullOrWhiteSpace(c.DocumentoFiscal) &&
+                         c.DocumentoFiscal.Trim().Equals(docDest ?? "", StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrWhiteSpace(c.Documento) &&
+                         c.Documento.Trim().Equals(docDest ?? "", StringComparison.OrdinalIgnoreCase)));
+
+                    row["DESTINATARIO"] = cliente?.Nombre ?? docDest;
+                }
+
+                // CONSIGNATARIO
+                if (row.TryGetPropertyValue("documentoConsignatario_codigo", out var docConsNode))
+                {
+                    var docCons = docConsNode?.GetValue<string>();
+                    var cliente = clientes.FirstOrDefault(c =>
+                        (!string.IsNullOrWhiteSpace(c.DocumentoFiscal) &&
+                         c.DocumentoFiscal.Trim().Equals(docCons ?? "", StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrWhiteSpace(c.Documento) &&
+                         c.Documento.Trim().Equals(docCons ?? "", StringComparison.OrdinalIgnoreCase)));
+
+                    row["CONSIGNATARIO"] = cliente?.Nombre ?? docCons;
+                }
+
+                // TRANSPORTE
+                if (row.TryGetPropertyValue("transporte_codigo", out var transporteCodigoNode))
+                {
+                    var transporteCodigo = transporteCodigoNode?.GetValue<string>();
+                    var transporte = transportes.FirstOrDefault(t =>
+                        !string.IsNullOrWhiteSpace(t.Id) &&
+                        t.Id.Trim().Equals(transporteCodigo ?? "", StringComparison.OrdinalIgnoreCase));
+
+                    row["TRANSPORTE"] = transporte?.Transporte ?? transporteCodigo;
+                }
+
+                // CALIBRE
+                if (!string.IsNullOrWhiteSpace(codigoCultivo) && row.TryGetPropertyValue("calibre_codigo", out var calibreCodigoNode))
+                {
+                    var calibreCodigo = calibreCodigoNode?.GetValue<string>();
+                    var calibre = calibres.FirstOrDefault(c =>
+                        !string.IsNullOrWhiteSpace(c.Id) &&
+                        c.Id.Trim().Equals(calibreCodigo ?? "", StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrWhiteSpace(c.IdCultivo) &&
+                        c.IdCultivo.Trim().Equals(codigoCultivo, StringComparison.OrdinalIgnoreCase));
+
+                    row["CALIBRE"] = calibre?.Calibre ?? calibreCodigo;
+                }
+
+                // Eliminar columnas de código
+                row.Remove("idProyecto_codigo");
+                row.Remove("codigoAcopio_codigo");
+                row.Remove("variedad_codigo");
+                row.Remove("destinoId_codigo");
+                row.Remove("documentoDestinatario_codigo");
+                row.Remove("documentoConsignatario_codigo");
+                row.Remove("transporte_codigo");
+                row.Remove("calibre_codigo");
+
+                enrichedArray.Add(row);
+            }
+
+            var response = new { error = false, data = enrichedArray, mensaje = "" };
+            var responseJson = JsonSerializer.Serialize(response);
+            return new List<JsonElement> { JsonSerializer.Deserialize<JsonElement>(responseJson) };
+        }
+        catch (Exception ex)
+        {
+            var errorResponse = new { error = true, data = JsonSerializer.Deserialize<JsonElement>("null"), mensaje = $"Error enriqueciendo Excel: {ex.Message}" };
+            var errorJson = JsonSerializer.Serialize(errorResponse);
+            return new List<JsonElement> { JsonSerializer.Deserialize<JsonElement>(errorJson) };
+        }
     }
 
     public async Task<List<JsonElement>> GetGuiaRemisionAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio, string codigoGuiaRemision)
