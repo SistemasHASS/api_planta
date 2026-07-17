@@ -26,4 +26,25 @@ public interface IProcesosUseCase
     Task<List<JsonElement>> ListarProcesosAbiertosConPaletsCerradosAsync(string idempresa, string ruc, string codigoAcopio);
     Task<List<JsonElement>> BuscarProcesoAsync(string idempresa, string ruc, string idProyecto, string codigoCultivo, string codigoAcopio, string turno, string fecha);
     Task<List<JsonElement>> ObtenerReporteDiarioAsync(string idempresa, string ruc, string fecha, string acopios, string idCampana);
+    Task<List<JsonElement>> ObtenerReporteSemanalFiltrosAsync(string idempresa, string ruc, string idProyecto);
+    Task<List<JsonElement>> ObtenerReporteSemanalDatosAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string? semanas,
+        string? variedades,
+        string? formatos,
+        string? destinos,
+        string? clientes,
+        string? consignatarios);
+    Task<List<JsonElement>> ObtenerReporteCampaniaDatosAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string? semanas,
+        string? variedades,
+        string? formatos,
+        string? destinos,
+        string? clientes,
+        string? consignatarios);
 }

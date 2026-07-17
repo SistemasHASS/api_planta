@@ -236,6 +236,330 @@ public sealed class ProcesosUseCase(IProcesosService procesosService, IMaestrosS
         return result;
     }
 
+    public async Task<List<JsonElement>> ObtenerReporteSemanalFiltrosAsync(string idempresa, string ruc, string idProyecto)
+    {
+        var result = await procesosService.ObtenerReporteSemanalFiltrosAsync(idempresa, ruc, idProyecto);
+
+        if (result.Count == 0)
+        {
+            return result;
+        }
+
+        var wrapper = result[0];
+        if (!wrapper.TryGetProperty("error", out var errorElement))
+        {
+            return result;
+        }
+
+        var hasError = errorElement.ValueKind == JsonValueKind.True
+                       || (errorElement.ValueKind != JsonValueKind.False && errorElement.GetBoolean());
+        if (hasError)
+        {
+            return result;
+        }
+
+        if (!wrapper.TryGetProperty("data", out var dataElement) || dataElement.ValueKind != JsonValueKind.Object)
+        {
+            return result;
+        }
+
+        if (JsonNode.Parse(dataElement.GetRawText()) is not JsonObject dataNode)
+        {
+            return result;
+        }
+
+        var enriched = await EnriquecerFiltros(dataNode, idempresa);
+        if (!enriched)
+        {
+            return result;
+        }
+
+        if (JsonNode.Parse(wrapper.GetRawText()) is not JsonObject wrapperNode)
+        {
+            return result;
+        }
+
+        wrapperNode["data"] = dataNode;
+        result[0] = JsonSerializer.Deserialize<JsonElement>(wrapperNode.ToJsonString());
+        return result;
+    }
+
+    public async Task<List<JsonElement>> ObtenerReporteSemanalDatosAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string? semanas,
+        string? variedades,
+        string? formatos,
+        string? destinos,
+        string? clientes,
+        string? consignatarios)
+    {
+        var result = await procesosService.ObtenerReporteSemanalDatosAsync(
+            idempresa, ruc, idProyecto, semanas, variedades, formatos, destinos, clientes, consignatarios);
+
+        if (result.Count == 0)
+        {
+            return result;
+        }
+
+        var wrapper = result[0];
+        if (!wrapper.TryGetProperty("error", out var errorElement))
+        {
+            return result;
+        }
+
+        var hasError = errorElement.ValueKind == JsonValueKind.True
+                       || (errorElement.ValueKind != JsonValueKind.False && errorElement.GetBoolean());
+        if (hasError)
+        {
+            return result;
+        }
+
+        if (!wrapper.TryGetProperty("data", out var dataElement) || dataElement.ValueKind != JsonValueKind.Object)
+        {
+            return result;
+        }
+
+        if (JsonNode.Parse(dataElement.GetRawText()) is not JsonObject dataNode)
+        {
+            return result;
+        }
+
+        var enriched = await EnriquecerDetalleVariedades(dataNode, idempresa);
+        if (!enriched)
+        {
+            return result;
+        }
+
+        if (JsonNode.Parse(wrapper.GetRawText()) is not JsonObject wrapperNode)
+        {
+            return result;
+        }
+
+        wrapperNode["data"] = dataNode;
+        result[0] = JsonSerializer.Deserialize<JsonElement>(wrapperNode.ToJsonString());
+        return result;
+    }
+
+    public async Task<List<JsonElement>> ObtenerReporteCampaniaDatosAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string? semanas,
+        string? variedades,
+        string? formatos,
+        string? destinos,
+        string? clientes,
+        string? consignatarios)
+    {
+        var result = await procesosService.ObtenerReporteCampaniaDatosAsync(
+            idempresa, ruc, idProyecto, semanas, variedades, formatos, destinos, clientes, consignatarios);
+
+        if (result.Count == 0)
+        {
+            return result;
+        }
+
+        var wrapper = result[0];
+        if (!wrapper.TryGetProperty("error", out var errorElement))
+        {
+            return result;
+        }
+
+        var hasError = errorElement.ValueKind == JsonValueKind.True
+                       || (errorElement.ValueKind != JsonValueKind.False && errorElement.GetBoolean());
+        if (hasError)
+        {
+            return result;
+        }
+
+        if (!wrapper.TryGetProperty("data", out var dataElement) || dataElement.ValueKind != JsonValueKind.Object)
+        {
+            return result;
+        }
+
+        if (JsonNode.Parse(dataElement.GetRawText()) is not JsonObject dataNode)
+        {
+            return result;
+        }
+
+        var enriched = await EnriquecerDetalleVariedades(dataNode, idempresa);
+        if (!enriched)
+        {
+            return result;
+        }
+
+        if (JsonNode.Parse(wrapper.GetRawText()) is not JsonObject wrapperNode)
+        {
+            return result;
+        }
+
+        wrapperNode["data"] = dataNode;
+        result[0] = JsonSerializer.Deserialize<JsonElement>(wrapperNode.ToJsonString());
+        return result;
+    }
+
+    private async Task<bool> EnriquecerDetalleVariedades(JsonObject dataNode, string idempresa)
+    {
+        var modified = false;
+
+        if (dataNode["detalleVariedad"] is JsonArray detalleArray && detalleArray.Count > 0)
+        {
+            var variedadesLookup = BuildVariedadLookup(await maestrosService.GetVariedadesAsync(idempresa));
+            if (variedadesLookup.Count > 0)
+            {
+                foreach (var entry in detalleArray)
+                {
+                    if (entry is not JsonObject row)
+                    {
+                        continue;
+                    }
+
+                    var variedadId = row["variedadId"]?.GetValue<string>();
+                    var codigoCultivo = row["codigoCultivo"]?.GetValue<string>();
+                    var nombreActual = row["variedad"]?.GetValue<string>();
+
+                    var key = BuildVariedadKey(codigoCultivo, variedadId);
+                    string? nuevoNombre = null;
+
+                    if (key is not null && variedadesLookup.TryGetValue(key, out var nombreVariedad) && !string.IsNullOrWhiteSpace(nombreVariedad))
+                    {
+                        nuevoNombre = nombreVariedad;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(variedadId) && string.IsNullOrWhiteSpace(nombreActual))
+                    {
+                        nuevoNombre = variedadId;
+                    }
+
+                    if (nuevoNombre is not null && !string.Equals(nombreActual, nuevoNombre, StringComparison.OrdinalIgnoreCase))
+                    {
+                        row["variedad"] = nuevoNombre;
+                        modified = true;
+                    }
+                }
+            }
+        }
+
+        return modified;
+    }
+
+    private async Task<bool> EnriquecerFiltros(JsonObject dataNode, string idempresa)
+    {
+        var modified = false;
+
+        if (dataNode["variedades"] is JsonArray variedadesArray && variedadesArray.Count > 0)
+        {
+            var variedadesLookup = BuildVariedadLookup(await maestrosService.GetVariedadesAsync(idempresa));
+            if (variedadesLookup.Count > 0)
+            {
+                foreach (var entry in variedadesArray)
+                {
+                    if (entry is not JsonObject row)
+                    {
+                        continue;
+                    }
+
+                    var variedadId = row["id"]?.GetValue<string>();
+                    var codigoCultivo = row["codigoCultivo"]?.GetValue<string>();
+                    var nombreActual = row["nombre"]?.GetValue<string>();
+
+                    var key = BuildVariedadKey(codigoCultivo, variedadId);
+                    string? nuevoNombre = null;
+
+                    if (key is not null && variedadesLookup.TryGetValue(key, out var nombreVariedad) && !string.IsNullOrWhiteSpace(nombreVariedad))
+                    {
+                        nuevoNombre = nombreVariedad;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(variedadId) && string.IsNullOrWhiteSpace(nombreActual))
+                    {
+                        nuevoNombre = variedadId;
+                    }
+
+                    if (nuevoNombre is not null && !string.Equals(nombreActual, nuevoNombre, StringComparison.Ordinal))
+                    {
+                        row["nombre"] = nuevoNombre;
+                        modified = true;
+                    }
+                }
+            }
+        }
+
+        if (dataNode["destinos"] is JsonArray destinosArray && destinosArray.Count > 0)
+        {
+            var destinosLookup = BuildPaisLookup(await maestrosService.GetPaisesAsync());
+            if (destinosLookup.Count > 0)
+            {
+                foreach (var entry in destinosArray)
+                {
+                    if (entry is not JsonObject row)
+                    {
+                        continue;
+                    }
+
+                    var destinoId = row["id"]?.GetValue<string>()?.Trim();
+                    if (string.IsNullOrWhiteSpace(destinoId))
+                    {
+                        continue;
+                    }
+
+                    if (destinosLookup.TryGetValue(destinoId, out var nombreDestino) && !string.IsNullOrWhiteSpace(nombreDestino))
+                    {
+                        var nombreActual = row["nombre"]?.GetValue<string>();
+                        if (!string.Equals(nombreActual, nombreDestino, StringComparison.Ordinal))
+                        {
+                            row["nombre"] = nombreDestino;
+                            modified = true;
+                        }
+                    }
+                    else if (string.IsNullOrWhiteSpace(row["nombre"]?.GetValue<string>()))
+                    {
+                        row["nombre"] = destinoId;
+                        modified = true;
+                    }
+                }
+            }
+        }
+
+        if (dataNode["consignatarios"] is JsonArray consignatariosArray && consignatariosArray.Count > 0)
+        {
+            var clientesLookup = BuildClienteLookup(await maestrosService.GetClientesAsync(idempresa));
+            if (clientesLookup.Count > 0)
+            {
+                foreach (var entry in consignatariosArray)
+                {
+                    if (entry is not JsonObject row)
+                    {
+                        continue;
+                    }
+
+                    var documento = row["id"]?.GetValue<string>()?.Trim();
+                    if (string.IsNullOrWhiteSpace(documento))
+                    {
+                        continue;
+                    }
+
+                    if (clientesLookup.TryGetValue(documento, out var nombreConsignatario) && !string.IsNullOrWhiteSpace(nombreConsignatario))
+                    {
+                        var nombreActual = row["nombre"]?.GetValue<string>();
+                        if (!string.Equals(nombreActual, nombreConsignatario, StringComparison.Ordinal))
+                        {
+                            row["nombre"] = nombreConsignatario;
+                            modified = true;
+                        }
+                    }
+                    else if (string.IsNullOrWhiteSpace(row["nombre"]?.GetValue<string>()))
+                    {
+                        row["nombre"] = documento;
+                        modified = true;
+                    }
+                }
+            }
+        }
+
+        return modified;
+    }
+
     private static Dictionary<string, string> BuildVariedadLookup(IReadOnlyList<VariedadExterna>? variedades)
     {
         var lookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -263,6 +587,35 @@ public sealed class ProcesosUseCase(IProcesosService procesosService, IMaestrosS
             {
                 lookup[key] = nombre;
             }
+        }
+
+        return lookup;
+    }
+
+    private static Dictionary<string, string> BuildPaisLookup(IReadOnlyList<PaisExterno>? paises)
+    {
+        var lookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        if (paises is null)
+        {
+            return lookup;
+        }
+
+        foreach (var pais in paises)
+        {
+            var id = pais?.Id?.Trim();
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                continue;
+            }
+
+            var nombre = (pais?.Pais ?? pais?.Nacionalidad ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                nombre = id;
+            }
+
+            lookup[id] = nombre;
         }
 
         return lookup;

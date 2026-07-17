@@ -773,6 +773,138 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
         });
     }
 
+    public async Task<List<JsonElement>> ObtenerReporteSemanalFiltrosAsync(string idempresa, string ruc, string idProyecto)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ReporteSemanal_Filtros",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idProyecto", idProyecto }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ObtenerReporteSemanalDatosAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string? semanas,
+        string? variedades,
+        string? formatos,
+        string? destinos,
+        string? clientes,
+        string? consignatarios)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ReporteSemanal_Datos",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idProyecto", idProyecto },
+                { "@semanas", semanas },
+                { "@variedades", variedades },
+                { "@formatos", formatos },
+                { "@destinos", destinos },
+                { "@clientes", clientes },
+                { "@consignatarios", consignatarios }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
+    public async Task<List<JsonElement>> ObtenerReporteCampaniaDatosAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string? semanas,
+        string? variedades,
+        string? formatos,
+        string? destinos,
+        string? clientes,
+        string? consignatarios)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ReporteCampania_Datos",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idProyecto", idProyecto },
+                { "@semanas", semanas },
+                { "@variedades", variedades },
+                { "@formatos", formatos },
+                { "@destinos", destinos },
+                { "@clientes", clientes },
+                { "@consignatarios", consignatarios }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("null");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("null")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
 }
 
 

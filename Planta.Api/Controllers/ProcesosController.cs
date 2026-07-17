@@ -295,6 +295,183 @@ public sealed class ProcesosController(ILogger<ProcesosController> logger, ICurr
         }
     }
 
+    [HttpGet("reporte-semanal-filtros")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ObtenerReporteSemanalFiltros([FromQuery] string idProyecto)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrWhiteSpace(idProyecto))
+            {
+                return BadRequest("idProyecto is required");
+            }
+
+            var result = await procesosUseCase.ObtenerReporteSemanalFiltrosAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                idProyecto
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ObtenerReporteSemanalFiltros");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpPost("reporte-semanal")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ObtenerReporteSemanalDatos([FromBody] ReporteSemanalDatosRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrWhiteSpace(request.IdProyecto))
+            {
+                return BadRequest("IdProyecto is required");
+            }
+
+            var semanas = request.Semanas is { Count: > 0 } ? JsonSerializer.Serialize(request.Semanas) : null;
+            var variedades = request.Variedades is { Count: > 0 } ? JsonSerializer.Serialize(request.Variedades) : null;
+            var formatos = request.Formatos is { Count: > 0 } ? JsonSerializer.Serialize(request.Formatos) : null;
+            var destinos = request.Destinos is { Count: > 0 } ? JsonSerializer.Serialize(request.Destinos) : null;
+            var clientes = request.Clientes is { Count: > 0 } ? JsonSerializer.Serialize(request.Clientes) : null;
+            var consignatarios = request.Consignatarios is { Count: > 0 } ? JsonSerializer.Serialize(request.Consignatarios) : null;
+
+            var result = await procesosUseCase.ObtenerReporteSemanalDatosAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                request.IdProyecto,
+                semanas,
+                variedades,
+                formatos,
+                destinos,
+                clientes,
+                consignatarios
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ObtenerReporteSemanalDatos");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpPost("reporte-campania")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ObtenerReporteCampaniaDatos([FromBody] ReporteCampaniaDatosRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrWhiteSpace(request.IdProyecto))
+            {
+                return BadRequest("IdProyecto is required");
+            }
+
+            var semanas = request.Semanas is { Count: > 0 } ? JsonSerializer.Serialize(request.Semanas) : null;
+            var variedades = request.Variedades is { Count: > 0 } ? JsonSerializer.Serialize(request.Variedades) : null;
+            var formatos = request.Formatos is { Count: > 0 } ? JsonSerializer.Serialize(request.Formatos) : null;
+            var destinos = request.Destinos is { Count: > 0 } ? JsonSerializer.Serialize(request.Destinos) : null;
+            var clientes = request.Clientes is { Count: > 0 } ? JsonSerializer.Serialize(request.Clientes) : null;
+            var consignatarios = request.Consignatarios is { Count: > 0 } ? JsonSerializer.Serialize(request.Consignatarios) : null;
+
+            var result = await procesosUseCase.ObtenerReporteCampaniaDatosAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                request.IdProyecto,
+                semanas,
+                variedades,
+                formatos,
+                destinos,
+                clientes,
+                consignatarios
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ObtenerReporteCampaniaDatos");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    public sealed class ReporteSemanalDatosRequest
+    {
+        public string IdProyecto { get; set; } = "";
+        public List<string> Semanas { get; set; } = [];
+        public List<string> Variedades { get; set; } = [];
+        public List<string> Formatos { get; set; } = [];
+        public List<string> Destinos { get; set; } = [];
+        public List<string> Clientes { get; set; } = [];
+        public List<string> Consignatarios { get; set; } = [];
+    }
+
+    public sealed class ReporteCampaniaDatosRequest
+    {
+        public string IdProyecto { get; set; } = "";
+        public List<string> Semanas { get; set; } = [];
+        public List<string> Variedades { get; set; } = [];
+        public List<string> Formatos { get; set; } = [];
+        public List<string> Destinos { get; set; } = [];
+        public List<string> Clientes { get; set; } = [];
+        public List<string> Consignatarios { get; set; } = [];
+    }
+
 }
 
 
