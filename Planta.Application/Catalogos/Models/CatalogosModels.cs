@@ -663,6 +663,30 @@ public sealed class AcopiosExterno
     public string Acopio { get; set; } = "";
 }
 
+public sealed class EmpresaExterna
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = "";
+
+    [JsonPropertyName("empresa")]
+    public int Empresa { get; set; }
+
+    [JsonPropertyName("idempresa")]
+    public string IdEmpresa { get; set; } = "";
+
+    [JsonPropertyName("companyowner")]
+    public string CompanyOwner { get; set; } = "";
+
+    [JsonPropertyName("ruc")]
+    public string Ruc { get; set; } = "";
+
+    [JsonPropertyName("razonsocial")]
+    public string RazonSocial { get; set; } = "";
+
+    [JsonPropertyName("direccionfiscal")]
+    public string DireccionFiscal { get; set; } = "";
+}
+
 public sealed class FundoExterno
 {
     public int Id { get; set; }

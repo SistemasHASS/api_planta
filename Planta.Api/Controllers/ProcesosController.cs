@@ -2,10 +2,12 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Planta.Api.Middlewares;
 using Planta.Api.Security;
 using Planta.Application.Proceso.Abstractions;
+using Planta.Application.Maestros.Abstractions;
 
 namespace Planta.Api.Controllers;
 
@@ -477,8 +479,151 @@ public sealed class ProcesosController(ILogger<ProcesosController> logger, ICurr
 
 [Route("api/palets")]
 [ApiController]
-public class PaletsController(ILogger<PaletsController> logger, ICurrentUserContext _currentUser, IProcesosUseCase procesosUseCase) : ControllerBase
+public class PaletsController(ILogger<PaletsController> logger, ICurrentUserContext _currentUser, IProcesosUseCase procesosUseCase, IPdfService pdfService, IMaestrosService maestrosService, IWebHostEnvironment env) : ControllerBase
 {
+
+    [HttpGet("descargar-ficha-composicion")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> DescargarFichaComposicion([FromQuery] string idPalet)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrWhiteSpace(idPalet))
+            {
+                return BadRequest("idPalet is required");
+            }
+
+            var result = await procesosUseCase.ObtenerDatosFichaComposicionPaletAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                idPalet
+            );
+
+            if (result.Count == 0)
+            {
+                return NotFound("No se encontraron datos para el palet especificado.");
+            }
+
+            var wrapper = result[0];
+            if (wrapper.TryGetProperty("error", out var errorProp) && errorProp.GetBoolean())
+            {
+                var msg = wrapper.TryGetProperty("mensaje", out var msgProp) ? msgProp.GetString() : "Error desconocido";
+                return BadRequest(msg);
+            }
+
+            if (!wrapper.TryGetProperty("data", out var dataProp))
+            {
+                return BadRequest("No se recibieron datos válidos del SP.");
+            }
+
+            var rawJson = dataProp.GetRawText();
+            Planta.Application.Proceso.Models.FichaComposicionPaletModel? model = null;
+            try
+            {
+                model = JsonSerializer.Deserialize<Planta.Application.Proceso.Models.FichaComposicionPaletModel>(rawJson, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (JsonException jex)
+            {
+                logger.LogError(jex, "Error deserializando JSON de ficha de composición. JSON RAW: {RawJson}", rawJson);
+                return BadRequest($"Error de formato en los datos recibidos: {jex.Message}");
+            }
+
+            if (model == null)
+            {
+                return BadRequest("Error al deserializar los datos para el PDF.");
+            }
+
+            // Enriquecer Clientes
+            var clientesExternos = await maestrosService.GetClientesAsync(_currentUser.IdEmpresa!);
+            if (clientesExternos != null)
+            {
+                foreach (var c in model.Cabecera.Clientes)
+                {
+                    var match = clientesExternos.FirstOrDefault(ce => ce.Documento == c.Documento || ce.DocumentoFiscal == c.Documento);
+                    if (match != null)
+                    {
+                        c.Cliente = match.Nombre;
+                    }
+                }
+            }
+
+            // Enriquecer Destinos
+            var paisesExternos = await maestrosService.GetPaisesAsync();
+            if (paisesExternos != null)
+            {
+                foreach (var d in model.Cabecera.Destinos)
+                {
+                    var match = paisesExternos.FirstOrDefault(pe => pe.Id == d.DestinoId);
+                    if (match != null)
+                    {
+                        d.Destino = match.Pais;
+                    }
+                }
+            }
+
+            // Enriquecer Variedades
+            var variedadesExternas = await maestrosService.GetVariedadesAsync(_currentUser.IdEmpresa!);
+            if (variedadesExternas != null)
+            {
+                foreach (var detail in model.Detalle)
+                {
+                    foreach (var v in detail.Variedad)
+                    {
+                        var match = variedadesExternas.FirstOrDefault(ve => ve.IdVariedad == v.VariedadId && ve.IdCultivo == v.CodigoCultivo);
+                        if (match != null)
+                        {
+                            v.Variedad = match.Variedad;
+                        }
+                    }
+                }
+            }
+
+            // Enriquecer Razon Social
+            var empresasExternas = await maestrosService.GetEmpresasAsync();
+            if (empresasExternas != null)
+            {
+                var match = empresasExternas.FirstOrDefault(e => e.Ruc == model.Cabecera.Ruc);
+                if (match != null)
+                {
+                    model.Cabecera.RazonSocial = match.RazonSocial;
+                }
+            }
+
+            // Enriquecer Planta de Empaque
+            var acopiosExternos = await maestrosService.GetAcopiosAsync(_currentUser.IdEmpresa!);
+            if (acopiosExternos != null)
+            {
+                var match = acopiosExternos.FirstOrDefault(a => a.codigo_acopio == model.Cabecera.PlantaDeEmpaque);
+                if (match != null)
+                {
+                    model.Cabecera.PlantaDeEmpaque = match.Acopio;
+                }
+            }
+
+            var pdfBytes = await pdfService.GenerarFichaComposicionPaletAsync(model, env.WebRootPath);
+            return File(pdfBytes, "application/pdf", $"FichaComposicion_{idPalet}.pdf");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error al generar PDF de ficha de composición");
+            return StatusCode(500, new { message = "Error interno al generar el PDF.", error = ex.Message });
+        }
+    }
 
     public sealed class SincronizarPaletsRequest
     {

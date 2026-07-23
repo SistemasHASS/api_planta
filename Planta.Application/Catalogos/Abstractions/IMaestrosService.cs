@@ -18,4 +18,5 @@ public interface IMaestrosService
     Task<IReadOnlyList<CalibreExterno>?> GetCalibresAsync();
     Task<IReadOnlyList<TransporteExterno>?> GetTransportesAsync();
     Task<IReadOnlyList<TipoClamshellExterno>?> GetTiposClamshellAsync();
+    Task<IReadOnlyList<EmpresaExterna>?> GetEmpresasAsync();
 }

@@ -99,6 +99,11 @@ public sealed class ProcesosUseCase(IProcesosService procesosService, IMaestrosS
     {
         return await procesosService.ListarDPaletsPorPaletAsync(idempresa, ruc, idPalet);
     }
+
+    public async Task<List<JsonElement>> ObtenerDatosFichaComposicionPaletAsync(string idempresa, string ruc, string idPalet)
+    {
+        return await procesosService.ObtenerDatosFichaComposicionPaletAsync(idempresa, ruc, idPalet);
+    }
     
     public async Task<List<JsonElement>> ListarProcesosAbiertosConPaletsCerradosAsync(string idempresa, string ruc, string codigoAcopio)
     {

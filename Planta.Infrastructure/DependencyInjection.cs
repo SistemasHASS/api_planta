@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IProcesosService, ProcesosServiceImpl>();
         services.AddScoped<IProcesosUseCase, ProcesosUseCase>();
         services.AddScoped<IProcesosRepository, ProcesosRespository>();
+        services.AddScoped<IPdfService, PdfServiceImpl>();
 
         services.AddScoped<IGuiasRemisionService, GuiasRemisionServiceImpl>();
         services.AddScoped<IGuiasRemisionUseCase, GuiasRemisionUseCase>();

@@ -57,6 +57,27 @@ public sealed class MaestrosServiceImpl(IHttpClientFactory httpClientFactory, IC
         }
     }
 
+    private async Task<JsonElement?> GetAndGetJsonElementAsync(string url)
+    {
+        var client = CreateClient();
+        using var response = await client.GetAsync(url);
+        var responseBody = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<JsonElement>(responseBody, JsonOptions);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static JsonElement UnwrapDataIfPresent(JsonElement element)
     {
         if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty("data", out var dataElement))
@@ -592,6 +613,40 @@ public sealed class MaestrosServiceImpl(IHttpClientFactory httpClientFactory, IC
         return null;
     }
 
-    
+    public async Task<IReadOnlyList<EmpresaExterna>?> GetEmpresasAsync()
+    {
+        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
+        var url = $"{urlMaestros}/api/Maestros/get_empresas";
 
+        // Cambiado a POST con cuerpo vacío según se observa en la captura de Postman
+        var elementNullable = await PostAndGetJsonElementAsync(url, new { });
+        if (elementNullable is null)
+        {
+            return null;
+        }
+
+        var element = UnwrapDataIfPresent(elementNullable.Value);
+        if (element.ValueKind == JsonValueKind.Array)
+        {
+            var list = new List<EmpresaExterna>();
+            foreach (var item in element.EnumerateArray())
+            {
+                var parsed = item.Deserialize<EmpresaExterna>(JsonOptions);
+                if (parsed is not null)
+                {
+                    list.Add(parsed);
+                }
+            }
+
+            return list;
+        }
+
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            var single = element.Deserialize<EmpresaExterna>(JsonOptions);
+            return single is null ? null : new List<EmpresaExterna> { single };
+        }
+
+        return null;
+    }
 }

@@ -668,6 +668,40 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
         });
     }
 
+    public async Task<List<JsonElement>> ObtenerDatosFichaComposicionPaletAsync(string idempresa, string ruc, string idPalet)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_PDF_FichaComposicionPalet",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idPalet", idPalet }
+        }
+        , result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+            JsonElement data;
+            if (result.IsDBNull(1))
+            {
+                data = JsonSerializer.Deserialize<JsonElement>("{}");
+            }
+            else
+            {
+                var dataStr = Convert.ToString(result.GetValue(1));
+                data = string.IsNullOrWhiteSpace(dataStr)
+                    ? JsonSerializer.Deserialize<JsonElement>("{}")
+                    : JsonSerializer.Deserialize<JsonElement>(dataStr);
+            }
+
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+
+            var payload = new { error, data, mensaje };
+            var payloadJson = JsonSerializer.Serialize(payload);
+            return JsonSerializer.Deserialize<JsonElement>(payloadJson);
+        });
+    }
+
     public async Task<List<JsonElement>> ListarTipoProcesoEmpacadoPorAcopioAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio)
     {
         return await EjecutarStoredProcedureAsync("PLANTA_ListarTipoProcesoEmpacadoPorAcopio",

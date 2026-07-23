@@ -61,6 +61,9 @@ public sealed class ProcesosServiceImpl (IProcesosRepository procesosRepository)
 
   public Task<List<JsonElement>> ListarDPaletsPorPaletAsync(string idempresa, string ruc, string idPalet)
     => procesosRepository.ListarDPaletsPorPaletAsync(idempresa, ruc, idPalet);
+
+  public Task<List<JsonElement>> ObtenerDatosFichaComposicionPaletAsync(string idempresa, string ruc, string idPalet)
+    => procesosRepository.ObtenerDatosFichaComposicionPaletAsync(idempresa, ruc, idPalet);
   
   public Task<List<JsonElement>> ListarProcesosAbiertosConPaletsCerradosAsync(string idempresa, string ruc, string codigoAcopio)
     => procesosRepository.ListarProcesosAbiertosConPaletsCerradosAsync(idempresa, ruc, codigoAcopio);
