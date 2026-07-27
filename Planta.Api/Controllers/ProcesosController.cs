@@ -117,10 +117,10 @@ public sealed class ProcesosController(ILogger<ProcesosController> logger, ICurr
                 return BadRequest("Ruc is required");
             }
 
-            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
-            {
-                return BadRequest("CodigoAcopio is required");
-            }
+            // if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            // {
+            //     return BadRequest("CodigoAcopio is required");
+            // }
 
             var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
@@ -134,7 +134,7 @@ public sealed class ProcesosController(ILogger<ProcesosController> logger, ICurr
                 : null;
 
 
-            var result = await procesosUseCase.ListarProcesosAsync(_currentUser.Role!,_currentUser.IdEmpresa!, _currentUser.Ruc!, idproyecto!, codigoCultivo!, _currentUser.CodigoAcopio!);
+            var result = await procesosUseCase.ListarProcesosAsync(_currentUser.Role!,_currentUser.IdEmpresa!, _currentUser.Ruc!, idproyecto!, codigoCultivo!, _currentUser.CodigoAcopio ?? string.Empty);
             return Ok(result);
         }
         catch (UnauthorizedAccessException ex)
@@ -703,15 +703,15 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
             {
                 return BadRequest("Ruc is required");
             }
-            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
-            {
-                return BadRequest("CodigoAcopio is required");
-            }
+            // if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            // {
+            //     return BadRequest("CodigoAcopio is required");
+            // }
 
             var result = await procesosUseCase.ListarDPaletsPorAcopioAsync(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
-                _currentUser.CodigoAcopio!
+                _currentUser.CodigoAcopio ?? string.Empty
             );
 
             return Ok(result);

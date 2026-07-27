@@ -117,10 +117,10 @@ public sealed class GuiasRemisionController(
                           (_currentUser.Role.Equals("ADPLA", StringComparison.OrdinalIgnoreCase) || 
                            _currentUser.Role.Equals("ADMINISTRADOR", StringComparison.OrdinalIgnoreCase));
 
-            if (!esAdmin && string.IsNullOrEmpty(_currentUser.CodigoAcopio))
-            {
-                return BadRequest("CodigoAcopio is required");
-            }
+            // if (!esAdmin && string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            // {
+            //     return BadRequest("CodigoAcopio is required");
+            // }
             if (string.IsNullOrEmpty(idProyecto))
             {
                 return BadRequest("IdProyecto is required");
@@ -182,7 +182,9 @@ public sealed class GuiasRemisionController(
             }
             var esAdmin = !string.IsNullOrEmpty(_currentUser.Role) && 
                           (_currentUser.Role.Equals("ADPLA", StringComparison.OrdinalIgnoreCase) || 
-                           _currentUser.Role.Equals("ADMINISTRADOR", StringComparison.OrdinalIgnoreCase));
+                           _currentUser.Role.Equals("ADMINISTRADOR", StringComparison.OrdinalIgnoreCase)||
+                           _currentUser.Role.Equals("MOPLA", StringComparison.OrdinalIgnoreCase) ||
+                           _currentUser.Role.Equals("MONITOR", StringComparison.OrdinalIgnoreCase));
 
             if (!esAdmin)
             {
@@ -311,10 +313,10 @@ public sealed class GuiasRemisionController(
             {
                 return BadRequest("Ruc is required");
             }
-            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
-            {
-                return BadRequest("CodigoAcopio is required");
-            }
+            // if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            // {
+            //     return BadRequest("CodigoAcopio is required");
+            // }
             if (string.IsNullOrEmpty(idProyecto))
             {
                 return BadRequest("IdProyecto is required");
@@ -328,7 +330,7 @@ public sealed class GuiasRemisionController(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
                 idProyecto,
-                _currentUser.CodigoAcopio!,
+                _currentUser.CodigoAcopio ?? string.Empty,
                 codigoGuiaRemision
             );
 
