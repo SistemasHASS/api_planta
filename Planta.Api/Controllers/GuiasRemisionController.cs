@@ -541,7 +541,7 @@ public sealed class GuiasRemisionController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize]
-    public async Task<IActionResult> AnularGuiaRemision([FromQuery] string idProyecto, [FromQuery] string codigoGuiaRemision)
+    public async Task<IActionResult> AnularGuiaRemision([FromQuery] string idProyecto, [FromQuery] string codigoGuiaRemision, [FromQuery] string codigoAcopio)
     {
         try
         {
@@ -561,10 +561,10 @@ public sealed class GuiasRemisionController(
             {
                 return BadRequest("Ruc is required");
             }
-            if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
-            {
-                return BadRequest("CodigoAcopio is required");
-            }
+            // if (string.IsNullOrEmpty(_currentUser.CodigoAcopio))
+            // {
+            //     return BadRequest("CodigoAcopio is required");
+            // }
             if (string.IsNullOrEmpty(idProyecto))
             {
                 return BadRequest("IdProyecto is required");
@@ -578,7 +578,7 @@ public sealed class GuiasRemisionController(
                 _currentUser.IdEmpresa!,
                 _currentUser.Ruc!,
                 idProyecto,
-                _currentUser.CodigoAcopio!,
+                codigoAcopio!,
                 codigoGuiaRemision,
                 _currentUser.UserName!
             );
