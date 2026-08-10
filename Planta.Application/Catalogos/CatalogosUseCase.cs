@@ -225,4 +225,29 @@ public sealed class CatalogosUseCase(IMaestrosService maestrosService, ICatalogo
     {
         return catalogosService.ListarParametrosAsync(idempresa, ruc);
     }
+
+    public Task<CatalogosResponse<List<EstablecimientoEmisor>>> GetEstablecimientoEmisorAsync(string idempresa, string ruc)
+    {
+        return catalogosService.GetEstablecimientoEmisorAsync(idempresa, ruc);
+    }
+
+    public Task<CatalogosResponse<List<EstablecimientoEmisor>>> ListarEstablecimientosAsync(string idempresa, string ruc)
+    {
+        return catalogosService.ListarEstablecimientosAsync(idempresa, ruc);
+    }
+
+    public Task<CatalogosResponse<List<TipoLocacion>>> ListarTiposLocacionAsync()
+    {
+        return catalogosService.ListarTiposLocacionAsync();
+    }
+
+    public Task<CatalogosResponse<List<LocacionTraslado>>> ListarPuertosAsync()
+    {
+        return catalogosService.ListarPuertosAsync();
+    }
+
+    public Task<CatalogosResponse<List<LocacionTraslado>>> ListarAeroPuertosAsync()
+    {
+        return catalogosService.ListarAeroPuertosAsync();
+    }
 }

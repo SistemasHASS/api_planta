@@ -1354,6 +1354,219 @@ public sealed class CatalogosRepository : BaseRepository, ICatalogosRepository
                };
     }
 
+    public async Task<CatalogosResponse<List<EstablecimientoEmisor>>> GetEstablecimientoEmisorAsync(string idempresa, string ruc)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_GetEstablecimientoEmisor",
+            new Dictionary<string, object?>
+            {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<EstablecimientoEmisor>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<EstablecimientoEmisor>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<EstablecimientoEmisor>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<EstablecimientoEmisor>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<CatalogosResponse<List<EstablecimientoEmisor>>> ListarEstablecimientosAsync(string idempresa, string ruc)
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarEstablecimientos",
+            new Dictionary<string, object?>
+            {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc }
+            },
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<EstablecimientoEmisor>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<EstablecimientoEmisor>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<EstablecimientoEmisor>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<EstablecimientoEmisor>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<CatalogosResponse<List<TipoLocacion>>> ListarTiposLocacionAsync()
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarTiposLocacion",
+            new Dictionary<string, object?>(),
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<TipoLocacion>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<TipoLocacion>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<TipoLocacion>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<TipoLocacion>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<CatalogosResponse<List<LocacionTraslado>>> ListarPuertosAsync()
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarPuertos",
+            new Dictionary<string, object?>(),
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<LocacionTraslado>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<LocacionTraslado>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<LocacionTraslado>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<LocacionTraslado>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
+    public async Task<CatalogosResponse<List<LocacionTraslado>>> ListarAeroPuertosAsync()
+    {
+        var resultado = await EjecutarStoredProcedureAsync(
+            "PLANTA_ListarAeroPuertos",
+            new Dictionary<string, object?>(),
+            result =>
+            {
+                var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+
+                var mensaje = result.IsDBNull(2)
+                    ? ""
+                    : Convert.ToString(result.GetValue(2)) ?? "";
+
+                List<LocacionTraslado>? data = null;
+
+                if (!result.IsDBNull(1))
+                {
+                    var dataStr = Convert.ToString(result.GetValue(1));
+
+                    if (!string.IsNullOrWhiteSpace(dataStr))
+                    {
+                        data = JsonSerializer.Deserialize<List<LocacionTraslado>>(dataStr);
+                    }
+                }
+
+                return new CatalogosResponse<List<LocacionTraslado>>
+                {
+                    Error = error,
+                    Data = data,
+                    Mensaje = mensaje
+                };
+            });
+
+        return resultado.FirstOrDefault()
+               ?? new CatalogosResponse<List<LocacionTraslado>>
+               {
+                   Error = true,
+                   Mensaje = "Sin resultados"
+               };
+    }
+
     public async Task<List<JsonElement>> SincronizarConsignatariosAsync(string idempresa, string ruc, string usuario, string json)
     {
         return await EjecutarStoredProcedureAsync(

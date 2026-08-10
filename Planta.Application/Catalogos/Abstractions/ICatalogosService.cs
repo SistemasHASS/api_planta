@@ -36,6 +36,11 @@ public interface ICatalogosService
     Task<CatalogosResponse<List<CodigoRancho>>> GetCodigosRanchoAsync(string idempresa, string ruc, string idproyecto);
     Task<CatalogosResponse<List<LugarProduccionConfig>>> GetLugaresProduccionConfigAsync(string idempresa, string ruc, string idproyecto);
     Task<CatalogosResponse<List<Parametro>>> ListarParametrosAsync(string idempresa, string ruc);
+    Task<CatalogosResponse<List<EstablecimientoEmisor>>> GetEstablecimientoEmisorAsync(string idempresa, string ruc);
+    Task<CatalogosResponse<List<EstablecimientoEmisor>>> ListarEstablecimientosAsync(string idempresa, string ruc);
+    Task<CatalogosResponse<List<TipoLocacion>>> ListarTiposLocacionAsync();
+    Task<CatalogosResponse<List<LocacionTraslado>>> ListarPuertosAsync();
+    Task<CatalogosResponse<List<LocacionTraslado>>> ListarAeroPuertosAsync();
     Task<CatalogosResponse<List<UbigeoDepartamento>>> ListarDepartamentosAsync();
     Task<CatalogosResponse<List<UbigeoProvincia>>> ListarProvinciasAsync(string codigoDepartamento);
     Task<CatalogosResponse<List<UbigeoDistrito>>> ListarDistritosAsync(string codigoDepartamento, string codigoProvincia);

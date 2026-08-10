@@ -205,6 +205,60 @@ public sealed class Parametro
     public bool Activo { get; set; }
 }
 
+public sealed class EstablecimientoEmisor
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("idempresa")]
+    public string IdEmpresa { get; set; } = "";
+
+    [JsonPropertyName("ruc")]
+    public string Ruc { get; set; } = "";
+
+    [JsonPropertyName("idEstablecimiento")]
+    public string IdEstablecimiento { get; set; } = "";
+
+    [JsonPropertyName("direccion")]
+    public string Direccion { get; set; } = "";
+
+    [JsonPropertyName("descripcion")]
+    public string Descripcion { get; set; } = "";
+
+    [JsonPropertyName("codigoEstablecimientoSunat")]
+    public string CodigoEstablecimientoSunat { get; set; } = "";
+
+    [JsonPropertyName("idTipoEstablecimiento")]
+    public string IdTipoEstablecimiento { get; set; } = "";
+
+    [JsonPropertyName("codigoUbigeo")]
+    public string CodigoUbigeo { get; set; } = "";
+}
+
+public sealed class TipoLocacion
+{
+    [JsonPropertyName("idTipoLocacion")]
+    public string IdTipoLocacion { get; set; } = "";
+
+    [JsonPropertyName("descripcion")]
+    public string Descripcion { get; set; } = "";
+
+    [JsonPropertyName("estado")]
+    public bool Estado { get; set; }
+}
+
+public sealed class LocacionTraslado
+{
+    [JsonPropertyName("codigo")]
+    public string Codigo { get; set; } = "";
+
+    [JsonPropertyName("nombre")]
+    public string Nombre { get; set; } = "";
+
+    [JsonPropertyName("codigoUbigeo")]
+    public string CodigoUbigeo { get; set; } = "";
+}
+
 
 public sealed class Destinatarios
 {

@@ -301,6 +301,74 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
         }
     }
 
+    [HttpGet("get-establecimiento-emisor")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetEstablecimientoEmisor()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            var result = await catalogosUseCase.GetEstablecimientoEmisorAsync(_currentUser.IdEmpresa!, _currentUser.Ruc!);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetEstablecimientoEmisor");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("get-establecimientos")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ListarEstablecimientos()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            var result = await catalogosUseCase.ListarEstablecimientosAsync(_currentUser.IdEmpresa!, _currentUser.Ruc!);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ListarEstablecimientos");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
     [HttpGet("unidades-medida")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -321,6 +389,78 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
         catch (Exception ex)
         {
             logger.LogError(ex, "Error interno en ListarUnidadesMedida");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("tipos-locacion")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ListarTiposLocacion()
+    {
+        try
+        {
+            var result = await catalogosUseCase.ListarTiposLocacionAsync();
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ListarTiposLocacion");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("puertos")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ListarPuertos()
+    {
+        try
+        {
+            var result = await catalogosUseCase.ListarPuertosAsync();
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ListarPuertos");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("aeropuertos")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ListarAeroPuertos()
+    {
+        try
+        {
+            var result = await catalogosUseCase.ListarAeroPuertosAsync();
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ListarAeroPuertos");
             return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
         }
     }

@@ -216,6 +216,8 @@ public sealed class GuiasRemisionUseCase(
             var guiaObj = guiaNode.AsObject();
 
             var documentoDestinatario = guiaObj["documentoDestinatario"]?.GetValue<string>();
+            var motivoTraslado = guiaObj["codigoSunatMotivoTraslado"]?.GetValue<string>() ?? guiaObj["motivoTraslado"]?.GetValue<string>();
+            var esTrasladoEntreEstablecimientos = string.Equals(motivoTraslado?.Trim(), "04", StringComparison.OrdinalIgnoreCase);
 
             var faltantes = new List<string>();
 
@@ -230,12 +232,19 @@ public sealed class GuiasRemisionUseCase(
             // Enriquecer cabecera (destinatario)
             if (!string.IsNullOrWhiteSpace(documentoDestinatario))
             {
-                var d = destinatarios.FirstOrDefault(x =>
-                    !string.IsNullOrWhiteSpace(x.DocumentoFiscal) && x.DocumentoFiscal.Trim() == documentoDestinatario.Trim());
-                if (d is null)
-                    faltantes.Add($"Destinatario con documento {documentoDestinatario}");
+                if (esTrasladoEntreEstablecimientos)
+                {
+                    guiaObj["nombreDestinatario"] = guiaObj["razonSocialRemitente"]?.GetValue<string>() ?? documentoDestinatario;
+                }
                 else
-                    guiaObj["nombreDestinatario"] = d.Nombre;
+                {
+                    var d = destinatarios.FirstOrDefault(x =>
+                        !string.IsNullOrWhiteSpace(x.DocumentoFiscal) && x.DocumentoFiscal.Trim() == documentoDestinatario.Trim());
+                    if (d is null)
+                        faltantes.Add($"Destinatario con documento {documentoDestinatario}");
+                    else
+                        guiaObj["nombreDestinatario"] = d.Nombre;
+                }
             }
 
             // Campanía / fruta
@@ -431,6 +440,14 @@ public sealed class GuiasRemisionUseCase(
         ["puntoLlegada"] = "PuntoLlegada",
         ["ubigeoPartida"] = "UbigeoPartida",
         ["ubigeoLlegada"] = "UbigeoLlegada",
+        ["idEstablecimientoPartida"] = "IdEstablecimientoPartida",
+        ["idEstablecimientoLlegada"] = "IdEstablecimientoLlegada",
+        ["descripcionEstablecimientoPartida"] = "DescripcionEstablecimientoPartida",
+        ["codigoEstablecimientoSunatPartida"] = "CodigoEstablecimientoSunatPartida",
+        ["idTipoEstablecimientoPartida"] = "IdTipoEstablecimientoPartida",
+        ["descripcionEstablecimientoLlegada"] = "DescripcionEstablecimientoLlegada",
+        ["codigoEstablecimientoSunatLlegada"] = "CodigoEstablecimientoSunatLlegada",
+        ["idTipoEstablecimientoLlegada"] = "IdTipoEstablecimientoLlegada",
         ["fechaEmision"] = "FechaEmision",
         ["idTransportista"] = "IdTransportista",
         ["razonSocialTransportista"] = "RazonSocialTransportista",
