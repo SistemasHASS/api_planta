@@ -36,6 +36,8 @@ namespace Planta.Application.Proceso.Models
 
     public class FichaDetalle
     {
+        public List<ClienteItem> Clientes { get; set; } = new();
+
         public List<VariedadItem> Variedad { get; set; } = new();
         
         [JsonPropertyName("Tipo De Empaque")]

@@ -548,16 +548,40 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
                 return BadRequest("Error al deserializar los datos para el PDF.");
             }
 
+            model.Detalle ??= [];
+            model.Cabecera.Clientes ??= [];
+            model.Cabecera.Destinos ??= [];
+
             // Enriquecer Clientes
             var clientesExternos = await maestrosService.GetClientesAsync(_currentUser.IdEmpresa!);
             if (clientesExternos != null)
             {
                 foreach (var c in model.Cabecera.Clientes)
                 {
-                    var match = clientesExternos.FirstOrDefault(ce => ce.Documento == c.Documento || ce.DocumentoFiscal == c.Documento);
+                    var documento = c.Documento?.Trim() ?? string.Empty;
+                    var match = clientesExternos.FirstOrDefault(ce =>
+                        (!string.IsNullOrWhiteSpace(ce.Documento) && ce.Documento.Trim().Equals(documento, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrWhiteSpace(ce.DocumentoFiscal) && ce.DocumentoFiscal.Trim().Equals(documento, StringComparison.OrdinalIgnoreCase)));
                     if (match != null)
                     {
                         c.Cliente = match.Nombre;
+                    }
+                }
+
+                foreach (var detail in model.Detalle)
+                {
+                    detail.Clientes ??= [];
+
+                    foreach (var c in detail.Clientes)
+                    {
+                        var documento = c.Documento?.Trim() ?? string.Empty;
+                        var match = clientesExternos.FirstOrDefault(ce =>
+                            (!string.IsNullOrWhiteSpace(ce.Documento) && ce.Documento.Trim().Equals(documento, StringComparison.OrdinalIgnoreCase)) ||
+                            (!string.IsNullOrWhiteSpace(ce.DocumentoFiscal) && ce.DocumentoFiscal.Trim().Equals(documento, StringComparison.OrdinalIgnoreCase)));
+                        if (match != null)
+                        {
+                            c.Cliente = match.Nombre;
+                        }
                     }
                 }
             }
@@ -582,6 +606,8 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
             {
                 foreach (var detail in model.Detalle)
                 {
+                    detail.Variedad ??= [];
+
                     foreach (var v in detail.Variedad)
                     {
                         var match = variedadesExternas.FirstOrDefault(ve => ve.IdVariedad == v.VariedadId && ve.IdCultivo == v.CodigoCultivo);
@@ -1342,5 +1368,3 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
     }
 
 }
-
-

@@ -124,6 +124,7 @@ namespace Planta.Infrastructure.ServiceImpl
                         {
                             table.ColumnsDefinition(columns =>
                             {
+                                columns.RelativeColumn(2); // Cliente
                                 columns.RelativeColumn(2); // Variedad
                                 columns.RelativeColumn(2); // Tipo de empaque
                                 columns.RelativeColumn(1); // N° Cajas
@@ -132,6 +133,7 @@ namespace Planta.Infrastructure.ServiceImpl
 
                             table.Header(header =>
                             {
+                                header.Cell().Border(1).Padding(2).AlignCenter().AlignMiddle().Text("CLIENTE").Bold();
                                 header.Cell().Border(1).Padding(2).AlignCenter().AlignMiddle().Text("VARIEDAD").Bold();
                                 header.Cell().Border(1).Padding(2).AlignCenter().AlignMiddle().Text("TIPO DE EMPAQUE").Bold();
                                 header.Cell().Border(1).Padding(2).AlignCenter().AlignMiddle().Text("N° CAJAS").Bold();
@@ -140,7 +142,13 @@ namespace Planta.Infrastructure.ServiceImpl
 
                             foreach (var item in model.Detalle)
                             {
-                                var nombresVariedades = item.Variedad.Select(v => string.IsNullOrWhiteSpace(v.Variedad) ? v.VariedadId : v.Variedad);
+                                var nombresClientes = (item.Clientes ?? [])
+                                    .Select(c => string.IsNullOrWhiteSpace(c.Cliente) ? c.Documento : c.Cliente)
+                                    .Where(c => !string.IsNullOrWhiteSpace(c));
+                                var nombresVariedades = (item.Variedad ?? [])
+                                    .Select(v => string.IsNullOrWhiteSpace(v.Variedad) ? v.VariedadId : v.Variedad)
+                                    .Where(v => !string.IsNullOrWhiteSpace(v));
+                                table.Cell().Border(1).Padding(2).AlignCenter().AlignMiddle().Text(string.Join(", ", nombresClientes));
                                 table.Cell().Border(1).Padding(2).AlignCenter().AlignMiddle().Text(string.Join(", ", nombresVariedades));
                                 table.Cell().Border(1).Padding(2).AlignCenter().AlignMiddle().Text(item.Tipo_De_Empaque);
                                 table.Cell().Border(1).Padding(2).AlignCenter().AlignMiddle().Text(item.CantidadCajas.ToString());
