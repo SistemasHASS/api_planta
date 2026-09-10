@@ -24,6 +24,90 @@ public sealed class GuiasRemisionManualUseCase(
         return await guiasRemisionManualService.ListarGuiasRemisionManualAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, estado, fechaDesde, fechaHasta, texto);
     }
 
+    public async Task<List<JsonElement>> ListarGuiasRemisionManualExcelAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio, string usuario, string idRol, string? estado, string? fechaDesde, string? fechaHasta, string? texto, string? codigoCultivo)
+    {
+        var result = await guiasRemisionManualService.ListarGuiasRemisionManualExcelAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, estado, fechaDesde, fechaHasta, texto);
+
+        if (result.Count == 0)
+            return result;
+
+        var wrapper = result[0];
+        if (wrapper.GetProperty("error").GetBoolean())
+            return result;
+
+        if (!wrapper.TryGetProperty("data", out var dataElement)
+            || dataElement.ValueKind != JsonValueKind.Array
+            || dataElement.GetArrayLength() == 0)
+            return result;
+
+        try
+        {
+            var campanias = await maestrosService.GetCampaniasAsync(ruc) ?? new List<CampaniaExterna>();
+            var clientes = await maestrosService.GetClientesAsync(idempresa) ?? new List<ClienteExterno>();
+            var acopios = await maestrosService.GetAcopiosAsync(idempresa) ?? new List<AcopiosExterno>();
+            var enrichedArray = new JsonArray();
+
+            foreach (var item in dataElement.EnumerateArray())
+            {
+                var node = JsonNode.Parse(item.GetRawText());
+                if (node is not JsonObject row)
+                    continue;
+
+                var codigoAcopioFila = row["codigoAcopio_codigo"]?.GetValue<string>();
+                var acopio = acopios.FirstOrDefault(a =>
+                    !string.IsNullOrWhiteSpace(a.codigo_acopio)
+                    && a.codigo_acopio.Trim().Equals(codigoAcopioFila ?? string.Empty, StringComparison.OrdinalIgnoreCase)
+                    && !string.IsNullOrWhiteSpace(a.Ruc)
+                    && a.Ruc.Trim().Equals(ruc, StringComparison.OrdinalIgnoreCase));
+                row["PLANTA DE EMPAQUE"] = acopio?.Acopio ?? codigoAcopioFila ?? string.Empty;
+
+                var idProyectoCodigo = row["idProyecto_codigo"]?.GetValue<string>();
+                var campania = campanias.FirstOrDefault(c =>
+                    !string.IsNullOrWhiteSpace(c.IdProyecto)
+                    && c.IdProyecto.Trim().Equals(idProyectoCodigo ?? string.Empty, StringComparison.OrdinalIgnoreCase)
+                    && (string.IsNullOrWhiteSpace(codigoCultivo)
+                        || (!string.IsNullOrWhiteSpace(c.CodCultivo)
+                            && c.CodCultivo.Trim().Equals(codigoCultivo, StringComparison.OrdinalIgnoreCase))));
+                row["CAMPAÑA"] = campania is not null
+                    ? $"{campania.FechaInicio:yyyy-MM-dd} - {campania.FechaFin:yyyy-MM-dd}"
+                    : idProyectoCodigo ?? string.Empty;
+
+                var documentoDestinatario = row["documentoDestinatario_codigo"]?.GetValue<string>();
+                var cliente = clientes.FirstOrDefault(c =>
+                    (!string.IsNullOrWhiteSpace(c.DocumentoFiscal)
+                        && c.DocumentoFiscal.Trim().Equals(documentoDestinatario ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrWhiteSpace(c.Documento)
+                        && c.Documento.Trim().Equals(documentoDestinatario ?? string.Empty, StringComparison.OrdinalIgnoreCase)));
+                row["DESTINATARIO"] = cliente?.Nombre ?? documentoDestinatario ?? string.Empty;
+
+                row.Remove("idProyecto_codigo");
+                row.Remove("codigoAcopio_codigo");
+                row.Remove("documentoDestinatario_codigo");
+
+                enrichedArray.Add(row);
+            }
+
+            var response = new { error = false, data = enrichedArray, mensaje = "" };
+            return new List<JsonElement>
+            {
+                JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(response))
+            };
+        }
+        catch (Exception ex)
+        {
+            var errorResponse = new
+            {
+                error = true,
+                data = JsonSerializer.Deserialize<JsonElement>("null"),
+                mensaje = $"Error enriqueciendo Excel de guías manuales: {ex.Message}"
+            };
+            return new List<JsonElement>
+            {
+                JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(errorResponse))
+            };
+        }
+    }
+
     public async Task<List<JsonElement>> GetGuiaRemisionManualAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio, string idRol, string codigoGuiaRemision)
     {
         return await guiasRemisionManualService.GetGuiaRemisionManualAsync(idempresa, ruc, idProyecto, codigoAcopio, idRol, codigoGuiaRemision);

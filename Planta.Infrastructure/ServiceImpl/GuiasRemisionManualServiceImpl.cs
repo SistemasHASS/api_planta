@@ -11,6 +11,9 @@ public sealed class GuiasRemisionManualServiceImpl(IGuiasRemisionManualRepositor
     public Task<List<JsonElement>> ListarGuiasRemisionManualAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio, string usuario, string idRol, string? estado, string? fechaDesde, string? fechaHasta, string? texto)
         => guiasRemisionManualRepository.ListarGuiasRemisionManualAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, estado, fechaDesde, fechaHasta, texto);
 
+    public Task<List<JsonElement>> ListarGuiasRemisionManualExcelAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio, string usuario, string idRol, string? estado, string? fechaDesde, string? fechaHasta, string? texto)
+        => guiasRemisionManualRepository.ListarGuiasRemisionManualExcelAsync(idempresa, ruc, idProyecto, codigoAcopio, usuario, idRol, estado, fechaDesde, fechaHasta, texto);
+
     public Task<List<JsonElement>> GetGuiaRemisionManualAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio, string idRol, string codigoGuiaRemision)
         => guiasRemisionManualRepository.GetGuiaRemisionManualAsync(idempresa, ruc, idProyecto, codigoAcopio, idRol, codigoGuiaRemision);
 

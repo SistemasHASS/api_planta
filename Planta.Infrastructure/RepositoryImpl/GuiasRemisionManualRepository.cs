@@ -106,6 +106,44 @@ public sealed class GuiasRemisionManualRepository : BaseRepository, IGuiasRemisi
         });
     }
 
+    public async Task<List<JsonElement>> ListarGuiasRemisionManualExcelAsync(
+        string idempresa,
+        string ruc,
+        string idProyecto,
+        string codigoAcopio,
+        string usuario,
+        string idRol,
+        string? estado,
+        string? fechaDesde,
+        string? fechaHasta,
+        string? texto)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ListarGuiasRemisionManualExcel",
+        new Dictionary<string, object?>
+        {
+                { "@idempresa", idempresa },
+                { "@ruc", ruc },
+                { "@idProyecto", idProyecto },
+                { "@codigoAcopio", codigoAcopio },
+                { "@usuario", usuario },
+                { "@idRol", idRol },
+                { "@estado", estado ?? (object)DBNull.Value },
+                { "@fechaDesde", fechaDesde ?? (object)DBNull.Value },
+                { "@fechaHasta", fechaHasta ?? (object)DBNull.Value },
+                { "@texto", texto ?? (object)DBNull.Value }
+        },
+        result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+            var data = result.IsDBNull(1)
+                ? JsonSerializer.Deserialize<JsonElement>("null")
+                : JsonSerializer.Deserialize<JsonElement>(Convert.ToString(result.GetValue(1)) ?? "null");
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+            var payload = new { error, data, mensaje };
+            return JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(payload));
+        });
+    }
+
     public async Task<List<JsonElement>> GetGuiaRemisionManualAsync(
         string idempresa,
         string ruc,
