@@ -1310,6 +1310,56 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
         }
     }
 
+    [HttpGet("reporte-diario-propio-externo")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ObtenerReporteDiarioPropioExterno([FromQuery] string fecha, [FromQuery] string? acopios = null, [FromQuery] string? idCampana = null, [FromQuery] string? origenes = null)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUser.IdEmpresa))
+            {
+                return BadRequest("IdEmpresa is required");
+            }
+            if (string.IsNullOrEmpty(_currentUser.Ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (string.IsNullOrWhiteSpace(fecha))
+            {
+                return BadRequest("Fecha is required");
+            }
+            if (string.IsNullOrWhiteSpace(idCampana))
+            {
+                return BadRequest("IdCampana is required");
+            }
+
+            var result = await procesosUseCase.ObtenerReporteDiarioPropioExternoAsync(
+                _currentUser.IdEmpresa!,
+                _currentUser.Ruc!,
+                fecha,
+                acopios ?? string.Empty,
+                idCampana,
+                origenes ?? string.Empty
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ObtenerReporteDiarioPropioExterno");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
     [HttpGet("reporte-diario")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

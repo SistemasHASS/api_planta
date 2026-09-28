@@ -241,6 +241,101 @@ public sealed class ProcesosUseCase(IProcesosService procesosService, IMaestrosS
         return result;
     }
 
+    public async Task<List<JsonElement>> ObtenerReporteDiarioPropioExternoAsync(string idempresa, string ruc, string fecha, string acopios, string idCampana, string origenes)
+    {
+        var result = await procesosService.ObtenerReporteDiarioPropioExternoAsync(idempresa, ruc, fecha, acopios, idCampana, origenes);
+
+        if (result.Count == 0)
+        {
+            return result;
+        }
+
+        var wrapper = result[0];
+        if (!wrapper.TryGetProperty("error", out var errorElement))
+        {
+            return result;
+        }
+
+        var hasError = errorElement.ValueKind == JsonValueKind.True
+                       || (errorElement.ValueKind != JsonValueKind.False && errorElement.GetBoolean());
+        if (hasError || !wrapper.TryGetProperty("data", out var dataElement) || dataElement.ValueKind != JsonValueKind.Object)
+        {
+            return result;
+        }
+
+        if (JsonNode.Parse(dataElement.GetRawText()) is not JsonObject dataNode)
+        {
+            return result;
+        }
+
+        var modified = false;
+        var variedadesLookup = BuildVariedadLookup(await maestrosService.GetVariedadesAsync(idempresa));
+        if (dataNode["produccionPorVariedad"] is JsonArray produccionArray)
+        {
+            foreach (var entry in produccionArray)
+            {
+                if (entry is not JsonObject row)
+                {
+                    continue;
+                }
+
+                var variedadId = row["variedadId"]?.GetValue<string>();
+                var codigoCultivo = row["codigoCultivo"]?.GetValue<string>();
+                var nombre = row["variedad"]?.GetValue<string>();
+                var key = BuildVariedadKey(codigoCultivo, variedadId);
+
+                if (key is not null && variedadesLookup.TryGetValue(key, out var nombreVariedad) && !string.IsNullOrWhiteSpace(nombreVariedad))
+                {
+                    row["variedad"] = nombreVariedad;
+                    modified = true;
+                }
+                else if (string.IsNullOrWhiteSpace(nombre) && !string.IsNullOrWhiteSpace(variedadId))
+                {
+                    row["variedad"] = variedadId;
+                    modified = true;
+                }
+            }
+        }
+
+        var clientesLookup = BuildClienteLookup(await maestrosService.GetClientesAsync(idempresa));
+        if (dataNode["avancePorConsignatario"] is JsonArray consignatarioArray)
+        {
+            foreach (var entry in consignatarioArray)
+            {
+                if (entry is not JsonObject row)
+                {
+                    continue;
+                }
+
+                var consignatarioId = row["consignatarioId"]?.GetValue<string>();
+                if (string.IsNullOrWhiteSpace(consignatarioId))
+                {
+                    continue;
+                }
+
+                if (clientesLookup.TryGetValue(consignatarioId.Trim(), out var nombreConsignatario) && !string.IsNullOrWhiteSpace(nombreConsignatario))
+                {
+                    row["consignatario"] = nombreConsignatario;
+                    modified = true;
+                }
+                else if (string.IsNullOrWhiteSpace(row["consignatario"]?.GetValue<string>()))
+                {
+                    row["consignatario"] = consignatarioId;
+                    modified = true;
+                }
+            }
+        }
+
+        if (!modified || JsonNode.Parse(wrapper.GetRawText()) is not JsonObject wrapperNode)
+        {
+            return result;
+        }
+
+        wrapperNode["data"] = dataNode;
+        result[0] = JsonSerializer.Deserialize<JsonElement>(wrapperNode.ToJsonString());
+        return result;
+    }
+
     public async Task<List<JsonElement>> ObtenerReporteSemanalFiltrosAsync(string idempresa, string ruc, string idProyecto)
     {
         var result = await procesosService.ObtenerReporteSemanalFiltrosAsync(idempresa, ruc, idProyecto);
