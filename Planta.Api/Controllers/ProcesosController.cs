@@ -8,6 +8,7 @@ using Planta.Api.Middlewares;
 using Planta.Api.Security;
 using Planta.Application.Proceso.Abstractions;
 using Planta.Application.Maestros.Abstractions;
+using Planta.Application.Catalogos.Abstractions;
 
 namespace Planta.Api.Controllers;
 
@@ -479,7 +480,7 @@ public sealed class ProcesosController(ILogger<ProcesosController> logger, ICurr
 
 [Route("api/palets")]
 [ApiController]
-public class PaletsController(ILogger<PaletsController> logger, ICurrentUserContext _currentUser, IProcesosUseCase procesosUseCase, IPdfService pdfService, IMaestrosService maestrosService, IWebHostEnvironment env) : ControllerBase
+public class PaletsController(ILogger<PaletsController> logger, ICurrentUserContext _currentUser, IProcesosUseCase procesosUseCase, ICatalogosUseCase catalogosUseCase, IPdfService pdfService, IMaestrosService maestrosService, IWebHostEnvironment env) : ControllerBase
 {
 
     [HttpGet("descargar-ficha-composicion")]
@@ -1356,6 +1357,82 @@ public class PaletsController(ILogger<PaletsController> logger, ICurrentUserCont
         catch (Exception ex)
         {
             logger.LogError(ex, "Error interno en ObtenerReporteDiarioPropioExterno");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("reporte-kg-ingresados-acopio")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> ObtenerReporteKgIngresadosAcopio(
+        [FromQuery] string fechaDesde,
+        [FromQuery] string? fechaHasta = null,
+        [FromQuery] string? ruc = null,
+        [FromQuery] string? idProyecto = null,
+        [FromQuery] string? codFundo = null,
+        [FromQuery] string? acopios = null)
+    {
+        try
+        {
+            var role = (_currentUser.Role ?? string.Empty).Trim().ToUpperInvariant();
+            if (role is not ("ADPLA" or "MOPLA" or "ADMINISTRADOR" or "MONITOR"))
+            {
+                return Forbid();
+            }
+            var rucSeleccionado = string.IsNullOrWhiteSpace(ruc) ? _currentUser.Ruc?.Trim() : ruc.Trim();
+            if (string.IsNullOrWhiteSpace(rucSeleccionado))
+            {
+                return BadRequest("Ruc is required");
+            }
+            if (!string.Equals(rucSeleccionado, _currentUser.Ruc?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                var parametros = await catalogosUseCase.ListarParametrosAsync(_currentUser.IdEmpresa!, _currentUser.Ruc!);
+                var permitido = parametros.Data?.Any(parametro =>
+                    string.Equals(parametro.IdParametro, "Reporte_KG_Ingresados_Externo", StringComparison.OrdinalIgnoreCase)
+                    && parametro.Activo
+                    && string.Equals(parametro.Valor?.Trim(), rucSeleccionado, StringComparison.OrdinalIgnoreCase)
+                ) == true;
+                if (!permitido)
+                {
+                    return Forbid();
+                }
+            }
+            if (string.IsNullOrWhiteSpace(fechaDesde))
+            {
+                return BadRequest("FechaDesde is required");
+            }
+            if (string.IsNullOrWhiteSpace(idProyecto))
+            {
+                return BadRequest("IdProyecto is required");
+            }
+            if (string.IsNullOrWhiteSpace(codFundo))
+            {
+                return BadRequest("CodFundo is required");
+            }
+
+            var result = await procesosUseCase.ObtenerReporteKgIngresadosAcopioAsync(
+                rucSeleccionado!,
+                fechaDesde,
+                fechaHasta ?? fechaDesde,
+                idProyecto!,
+                codFundo!,
+                acopios ?? string.Empty
+            );
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en ObtenerReporteKgIngresadosAcopio");
             return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
         }
     }

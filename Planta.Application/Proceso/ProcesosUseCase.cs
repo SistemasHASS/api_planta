@@ -115,6 +115,11 @@ public sealed class ProcesosUseCase(IProcesosService procesosService, IMaestrosS
         return await procesosService.BuscarProcesoAsync(idempresa, ruc, idProyecto, codigoCultivo, codigoAcopio, turno, fecha);
     }
 
+    public async Task<List<JsonElement>> ObtenerReporteKgIngresadosAcopioAsync(string ruc, string fechaDesde, string fechaHasta, string idProyecto, string codFundo, string acopios)
+    {
+        return await procesosService.ObtenerReporteKgIngresadosAcopioAsync(ruc, fechaDesde, fechaHasta, idProyecto, codFundo, acopios);
+    }
+
     public async Task<List<JsonElement>> ObtenerReporteDiarioAsync(string idempresa, string ruc, string fecha, string acopios, string idCampana)
     {
         var result = await procesosService.ObtenerReporteDiarioAsync(idempresa, ruc, fecha, acopios, idCampana);

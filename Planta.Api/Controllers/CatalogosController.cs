@@ -889,6 +889,59 @@ public sealed class CatalogosController(ILogger<CatalogosController> logger, ICu
         }
     }
 
+    [HttpGet("get-campanias-por-ruc")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<IActionResult> GetCampaniasPorRuc([FromQuery] string ruc)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_currentUser.IdEmpresa) || string.IsNullOrWhiteSpace(_currentUser.Ruc))
+            {
+                return BadRequest("Empresa y Ruc son obligatorios");
+            }
+            if (string.IsNullOrWhiteSpace(ruc))
+            {
+                return BadRequest("Ruc is required");
+            }
+
+            var requestedRuc = ruc.Trim();
+            var currentRuc = _currentUser.Ruc.Trim();
+            var permitido = string.Equals(requestedRuc, currentRuc, StringComparison.OrdinalIgnoreCase);
+
+            if (!permitido)
+            {
+                var parametros = await catalogosUseCase.ListarParametrosAsync(_currentUser.IdEmpresa!, currentRuc);
+                permitido = parametros.Data?.Any(parametro =>
+                    string.Equals(parametro.IdParametro, "Reporte_KG_Ingresados_Externo", StringComparison.OrdinalIgnoreCase)
+                    && parametro.Activo
+                    && string.Equals(parametro.Valor?.Trim(), requestedRuc, StringComparison.OrdinalIgnoreCase)
+                ) == true;
+            }
+
+            if (!permitido)
+            {
+                return Forbid();
+            }
+
+            return Ok(await catalogosUseCase.GetCampaniasAsync(requestedRuc));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex, "Login no autorizado para usuario {Usuario}", _currentUser.UserName);
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error interno en GetCampaniasPorRuc");
+            return StatusCode(500, new { message = "Error interno del servidor.", error = ex.Message });
+        }
+    }
+
     [HttpGet("get-paises")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

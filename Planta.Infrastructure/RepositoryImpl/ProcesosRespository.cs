@@ -771,6 +771,30 @@ public sealed class ProcesosRespository : BaseRepository, IProcesosRepository
         });
     }
 
+    public async Task<List<JsonElement>> ObtenerReporteKgIngresadosAcopioAsync(string ruc, string fechaDesde, string fechaHasta, string idProyecto, string codFundo, string acopios)
+    {
+        return await EjecutarStoredProcedureAsync("PLANTA_ReporteKgIngresadosAcopio",
+        new Dictionary<string, object?>
+        {
+            { "@ruc", ruc },
+            { "@fechaDesde", fechaDesde },
+            { "@fechaHasta", fechaHasta },
+            { "@idProyecto", idProyecto },
+            { "@codFundo", codFundo },
+            { "@acopios", acopios }
+        },
+        result =>
+        {
+            var error = !result.IsDBNull(0) && Convert.ToBoolean(result.GetValue(0));
+            var dataText = result.IsDBNull(1) ? null : Convert.ToString(result.GetValue(1));
+            var data = string.IsNullOrWhiteSpace(dataText)
+                ? JsonSerializer.Deserialize<JsonElement>("null")
+                : JsonSerializer.Deserialize<JsonElement>(dataText);
+            var mensaje = result.IsDBNull(2) ? null : Convert.ToString(result.GetValue(2));
+            return JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(new { error, data, mensaje }));
+        });
+    }
+
     public async Task<List<JsonElement>> ObtenerReporteDiarioAsync(string idempresa, string ruc, string fecha, string acopios, string idCampana)
     {
         return await EjecutarStoredProcedureAsync("PLANTA_ReporteDiario",
