@@ -1,71 +1,89 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Planta.Application.Auth.Abstractions;
-using Planta.Application.Auth;
-using Planta.Application.Administracion;
-using Planta.Application.Administracion.Abstractions;
-using Planta.Application.Catalogos.Abstractions;
-using Planta.Application.Catalogos;
-using Planta.Application.Maestros.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
+using Planta.Domain.Repository;
+using Planta.Domain.Service;
 using Planta.Infrastructure.Persistence;
 using Planta.Infrastructure.RepositoryImpl;
 using Planta.Infrastructure.ServiceImpl;
-using Planta.Application.Proceso.Abstractions;
-using Planta.Application.Proceso;
-using Planta.Application.GuiaRemision.Abstractions;
-using Planta.Application.GuiaRemision;
-using Planta.Application.GuiaRemisionManual.Abstractions;
-using Planta.Application.GuiaRemisionManual;
 
 namespace Planta.Infrastructure;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Registra la base de datos, las integraciones externas, los repositorios y los servicios.
+    /// Al crear un modulo nuevo, agregar aqui una linea:
+    /// services.AddScoped&lt;IXxxRepository, XxxRepositoryImpl&gt;();
+    /// </summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var defaultConnectionString = configuration.GetConnectionString("DefaultConnection");
-        if (string.IsNullOrWhiteSpace(defaultConnectionString))
+        // Base de datos: si no hay cadena de conexion la API levanta igual (ver DatabaseStartupCheck).
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (!string.IsNullOrWhiteSpace(connectionString))
         {
-            throw new InvalidOperationException("No se encontro la cadena de conexion 'DefaultConnection' en la configuracion.");
+            services.AddDbContextPool<ApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure()));
         }
 
-        services.AddDbContextPool<SistemaPaletsDbContext>(options =>
-            options.UseSqlServer(
-                defaultConnectionString,
-                sql => sql.EnableRetryOnFailure()));
+        // apimaestra: la URL base vive solo en appsettings (ExternalApis:Maestros:BaseUrl)
+        var maestrosUrl = configuration["ExternalApis:Maestros:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(maestrosUrl))
+        {
+            throw new InvalidOperationException("Falta configurar ExternalApis:Maestros:BaseUrl en appsettings.");
+        }
 
-        services.AddHttpClient();
+        services.AddHttpClient(MaestrosServiceImpl.HttpClientName, client =>
+        {
+            client.BaseAddress = new Uri(maestrosUrl);
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+        });
 
-        services.AddScoped<IProcesosService, ProcesosServiceImpl>();
-        services.AddScoped<IProcesosUseCase, ProcesosUseCase>();
-        services.AddScoped<IProcesosRepository, ProcesosRespository>();
-        services.AddScoped<IPdfService, PdfServiceImpl>();
+        // ApiDocumentosElectronicos (emision de guias ante SUNAT): opcional. Sin URL, emitir devuelve error controlado.
+        // Igual que el sistema anterior, se aceptan certificados no validos (ExternalApis:DocumentosElectronicos:IgnorarErroresSsl, por defecto true).
+        var documentosUrl = configuration["ExternalApis:DocumentosElectronicos:BaseUrl"];
+        if (!string.IsNullOrWhiteSpace(documentosUrl))
+        {
+            var ignorarSsl = !bool.TryParse(configuration["ExternalApis:DocumentosElectronicos:IgnorarErroresSsl"], out var valor) || valor;
+            var cliente = services.AddHttpClient(DocumentosElectronicosServiceImpl.HttpClientName, client =>
+            {
+                client.BaseAddress = new Uri(documentosUrl);
+                client.Timeout = TimeSpan.FromSeconds(120);
+                client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+            });
+            if (ignorarSsl)
+            {
+                cliente.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+                });
+            }
+        }
 
-        services.AddScoped<IGuiasRemisionService, GuiasRemisionServiceImpl>();
-        services.AddScoped<IGuiasRemisionUseCase, GuiasRemisionUseCase>();
-        services.AddScoped<IGuiasRemisionRepository, GuiasRemisionRepository>();
-
-        services.AddScoped<IGuiasRemisionManualService, GuiasRemisionManualServiceImpl>();
-        services.AddScoped<IGuiasRemisionManualUseCase, GuiasRemisionManualUseCase>();
-        services.AddScoped<IGuiasRemisionManualRepository, GuiasRemisionManualRepository>();
-
-        services.AddScoped<IDocumentosElectronicosService, DocumentosElectronicosServiceImpl>();
-
+        // Servicios
         services.AddScoped<IMaestrosService, MaestrosServiceImpl>();
-        services.AddScoped<ICatalogosService,CatalogosServiceImpl>();
-        services.AddScoped<ICatalogosUseCase, CatalogosUseCase>();
-        services.AddScoped<ICatalogosRepository, CatalogosRepository>();
-
-        services.AddScoped<IAdministracionUseCase, AdministracionUseCase>();
-        services.AddScoped<IAdministracionService, AdministracionServiceImpl>();
-        services.AddScoped<IAdministracionRepository, AdministracionRepository>();
-
-        services.AddScoped<IMaestrosAuthService, MaestrosAuthServiceImpl>();
         services.AddScoped<ITokenService, JwtTokenServiceImpl>();
-        services.AddScoped<IAuthUseCase, AuthUseCase>();
-        services.AddScoped<IAuthService, AuthServiceImpl>();
-        services.AddScoped<IAuthRepository, AuthRepository>();
+        services.AddScoped<ICatalogosLocalService, CatalogosLocalServiceImpl>();
+        services.AddScoped<IProcesosService, ProcesosServiceImpl>();
+        services.AddScoped<IReportesService, ReportesServiceImpl>();
+        services.AddScoped<IPaletsService, PaletsServiceImpl>();
+        services.AddScoped<IAdministracionService, AdministracionServiceImpl>();
+        services.AddScoped<IGuiasService, GuiasServiceImpl>();
+        services.AddScoped<IGuiasManualesService, GuiasManualesServiceImpl>();
+        services.AddScoped<IDocumentosElectronicosService, DocumentosElectronicosServiceImpl>();
+        services.AddSingleton<IPdfService, PdfServiceImpl>();
+        services.AddSingleton<IExcelService, ExcelServiceImpl>();
+
+        // Repositorios
+        services.AddScoped<IAuthRepository, AuthRepositoryImpl>();
+        services.AddScoped<IUsuarioAcopioRepository, UsuarioAcopioRepositoryImpl>();
+        services.AddScoped<ICatalogosLocalRepository, CatalogosLocalRepositoryImpl>();
+        services.AddScoped<IProcesosRepository, ProcesosRepositoryImpl>();
+        services.AddScoped<IReportesRepository, ReportesRepositoryImpl>();
+        services.AddScoped<IPaletsRepository, PaletsRepositoryImpl>();
+        services.AddScoped<IAdministracionRepository, AdministracionRepositoryImpl>();
+        services.AddScoped<IGuiasRepository, GuiasRepositoryImpl>();
+        services.AddScoped<IGuiasManualesRepository, GuiasManualesRepositoryImpl>();
 
         return services;
     }

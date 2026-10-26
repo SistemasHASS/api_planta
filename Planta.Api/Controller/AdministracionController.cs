@@ -1,0 +1,92 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Planta.Domain.Constants;
+using Planta.Domain.Dtos;
+using Planta.Domain.UseCase;
+
+namespace Planta.Api.Controller;
+
+/// <summary>
+/// Listados de administracion que el dispositivo descarga para trabajar sin conexion.
+/// Devuelve la respuesta del SP: { error, data, mensaje }. Empresa y RUC salen del token. Requiere token.
+/// </summary>
+[ApiController]
+[Route("api/administracion")]
+public sealed class AdministracionController(IAdministracionUseCase administracion) : ControllerBase
+{
+    [HttpPost("matrices-compatibilidad")]
+    public async Task<IActionResult> MatricesCompatibilidad([FromBody] ListarAdministracionRequest request, CancellationToken ct)
+        => Ok(await administracion.ListarMatricesCompatibilidadAsync(request, ct));
+
+    [HttpPost("reglas-sobrepeso")]
+    public async Task<IActionResult> ReglasSobrepeso([FromBody] ListarAdministracionRequest request, CancellationToken ct)
+        => Ok(await administracion.ListarReglasSobrepesoAsync(request, ct));
+
+    [HttpPost("correlativos-documentos")]
+    public async Task<IActionResult> CorrelativosDocumentos(CancellationToken ct)
+        => Ok(await administracion.ListarCorrelativosDocumentosAsync(ct));
+
+    /// <summary>Reporte "Códigos caja": combinaciones de PLANTA_CodigosCaja de la empresa con el nombre de cada código y la descripción completa.</summary>
+    [HttpPost("codigos-caja")]
+    public async Task<IActionResult> CodigosCaja(CancellationToken ct)
+        => Ok(await administracion.ListarCodigosCajaAsync(ct));
+
+    /// <summary>Excel de códigos caja con solo las filas que la persona ve en la tabla (solo administrador).</summary>
+    [HttpPost("codigos-caja/exportar-excel")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> ExportarCodigosCaja([FromBody] ExportarCodigosCajaRequest request, CancellationToken ct)
+    {
+        var archivo = await administracion.ExportarCodigosCajaExcelAsync(request, ct);
+        return File(archivo.Contenido, archivo.TipoContenido, archivo.Nombre);
+    }
+
+    /// <summary>Guarda la serie de guia y los tipos de proceso empacado de uno o varios acopios.</summary>
+    [HttpPost("acopios-config/sincronizar")]
+    public async Task<IActionResult> SincronizarAcopioConfig([FromBody] SincronizarAcopioConfigRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarAcopioConfigAsync(request, ct));
+
+    /// <summary>Usuarios de la aplicacion con su acopio y serie de guia asignados.</summary>
+    [HttpPost("usuarios/listar")]
+    public async Task<IActionResult> ListarUsuarios(CancellationToken ct)
+        => Ok(await administracion.ListarUsuariosAcopioAsync(ct));
+
+    /// <summary>Asigna acopio y serie de guia a un usuario.</summary>
+    [HttpPost("usuarios/sincronizar")]
+    public async Task<IActionResult> SincronizarUsuarios([FromBody] SincronizarUsuariosRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarUsuariosAsync(request, ct));
+
+    /// <summary>Crea o actualiza (incluye activar o desactivar) destinatarios.</summary>
+    [HttpPost("destinatarios/sincronizar")]
+    public async Task<IActionResult> SincronizarDestinatarios([FromBody] SincronizarDestinatariosRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarDestinatariosAsync(request, ct));
+
+    /// <summary>Asigna el grupo cliente y los códigos rancho de un consignatario.</summary>
+    [HttpPost("consignatarios/sincronizar")]
+    public async Task<IActionResult> SincronizarConsignatarios([FromBody] SincronizarConsignatariosRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarConsignatariosAsync(request, ct));
+
+    /// <summary>Crea variedades de ensayo o edita su nombre y la procedencia de cualquier variedad.</summary>
+    [HttpPost("variedades/sincronizar")]
+    public async Task<IActionResult> SincronizarVariedades([FromBody] SincronizarVariedadesRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarVariedadesAsync(request, ct));
+
+    /// <summary>Crea una serie de guia (GRE) o la activa/desactiva.</summary>
+    [HttpPost("correlativos-documentos/sincronizar")]
+    public async Task<IActionResult> SincronizarCorrelativosDocumentos([FromBody] SincronizarCorrelativosRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarCorrelativosDocumentosAsync(request, ct));
+
+    /// <summary>Crea o actualiza (incluye activar o desactivar) conductores, vehículos, transportistas, supervisores o personal de logística.</summary>
+    [HttpPost("catalogos-operativos/sincronizar")]
+    public async Task<IActionResult> SincronizarCatalogoOperativo([FromBody] SincronizarCatalogoOperativoRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarCatalogoOperativoAsync(request, ct));
+
+    /// <summary>Crea o actualiza reglas de sobrepeso (incluye activar o desactivar).</summary>
+    [HttpPost("reglas-sobrepeso/sincronizar")]
+    public async Task<IActionResult> SincronizarReglasSobrepeso([FromBody] SincronizarReglasSobrepesoRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarReglasSobrepesoAsync(request, ct));
+
+    /// <summary>Crea o actualiza combinaciones de la matriz de compatibilidad (incluye activar o desactivar).</summary>
+    [HttpPost("matrices-compatibilidad/sincronizar")]
+    public async Task<IActionResult> SincronizarMatricesCompatibilidad([FromBody] SincronizarMatricesCompatibilidadRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarMatricesCompatibilidadAsync(request, ct));
+}

@@ -1,57 +1,39 @@
-## Build results
-[Bb]in/
-[Oo]bj/
+# Compilacion
+bin/
+obj/
+publish/
+TestResults/
 
-## Visual Studio / VS Code
+# IDE / sistema
 .vs/
 .vscode/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-## Rider / JetBrains
 .idea/
-*.sln.iml
-
-## OS / tooling
+*.user
+*.suo
 .DS_Store
 Thumbs.db
 
-## ASP.NET Core
-appsettings.*.json
+# Logs de la API
+Logs/
+*.log
 
-## Sensitive config (do not commit)
+# Secretos: nunca versionar credenciales reales
+# (usar dotnet user-secrets en local y variables de entorno en el servidor)
+appsettings.*.local.json
+appsettings.Local.json
+secrets.json
+.env
+.env.*
+*.pfx
+*.key
+
+# Restos del sistema de archivos / editor
+.fuse_hidden*
+*.swp
+*.swo
+
+# Configuracion con credenciales: NO se versiona. La planta vive en appsettings*.example.json
+# (copiar a appsettings*.json y completar, o usar dotnet user-secrets).
 appsettings.json
 appsettings.Development.json
-
-## User secrets
-secrets.json
-
-## Publish
-[Aa]pp_[Dd]ata/
-wwwroot/lib/
-
-## Logs
-*.log
-Logs/
-
-## Test results
-TestResults/
-
-## NuGet
-*.nupkg
-*.snupkg
-.nuget/
-
-## Coverage
-coverage*
-*.coverage
-*.coveragexml
-
-## Others
-_ReSharper*/
-
-
-##Publish
-publish/
+appsettings.Production.json

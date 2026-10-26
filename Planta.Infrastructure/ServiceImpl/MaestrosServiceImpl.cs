@@ -1,47 +1,35 @@
-
-
-using System.Net.Http.Headers;
-using System.Text;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Planta.Application.Catalogos.Models;
-using Planta.Application.Maestros.Abstractions;
+using Planta.Domain.Constants;
+using Planta.Domain.Dtos;
+using Planta.Domain.Service;
 
 namespace Planta.Infrastructure.ServiceImpl;
 
+/// <summary>
+/// Cliente de apimaestra. El navegador nunca la llama: la API propia es el puente.
+/// La URL base se configura en appsettings (ExternalApis:Maestros:BaseUrl).
+/// </summary>
 public sealed class MaestrosServiceImpl(IHttpClientFactory httpClientFactory, IConfiguration configuration) : IMaestrosService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+    /// <summary>Nombre del HttpClient (se registra en DependencyInjection).</summary>
+    public const string HttpClientName = "ApiMaestra";
+
+    private const string GetUsuariosPath = "/api/Maestros/get-usuarios";
+
+    private const string AplicacionPlanta = "PLANTA";
+
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    private string Aplicacion => configuration["App:Name"] ?? string.Empty;
+
+    public async Task<UsuarioMaestrosDto?> ValidarUsuarioAsync(string usuario,string password,CancellationToken cancellationToken = default)
     {
-        PropertyNameCaseInsensitive = true
-    };
+        var client = httpClientFactory.CreateClient(HttpClientName);
+        var body = new[] { new { usuario, clave = password, aplicacion = Aplicacion } };
 
-    public sealed class ListaUsuariosResponse
-    {
-        public bool Error { get; set; }
-        public List<ListaUsuariosExterno>? Data { get; set; }
-        public string Mensaje { get; set; } = "";
-    }
-
-
-
-    private HttpClient CreateClient()
-    {
-        var client = httpClientFactory.CreateClient();
-        client.DefaultRequestHeaders.Accept.Clear();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        return client;
-    }
-
-    private async Task<JsonElement?> PostAndGetJsonElementAsync(string url, object body)
-    {
-        var client = CreateClient();
-        var json = JsonSerializer.Serialize(body);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        using var response = await client.PostAsync(url, content);
-        var responseBody = await response.Content.ReadAsStringAsync();
-
+        using var response = await client.PostAsJsonAsync(GetUsuariosPath, body, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             return null;
@@ -49,604 +37,120 @@ public sealed class MaestrosServiceImpl(IHttpClientFactory httpClientFactory, IC
 
         try
         {
-            return JsonSerializer.Deserialize<JsonElement>(responseBody, JsonOptions);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var element = await JsonSerializer.DeserializeAsync<JsonElement>(stream, JsonOptions, cancellationToken);
+
+            // La respuesta puede venir envuelta en { data: ... } o directa.
+            if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty("data", out var data))
+            {
+                element = data;
+            }
+
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                var first = element.EnumerateArray().FirstOrDefault();
+                return first.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+                    ? null
+                    : first.Deserialize<UsuarioMaestrosDto>(JsonOptions);
+            }
+
+            return element.ValueKind == JsonValueKind.Object
+                ? element.Deserialize<UsuarioMaestrosDto>(JsonOptions)
+                : null;
         }
-        catch
+        catch (JsonException)
         {
             return null;
         }
     }
 
-    private async Task<JsonElement?> GetAndGetJsonElementAsync(string url)
+    /// <summary>Endpoint y cuerpo de cada catalogo, igual que los usaba la API anterior.</summary>
+    public async Task<JsonElement> ConsultarAsync(
+        MaestroExterno maestro,
+        string idEmpresa,
+        string ruc,
+        string? usuario = null,
+        bool formatoSp = false,
+        CancellationToken cancellationToken = default)
     {
-        var client = CreateClient();
-        using var response = await client.GetAsync(url);
-        var responseBody = await response.Content.ReadAsStringAsync();
-
-        if (!response.IsSuccessStatusCode)
+        object lista = maestro switch
         {
-            return null;
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<JsonElement>(responseBody, JsonOptions);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static JsonElement UnwrapDataIfPresent(JsonElement element)
-    {
-        if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty("data", out var dataElement))
-        {
-            return dataElement;
-        }
-
-        return element;
-    }
-
-    public async Task<IReadOnlyList<AcopiosExterno>?> GetAcopiosAsync(string idempresa)
-    {   
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var urlGetAcopios = $"{urlMaestros}/api/Maestros/get-acopios";
-
-        var body = new[]
-        {
-        new
-        {
-            idempresa,
-            aplicacion="PLANTA",
-        }
+            MaestroExterno.Fundos => await LeerAsync<FundoExterno>("/api/Maestros/get-fundos", new[] { new { idempresa = idEmpresa } }, cancellationToken),
+            MaestroExterno.Cultivos => await LeerAsync<CultivoExterno>("/api/Maestros/get-cultivos", new[] { new { idempresa = idEmpresa } }, cancellationToken),
+            MaestroExterno.Campanias => await LeerAsync<CampaniaExterna>("/api/maestros/lista-campanias", new[] { new { ruc, aplicacion = AplicacionPlanta } }, cancellationToken),
+            MaestroExterno.Acopios => await LeerAsync<AcopiosExterno>("/api/Maestros/get-acopios", new[] { new { idempresa = idEmpresa, aplicacion = AplicacionPlanta } }, cancellationToken),
+            MaestroExterno.Variedades => await LeerAsync<VariedadExterna>("/api/Maestros/get-variedades", new[] { new { idempresa = idEmpresa, aplicacion = AplicacionPlanta } }, cancellationToken),
+            MaestroExterno.Clientes => await LeerAsync<ClienteExterno>("/api/Maestros/clientes/listado", new[] { new { idempresa = idEmpresa, aplicacion = AplicacionPlanta } }, cancellationToken),
+            MaestroExterno.Paises => await LeerAsync<PaisExterno>("/api/maestros/lista-paises", Array.Empty<object>(), cancellationToken),
+            MaestroExterno.Calibres => await LeerAsync<CalibreExterno>("/api/maestros/lista-calibres", Array.Empty<object>(), cancellationToken),
+            MaestroExterno.Transporte => await LeerAsync<TransporteExterno>("/api/maestros/lista-transporte", Array.Empty<object>(), cancellationToken),
+            MaestroExterno.TiposClamshell => await LeerAsync<TipoClamshellExterno>("/api/maestros/lista-tiposClamshell", Array.Empty<object>(), cancellationToken),
+            MaestroExterno.Empresas => await LeerAsync<EmpresaExterna>("/api/Maestros/get_empresas", new { }, cancellationToken),
+            MaestroExterno.Usuarios => await LeerUsuariosAsync(usuario ?? string.Empty, ruc, cancellationToken),
+            _ => throw new ArgumentOutOfRangeException(nameof(maestro), maestro, null)
         };
 
-        var elementNullable = await PostAndGetJsonElementAsync(urlGetAcopios, body);
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<AcopiosExterno>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<AcopiosExterno>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<AcopiosExterno>(JsonOptions);
-            return single is null ? null : new List<AcopiosExterno> { single };
-        }
-
-        return null;
-
+        // Al frontend: camelCase (como respondia la API anterior). A un SP: nombres por defecto, que es lo que leen.
+        return JsonSerializer.SerializeToElement(lista, formatoSp ? SpJsonOptions : JsonSerializerOptions.Web);
     }
 
-    public async Task<IReadOnlyList<FundoExterno>?> GetFundosAsync(string idempresa)
+    private static readonly JsonSerializerOptions SpJsonOptions = new();
+
+    /// <summary>Lee la lista de un catalogo; acepta la respuesta directa o envuelta en { data } y elementos que vengan como texto JSON.</summary>
+    private async Task<List<T>> LeerAsync<T>(string path, object body, CancellationToken cancellationToken)
     {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var urlGetFundos = $"{urlMaestros}/api/Maestros/get-fundos";
-
-        var body = new[]
-        {
-            new
-            {
-                idempresa
-            }
-        };
-
-        var elementNullable = await PostAndGetJsonElementAsync(urlGetFundos, body);
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<FundoExterno>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<FundoExterno>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<FundoExterno>(JsonOptions);
-            return single is null ? null : new List<FundoExterno> { single };
-        }
-
-        return null;
+        var element = await PostAsync(path, body, cancellationToken);
+        return ConvertirLista<T>(element);
     }
 
-    public async Task<IReadOnlyList<FormatoExterno>?> GetFormatosAsync(string idempresa)
+    /// <summary>lista-usuarios responde [{ error, data: [...], mensaje }]; se devuelven los usuarios del primer sobre.</summary>
+    private async Task<List<ListaUsuariosExterno>> LeerUsuariosAsync(string usuario, string ruc, CancellationToken cancellationToken)
     {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/Maestros/formato/listado";
-
-        var body = new[]
-        {
-            new
-            {
-                idempresa,
-                aplicacion = "PLANTA"
-            }
-        };
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, body);
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
+        var element = await PostAsync("/api/maestros/lista-usuarios", new[] { new { usuario, ruc, aplicacion = AplicacionPlanta } }, cancellationToken);
         if (element.ValueKind == JsonValueKind.Array)
         {
-            var list = new List<FormatoExterno>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<FormatoExterno>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
+            element = element.EnumerateArray().FirstOrDefault();
         }
 
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<FormatoExterno>(JsonOptions);
-            return single is null ? null : new List<FormatoExterno> { single };
-        }
-
-        return null;
+        return element.ValueKind == JsonValueKind.Object && element.TryGetProperty("data", out var data)
+            ? ConvertirLista<ListaUsuariosExterno>(data)
+            : [];
     }
 
-    public async Task<IReadOnlyList<ClienteExterno>?> GetClientesAsync(string idempresa)
+    private async Task<JsonElement> PostAsync(string path, object body, CancellationToken cancellationToken)
     {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/Maestros/clientes/listado";
+        var client = httpClientFactory.CreateClient(HttpClientName);
+        using var response = await client.PostAsJsonAsync(path, body, JsonOptions, cancellationToken);
+        response.EnsureSuccessStatusCode();
 
-        var body = new[]
-        {
-            new
-            {
-                idempresa,
-                aplicacion = "PLANTA"
-            }
-        };
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, body);
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<ClienteExterno>();
-            foreach (var item in element.EnumerateArray())
-            {
-                if (item.ValueKind == JsonValueKind.String)
-                {
-                    var jsonStr = item.GetString();
-                    if (!string.IsNullOrWhiteSpace(jsonStr))
-                    {
-                        var parsed = JsonSerializer.Deserialize<ClienteExterno>(jsonStr, JsonOptions);
-                        if (parsed is not null)
-                        {
-                            list.Add(parsed);
-                        }
-                    }
-
-                    continue;
-                }
-
-                var direct = item.Deserialize<ClienteExterno>(JsonOptions);
-                if (direct is not null)
-                {
-                    list.Add(direct);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.String)
-        {
-            var jsonStr = element.GetString();
-            if (string.IsNullOrWhiteSpace(jsonStr))
-            {
-                return null;
-            }
-
-            var single = JsonSerializer.Deserialize<ClienteExterno>(jsonStr, JsonOptions);
-            return single is null ? null : new List<ClienteExterno> { single };
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<ClienteExterno>(JsonOptions);
-            return single is null ? null : new List<ClienteExterno> { single };
-        }
-
-        return null;
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+        return document.RootElement.Clone();
     }
 
-    public async Task<IReadOnlyList<VariedadExterna>?> GetVariedadesAsync(string idempresa)
+    private static List<T> ConvertirLista<T>(JsonElement element)
     {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/Maestros/get-variedades";
-
-        var body = new[]
+        if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty("data", out var data))
         {
-            new
+            element = data;
+        }
+
+        var lista = new List<T>();
+        var items = element.ValueKind == JsonValueKind.Array ? element.EnumerateArray().ToList() : [element];
+        foreach (var item in items)
+        {
+            var parsed = item.ValueKind switch
             {
-                idempresa,
-                aplicacion = "PLANTA"
-            }
-        };
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, body);
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<VariedadExterna>();
-            foreach (var item in element.EnumerateArray())
+                JsonValueKind.String when !string.IsNullOrWhiteSpace(item.GetString()) => JsonSerializer.Deserialize<T>(item.GetString()!, JsonOptions),
+                JsonValueKind.Object => item.Deserialize<T>(JsonOptions),
+                _ => default
+            };
+            if (parsed is not null)
             {
-                var parsed = item.Deserialize<VariedadExterna>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
+                lista.Add(parsed);
             }
-
-            return list;
         }
 
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<VariedadExterna>(JsonOptions);
-            return single is null ? null : new List<VariedadExterna> { single };
-        }
-
-        return null;
-    }
-
-    public async Task<IReadOnlyList<CultivoExterno>?> GetCultivosAsync(string idempresa)
-    {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/Maestros/get-cultivos";
-
-        var body = new[]
-        {
-            new
-            {
-                idempresa
-            }
-        };
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, body);
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<CultivoExterno>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<CultivoExterno>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<CultivoExterno>(JsonOptions);
-            return single is null ? null : new List<CultivoExterno> { single };
-        }
-
-        return null;
-    }
-
-    public async Task<IReadOnlyList<CampaniaExterna>?> GetCampaniasAsync(string ruc)
-    {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/maestros/lista-campanias";
-
-        var body = new[]
-        {
-            new
-            {
-                ruc,
-                aplicacion = "PLANTA"
-            }
-        };
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, body);
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<CampaniaExterna>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<CampaniaExterna>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<CampaniaExterna>(JsonOptions);
-            return single is null ? null : new List<CampaniaExterna> { single };
-        }
-
-        return null;
-    }
-
-    public async Task<IReadOnlyList<PaisExterno>?> GetPaisesAsync()
-    {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/maestros/lista-paises";
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, Array.Empty<object>());
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<PaisExterno>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<PaisExterno>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<PaisExterno>(JsonOptions);
-            return single is null ? null : new List<PaisExterno> { single };
-        }
-
-        return null;
-    }
-
-    public async Task<IReadOnlyList<CalibreExterno>?> GetCalibresAsync()
-    {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/maestros/lista-calibres";
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, Array.Empty<object>());
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<CalibreExterno>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<CalibreExterno>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<CalibreExterno>(JsonOptions);
-            return single is null ? null : new List<CalibreExterno> { single };
-        }
-
-        return null;
-    }
-
-    public async Task<IReadOnlyList<TransporteExterno>?> GetTransportesAsync()
-    {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/maestros/lista-transporte";
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, Array.Empty<object>());
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<TransporteExterno>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<TransporteExterno>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<TransporteExterno>(JsonOptions);
-            return single is null ? null : new List<TransporteExterno> { single };
-        }
-
-        return null;
-    }
-
-    public async Task<IReadOnlyList<TipoClamshellExterno>?> GetTiposClamshellAsync()
-    {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/maestros/lista-tiposClamshell";
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, Array.Empty<object>());
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<TipoClamshellExterno>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<TipoClamshellExterno>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<TipoClamshellExterno>(JsonOptions);
-            return single is null ? null : new List<TipoClamshellExterno> { single };
-        }
-
-        return null;
-    }
-
-    public async Task<List<ListaUsuariosExterno>?> GetListaUsuariosAsync(string usuario, string ruc)
-    {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/maestros/lista-usuarios";
-
-        var body = new[]
-        {
-            new
-            {
-                usuario,
-                ruc,
-                aplicacion = "PLANTA"
-            }
-        };
-
-        var elementNullable = await PostAndGetJsonElementAsync(url, body);
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = elementNullable.Value;
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var envelopes = element.Deserialize<List<ListaUsuariosResponse>>(JsonOptions);
-            var first = envelopes?.FirstOrDefault();
-            return first?.Data;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var env = element.Deserialize<ListaUsuariosResponse>(JsonOptions);
-            return env?.Data;
-        }
-        
-        return null;
-    }
-
-    public async Task<IReadOnlyList<EmpresaExterna>?> GetEmpresasAsync()
-    {
-        var urlMaestros = configuration["Jwt:UrlMaestros"] ?? "";
-        var url = $"{urlMaestros}/api/Maestros/get_empresas";
-
-        // Cambiado a POST con cuerpo vacío según se observa en la captura de Postman
-        var elementNullable = await PostAndGetJsonElementAsync(url, new { });
-        if (elementNullable is null)
-        {
-            return null;
-        }
-
-        var element = UnwrapDataIfPresent(elementNullable.Value);
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            var list = new List<EmpresaExterna>();
-            foreach (var item in element.EnumerateArray())
-            {
-                var parsed = item.Deserialize<EmpresaExterna>(JsonOptions);
-                if (parsed is not null)
-                {
-                    list.Add(parsed);
-                }
-            }
-
-            return list;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            var single = element.Deserialize<EmpresaExterna>(JsonOptions);
-            return single is null ? null : new List<EmpresaExterna> { single };
-        }
-
-        return null;
+        return lista;
     }
 }

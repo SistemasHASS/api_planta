@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Planta.Api/Planta.Api.csproj" />
+  <Project Path="Planta.Application/Planta.Application.csproj" />
+  <Project Path="Planta.Domain/Planta.Domain.csproj" />
+  <Project Path="Planta.Infrastructure/Planta.Infrastructure.csproj" />
+</Solution>

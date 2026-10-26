@@ -1,188 +1,85 @@
 using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
+using System.Net.Http.Json;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
-using Planta.Application.GuiaRemision.Abstractions;
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
+using Planta.Domain.Dtos;
+using Planta.Domain.Service;
 
 namespace Planta.Infrastructure.ServiceImpl;
 
-public sealed class DocumentosElectronicosServiceImpl(IConfiguration configuration) : IDocumentosElectronicosService
+/// <summary>
+/// Cliente de ApiDocumentosElectronicos. La URL base se configura en appsettings
+/// (ExternalApis:DocumentosElectronicos:BaseUrl); si falta, las llamadas responden Success = false.
+/// </summary>
+public sealed class DocumentosElectronicosServiceImpl(IHttpClientFactory httpClientFactory, ILogger<DocumentosElectronicosServiceImpl> logger) : IDocumentosElectronicosService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    /// <summary>Nombre del HttpClient (se registra en DependencyInjection solo si hay URL).</summary>
+    public const string HttpClientName = "ApiDocumentosElectronicos";
 
-    public async Task<ApiDocumentosElectronicosResponse> EnviarGuiaRemisionAsync(JsonElement guiaJson, CancellationToken cancellationToken = default)
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    public Task<RespuestaDocumentosElectronicos> EnviarGuiaAsync(JsonNode guia, CancellationToken cancellationToken = default)
+        => LlamarAsync(
+            "POST api/documentos/guias-remision",
+            (cliente, ct) => cliente.PostAsJsonAsync("api/documentos/guias-remision", guia, ct),
+            cancellationToken);
+
+    public Task<RespuestaDocumentosElectronicos> ConsultarEstadoGuiaAsync(string idEmpresa, string serie, string numero, CancellationToken cancellationToken = default)
     {
-        var baseUrl = configuration["ApiDocumentosElectronicos:Url"] ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(baseUrl))
+        var ruta = $"api/documentos/estado/{Uri.EscapeDataString(idEmpresa)}/{Uri.EscapeDataString(serie)}/{Uri.EscapeDataString(numero)}";
+        return LlamarAsync($"GET {ruta}", (cliente, ct) => cliente.GetAsync(ruta, ct), cancellationToken);
+    }
+
+    private async Task<RespuestaDocumentosElectronicos> LlamarAsync(string descripcion, Func<HttpClient, CancellationToken, Task<HttpResponseMessage>> enviar, CancellationToken cancellationToken)
+    {
+        var cliente = httpClientFactory.CreateClient(HttpClientName);
+        if (cliente.BaseAddress is null)
         {
-            return new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = "No se configuró la URL de ApiDocumentosElectronicos."
-            };
+            return Fallo("No se configuro la URL de ApiDocumentosElectronicos (ExternalApis:DocumentosElectronicos:BaseUrl).");
         }
-
-        var url = $"{baseUrl.TrimEnd('/')}/api/documentos/guias-remision";
-
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-        };
-        var client = new HttpClient(handler);
-        client.DefaultRequestHeaders.Accept.Clear();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-        var json = JsonSerializer.Serialize(guiaJson);
-        Console.WriteLine($"[DocumentosElectronicos] RequestBody: {json}");
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         try
         {
-            using var response = await client.PostAsync(url, content, cancellationToken);
-            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            using var respuesta = await enviar(cliente, cancellationToken);
+            var cuerpo = await respuesta.Content.ReadAsStringAsync(cancellationToken);
+            logger.LogInformation("ApiDocumentosElectronicos {Llamada} -> {Estado}", descripcion, (int)respuesta.StatusCode);
 
-            Console.WriteLine($"[DocumentosElectronicos] POST {url} -> Status: {(int)response.StatusCode} ({response.StatusCode})");
-            Console.WriteLine($"[DocumentosElectronicos] ResponseBody: {responseBody}");
-
-            if (response.StatusCode == HttpStatusCode.BadRequest)
+            // 400: la API explica el motivo dentro del cuerpo.
+            if (respuesta.StatusCode == HttpStatusCode.BadRequest)
             {
-                var badRequest = JsonSerializer.Deserialize<ApiDocumentosElectronicosResponse>(responseBody, JsonOptions);
-                return badRequest ?? new ApiDocumentosElectronicosResponse
-                {
-                    Success = false,
-                    Message = responseBody
-                };
+                return Leer(cuerpo) ?? Fallo(cuerpo);
             }
 
-            if (!response.IsSuccessStatusCode)
+            if (!respuesta.IsSuccessStatusCode)
             {
-                return new ApiDocumentosElectronicosResponse
-                {
-                    Success = false,
-                    Message = $"Error del servicio de documentos electrónicos: {(int)response.StatusCode} - {responseBody}"
-                };
+                return Fallo($"Error del servicio de documentos electronicos: {(int)respuesta.StatusCode} - {cuerpo}");
             }
 
-            var resultado = JsonSerializer.Deserialize<ApiDocumentosElectronicosResponse>(responseBody, JsonOptions);
-            return resultado ?? new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = "Respuesta vacía del servicio de documentos electrónicos."
-            };
+            return Leer(cuerpo) ?? Fallo("Respuesta vacia del servicio de documentos electronicos.");
         }
-        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+        catch (TaskCanceledException)
         {
-            return new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = "Timeout al comunicarse con el servicio de documentos electrónicos."
-            };
+            return Fallo("Tiempo de espera agotado al comunicarse con el servicio de documentos electronicos.");
         }
         catch (HttpRequestException ex)
         {
-            return new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = $"Error de comunicación con el servicio de documentos electrónicos: {ex.Message}"
-            };
-        }
-        catch (Exception ex)
-        {
-            return new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = $"Error inesperado: {ex.Message}"
-            };
+            logger.LogWarning(ex, "Fallo la comunicacion con ApiDocumentosElectronicos ({Llamada})", descripcion);
+            return Fallo($"Error de comunicacion con el servicio de documentos electronicos: {ex.Message}");
         }
     }
 
-    public async Task<ApiDocumentosElectronicosResponse> ConsultarEstadoGuiaRemisionAsync(
-        string idempresa,
-        string serie,
-        string numero,
-        CancellationToken cancellationToken = default)
+    private static RespuestaDocumentosElectronicos? Leer(string cuerpo)
     {
-        var baseUrl = configuration["ApiDocumentosElectronicos:Url"] ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(baseUrl))
-        {
-            return new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = "No se configuró la URL de ApiDocumentosElectronicos."
-            };
-        }
-
-        var url = $"{baseUrl.TrimEnd('/')}/api/documentos/estado/{Uri.EscapeDataString(idempresa)}/{Uri.EscapeDataString(serie)}/{Uri.EscapeDataString(numero)}";
-
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-        };
-        var client = new HttpClient(handler);
-        client.DefaultRequestHeaders.Accept.Clear();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
         try
         {
-            using var response = await client.GetAsync(url, cancellationToken);
-            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            Console.WriteLine($"[DocumentosElectronicos] GET {url} -> Status: {(int)response.StatusCode} ({response.StatusCode})");
-            Console.WriteLine($"[DocumentosElectronicos] ResponseBody: {responseBody}");
-
-            if (response.StatusCode == HttpStatusCode.BadRequest)
-            {
-                var badRequest = JsonSerializer.Deserialize<ApiDocumentosElectronicosResponse>(responseBody, JsonOptions);
-                return badRequest ?? new ApiDocumentosElectronicosResponse
-                {
-                    Success = false,
-                    Message = responseBody
-                };
-            }
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return new ApiDocumentosElectronicosResponse
-                {
-                    Success = false,
-                    Message = $"Error del servicio de documentos electrónicos: {(int)response.StatusCode} - {responseBody}"
-                };
-            }
-
-            var resultado = JsonSerializer.Deserialize<ApiDocumentosElectronicosResponse>(responseBody, JsonOptions);
-            return resultado ?? new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = "Respuesta vacía del servicio de documentos electrónicos."
-            };
+            return JsonSerializer.Deserialize<RespuestaDocumentosElectronicos>(cuerpo, JsonOptions);
         }
-        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+        catch (JsonException)
         {
-            return new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = "Timeout al comunicarse con el servicio de documentos electrónicos."
-            };
-        }
-        catch (HttpRequestException ex)
-        {
-            return new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = $"Error de comunicación con el servicio de documentos electrónicos: {ex.Message}"
-            };
-        }
-        catch (Exception ex)
-        {
-            return new ApiDocumentosElectronicosResponse
-            {
-                Success = false,
-                Message = $"Error inesperado: {ex.Message}"
-            };
+            return null;
         }
     }
+
+    private static RespuestaDocumentosElectronicos Fallo(string mensaje) => new() { Success = false, Message = mensaje };
 }

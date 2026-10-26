@@ -1,109 +1,29 @@
-
-
 using System.Text.Json;
-using Planta.Application.Proceso.Abstractions;
+using Planta.Domain.Dtos;
+using Planta.Domain.Repository;
+using Planta.Domain.Service;
 
-namespace Planta.Infrastructure.ServiceImpl; 
+namespace Planta.Infrastructure.ServiceImpl;
 
-public sealed class ProcesosServiceImpl (IProcesosRepository procesosRepository): IProcesosService
+public sealed class ProcesosServiceImpl(IProcesosRepository repository) : IProcesosService
 {
-  
-  public Task<List<JsonElement>> ListarPaletsForProcesoAsync(string idempresa, string ruc, string idproceso)
-    => procesosRepository.ListarPaletsForProcesoAsync(idempresa, ruc, idproceso);
-  
-  public Task<List<JsonElement>> SincronizarPaletsAsync(string idempresa, string ruc, string usuario, string idRol, string json)
-    => procesosRepository.SincronizarPaletsAsync(idempresa, ruc, usuario, idRol, json);
-  
-  public Task<List<JsonElement>> SincronizarDPaletsAsync(string idempresa, string ruc, string codigoAcopio, string usuario, string json)
-    => procesosRepository.SincronizarDPaletsAsync(idempresa, ruc, codigoAcopio, usuario, json);
-  
-  public Task<List<JsonElement>> SincronizarProcesoAsync(string idempresa, string ruc, string idProyecto, string codigoCultivo, string codigoAcopio, string usuario, string idRol, string jsonProceso, string jsonDprocesoLogisticos, string jsonDprocesoSupervisores, string? modo)
-    => procesosRepository.SincronizarProcesoAsync(idempresa, ruc, idProyecto, codigoCultivo, codigoAcopio, usuario, idRol, jsonProceso, jsonDprocesoLogisticos, jsonDprocesoSupervisores, modo);
-  
-  public Task<List<JsonElement>> ListarProcesosAsync(string idempresa, string ruc, string idProyecto, string idCultivo, string acopioId)
-    => procesosRepository.ListarProcesosAsync(idempresa, ruc, idProyecto, idCultivo, acopioId);
-  
-  public Task<List<JsonElement>> ListarProcesosTodosAsync(string idempresa, string ruc, string idProyecto, string idCultivo)
-    => procesosRepository.ListarProcesosTodosAsync(idempresa, ruc, idProyecto, idCultivo);
-    
-  public Task<List<JsonElement>> GetSupervisoresDisponiblesAsync(string idempresa, string ruc, string idProyecto, string fecha)
-    => procesosRepository.GetSupervisoresDisponiblesAsync(idempresa, ruc, idProyecto, fecha);
-    
-  public Task<List<JsonElement>> GetPersonalLogisticaDisponiblesAsync(string idempresa, string ruc, string idProyecto, string fecha)
-    => procesosRepository.GetPersonalLogisticaDisponiblesAsync(idempresa, ruc, idProyecto, fecha);
-    
-  public Task<List<JsonElement>> ListarTipoProcesoEmpacadoPorAcopioAsync(string idempresa, string ruc, string idProyecto, string codigoAcopio)
-    => procesosRepository.ListarTipoProcesoEmpacadoPorAcopioAsync(idempresa, ruc, idProyecto, codigoAcopio);
-  
-  public Task<List<JsonElement>> ListarDestinosPorMatrizCompatibilidadAsync(string idempresa, string ruc, string idProyecto, string documentoConsignatario)
-    => procesosRepository.ListarDestinosPorMatrizCompatibilidadAsync(idempresa, ruc, idProyecto, documentoConsignatario);
-  
-  public Task<List<JsonElement>> ListarFormatosPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId)
-    => procesosRepository.ListarFormatosPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId);
-  
-  public Task<List<JsonElement>> ListarTiposEmpaqueGuiaPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId)
-    => procesosRepository.ListarTiposEmpaqueGuiaPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId, formatoId);
-  
-  public Task<List<JsonElement>> ListarPresentacionesPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId)
-    => procesosRepository.ListarPresentacionesPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId, formatoId, tipoEmpaqueGuiaId);
-  
-  public Task<List<JsonElement>> ListarTiposCajaPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId, int? presentacionId = null)
-    => procesosRepository.ListarTiposCajaPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId, formatoId, tipoEmpaqueGuiaId, presentacionId);
-  
-  public Task<List<JsonElement>> ListarTiposClamshellPorMatrizAsync(string idempresa, string ruc, string codigoCultivo, string documentoConsignatario, string destinoId, int formatoId, int tipoEmpaqueGuiaId, int? tipoCajaId = null, int? presentacionId = null)
-    => procesosRepository.ListarTiposClamshellPorMatrizAsync(idempresa, ruc, codigoCultivo, documentoConsignatario, destinoId, formatoId, tipoEmpaqueGuiaId, tipoCajaId, presentacionId);
-  
-  public Task<List<JsonElement>> ListarCodigosRanchoPorLugarProduccionAsync(string idempresa, string ruc, string idProyecto, int idLugaresDeProduccion)
-    => procesosRepository.ListarCodigosRanchoPorLugarProduccionAsync(idempresa, ruc, idProyecto, idLugaresDeProduccion);
-  
-  public Task<List<JsonElement>> ListarDPaletsPorAcopioAsync(string idempresa, string ruc, string codigoAcopio)
-    => procesosRepository.ListarDPaletsPorAcopioAsync(idempresa, ruc, codigoAcopio);
+    public Task<JsonElement> ListarAsync(ContextoUsuario contexto, ListarProcesosRequest request, bool verTodosLosAcopios, CancellationToken cancellationToken = default)
+        => verTodosLosAcopios
+            ? repository.ListarTodosAsync(contexto, request, cancellationToken)
+            : repository.ListarAsync(contexto, request, cancellationToken);
 
-  public Task<List<JsonElement>> ListarDPaletsPorPaletAsync(string idempresa, string ruc, string idPalet)
-    => procesosRepository.ListarDPaletsPorPaletAsync(idempresa, ruc, idPalet);
+    public Task<JsonElement> BuscarAsync(ContextoUsuario contexto, BuscarProcesoRequest request, CancellationToken cancellationToken = default)
+        => repository.BuscarAsync(contexto, request, cancellationToken);
 
-  public Task<List<JsonElement>> ObtenerDatosFichaComposicionPaletAsync(string idempresa, string ruc, string idPalet)
-    => procesosRepository.ObtenerDatosFichaComposicionPaletAsync(idempresa, ruc, idPalet);
-  
-  public Task<List<JsonElement>> ListarProcesosAbiertosConPaletsCerradosAsync(string idempresa, string ruc, string codigoAcopio)
-    => procesosRepository.ListarProcesosAbiertosConPaletsCerradosAsync(idempresa, ruc, codigoAcopio);
-  
-  public Task<List<JsonElement>> BuscarProcesoAsync(string idempresa, string ruc, string idProyecto, string codigoCultivo, string codigoAcopio, string turno, string fecha)
-    => procesosRepository.BuscarProcesoAsync(idempresa, ruc, idProyecto, codigoCultivo, codigoAcopio, turno, fecha);
+    public Task<JsonElement> ListarSupervisoresDisponiblesAsync(ContextoUsuario contexto, PersonalDisponibleRequest request, CancellationToken cancellationToken = default)
+        => repository.ListarSupervisoresDisponiblesAsync(contexto, request, cancellationToken);
 
-  public Task<List<JsonElement>> ObtenerReporteDiarioAsync(string idempresa, string ruc, string fecha, string acopios, string idCampana)
-    => procesosRepository.ObtenerReporteDiarioAsync(idempresa, ruc, fecha, acopios, idCampana);
+    public Task<JsonElement> ListarPersonalLogisticoDisponibleAsync(ContextoUsuario contexto, PersonalDisponibleRequest request, CancellationToken cancellationToken = default)
+        => repository.ListarPersonalLogisticoDisponibleAsync(contexto, request, cancellationToken);
 
-  public Task<List<JsonElement>> ObtenerReporteKgIngresadosAcopioAsync(string ruc, string fechaDesde, string fechaHasta, string idProyecto, string codFundo, string acopios)
-    => procesosRepository.ObtenerReporteKgIngresadosAcopioAsync(ruc, fechaDesde, fechaHasta, idProyecto, codFundo, acopios);
+    public Task<JsonElement> ListarTipoProcesoEmpacadoPorAcopioAsync(ContextoUsuario contexto, string idProyecto, CancellationToken cancellationToken = default)
+        => repository.ListarTipoProcesoEmpacadoPorAcopioAsync(contexto, idProyecto, cancellationToken);
 
-  public Task<List<JsonElement>> ObtenerReporteDiarioPropioExternoAsync(string idempresa, string ruc, string fecha, string acopios, string idCampana, string origenes)
-    => procesosRepository.ObtenerReporteDiarioPropioExternoAsync(idempresa, ruc, fecha, acopios, idCampana, origenes);
-
-  public Task<List<JsonElement>> ObtenerReporteSemanalFiltrosAsync(string idempresa, string ruc, string idProyecto)
-    => procesosRepository.ObtenerReporteSemanalFiltrosAsync(idempresa, ruc, idProyecto);
-
-  public Task<List<JsonElement>> ObtenerReporteSemanalDatosAsync(
-    string idempresa,
-    string ruc,
-    string idProyecto,
-    string? semanas,
-    string? variedades,
-    string? formatos,
-    string? destinos,
-    string? clientes,
-    string? consignatarios)
-    => procesosRepository.ObtenerReporteSemanalDatosAsync(idempresa, ruc, idProyecto, semanas, variedades, formatos, destinos, clientes, consignatarios);
-
-  public Task<List<JsonElement>> ObtenerReporteCampaniaDatosAsync(
-    string idempresa,
-    string ruc,
-    string idProyecto,
-    string? semanas,
-    string? variedades,
-    string? formatos,
-    string? destinos,
-    string? clientes,
-    string? consignatarios)
-    => procesosRepository.ObtenerReporteCampaniaDatosAsync(idempresa, ruc, idProyecto, semanas, variedades, formatos, destinos, clientes, consignatarios);
+    public Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, SincronizarProcesoRequest request, CancellationToken cancellationToken = default)
+        => repository.SincronizarAsync(contexto, request, cancellationToken);
 }
