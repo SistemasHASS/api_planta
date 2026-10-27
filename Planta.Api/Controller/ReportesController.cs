@@ -59,4 +59,40 @@ public sealed class ReportesController(IReportesUseCase reportes) : ControllerBa
     [HttpPost("reporte-diario-propio-externo")]
     public async Task<IActionResult> ReporteDiarioPropioExterno([FromBody] ReporteDiarioPropioExternoRequest request, CancellationToken ct)
         => Ok(await reportes.ReporteDiarioPropioExternoAsync(request, ct));
+
+    /// <summary>Campañas de la empresa elegida en el select (RUC de apimaestra).</summary>
+    [HttpPost("reporte-avance-cosechador/campanias")]
+    public async Task<IActionResult> ReporteAvanceCosechadorCampanias([FromBody] RucRequest request, CancellationToken ct)
+        => Ok(await reportes.ReporteAvanceCosechadorCampaniasAsync(request, ct));
+
+    /// <summary>Avance por grupo y supervisor: jarra blanca, jarra verde y descarte de la empresa elegida.</summary>
+    [HttpPost("reporte-avance-grupo")]
+    public async Task<IActionResult> ReporteAvanceGrupo([FromBody] ReporteAvanceGrupoRequest request, CancellationToken ct)
+        => Ok(await reportes.ReporteAvanceGrupoAsync(request, ct));
+
+    /// <summary>Excel de la tabla "Detalle por grupo" con los mismos filtros del reporte.</summary>
+    [HttpPost("reporte-avance-grupo/exportar-excel")]
+    public async Task<IActionResult> ExportarAvanceGrupoExcel([FromBody] ReporteAvanceGrupoRequest request, CancellationToken ct)
+    {
+        var archivo = await reportes.ExportarAvanceGrupoExcelAsync(request, ct);
+        return File(archivo.Contenido, archivo.TipoContenido, archivo.Nombre);
+    }
+
+    /// <summary>Opciones de los filtros grupo y cosechador para el rango de fechas (los cosechadores se limitan a los grupos enviados).</summary>
+    [HttpPost("reporte-avance-cosechador/filtros")]
+    public async Task<IActionResult> ReporteAvanceCosechadorFiltros([FromBody] ReporteAvanceCosechadorFiltrosRequest request, CancellationToken ct)
+        => Ok(await reportes.ReporteAvanceCosechadorFiltrosAsync(request, ct));
+
+    /// <summary>Excel de la tabla "Detalle por cosechador" con los mismos filtros del reporte.</summary>
+    [HttpPost("reporte-avance-cosechador/exportar-excel")]
+    public async Task<IActionResult> ExportarAvanceCosechadorExcel([FromBody] ReporteAvanceCosechadorRequest request, CancellationToken ct)
+    {
+        var archivo = await reportes.ExportarAvanceCosechadorExcelAsync(request, ct);
+        return File(archivo.Contenido, archivo.TipoContenido, archivo.Nombre);
+    }
+
+    /// <summary>Avance por cosechador: jarra blanca, jarra verde y descarte (por cosechador y por dia) de la empresa elegida.</summary>
+    [HttpPost("reporte-avance-cosechador")]
+    public async Task<IActionResult> ReporteAvanceCosechador([FromBody] ReporteAvanceCosechadorRequest request, CancellationToken ct)
+        => Ok(await reportes.ReporteAvanceCosechadorAsync(request, ct));
 }

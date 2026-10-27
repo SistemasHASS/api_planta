@@ -27,4 +27,22 @@ public interface IReportesService
     Task<bool> ReporteBhHabilitadoAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
 
     Task<JsonElement> ReporteDiarioPropioExternoAsync(ContextoUsuario contexto, ReporteDiarioPropioExternoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Campañas de una empresa de apimaestra (get_empresas) para el reporte de avance por cosechador.</summary>
+    Task<JsonElement> CampaniasAvanceCosechadorAsync(ContextoUsuario contexto, string ruc, CancellationToken cancellationToken = default);
+
+    /// <summary>Avance por grupo y supervisor. El RUC debe ser el de una empresa listada por apimaestra.</summary>
+    Task<JsonElement> ReporteAvanceGrupoAsync(ContextoUsuario contexto, ReporteAvanceGrupoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Excel con la tabla "Detalle por grupo" (mismos filtros que el reporte).</summary>
+    Task<ArchivoGenerado> ExportarAvanceGrupoExcelAsync(ContextoUsuario contexto, ReporteAvanceGrupoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Grupos y cosechadores con avance en el rango de fechas, de la empresa elegida.</summary>
+    Task<JsonElement> ReporteAvanceCosechadorFiltrosAsync(ContextoUsuario contexto, ReporteAvanceCosechadorFiltrosRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Excel con la tabla "Detalle por cosechador" (mismos filtros que el reporte).</summary>
+    Task<ArchivoGenerado> ExportarAvanceCosechadorExcelAsync(ContextoUsuario contexto, ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Avance por cosechador. El RUC debe ser el de una empresa listada por apimaestra.</summary>
+    Task<JsonElement> ReporteAvanceCosechadorAsync(ContextoUsuario contexto, ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default);
 }

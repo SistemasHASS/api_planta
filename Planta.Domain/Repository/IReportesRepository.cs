@@ -26,4 +26,13 @@ public interface IReportesRepository
 
     /// <summary>Reporte diario separado por origen BH (propio) / CAO (externo) (PLANTA_ReporteDiario_PropioExterno).</summary>
     Task<JsonElement> ReporteDiarioPropioExternoAsync(ContextoUsuario contexto, ReporteDiarioPropioExternoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Avance por grupo y supervisor (PLANTA_ReporteAvanceGrupo).</summary>
+    Task<JsonElement> ReporteAvanceGrupoAsync(ContextoUsuario contexto, ReporteAvanceGrupoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Grupos y cosechadores con avance en el rango de fechas (PLANTA_ReporteAvanceCosechador_Filtros).</summary>
+    Task<JsonElement> ReporteAvanceCosechadorFiltrosAsync(ContextoUsuario contexto, ReporteAvanceCosechadorFiltrosRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Avance por cosechador: jarra blanca, jarra verde y descarte (PLANTA_ReporteAvanceCosechador).</summary>
+    Task<JsonElement> ReporteAvanceCosechadorAsync(ContextoUsuario contexto, ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default);
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Planta.Domain.Constants;
 using Planta.Domain.UseCase;
@@ -43,4 +44,9 @@ public sealed class MaestrosController(IMaestrosUseCase maestros) : ControllerBa
 
     [HttpPost("tipos-clamshell")]
     public async Task<IActionResult> TiposClamshell(CancellationToken ct) => Ok(await maestros.ConsultarAsync(MaestroExterno.TiposClamshell, ct));
+
+    /// <summary>Empresas (get_empresas). Sin cuerpo. Solo administrador y monitor (select de los reportes de avance).</summary>
+    [HttpPost("empresas")]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Monitor}")]
+    public async Task<IActionResult> Empresas(CancellationToken ct) => Ok(await maestros.ConsultarAsync(MaestroExterno.Empresas, ct));
 }

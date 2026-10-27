@@ -32,4 +32,22 @@ public interface IReportesUseCase
 
     /// <summary>Reporte diario separado por origen BH (propio) / CAO (externo).</summary>
     Task<JsonElement> ReporteDiarioPropioExternoAsync(ReporteDiarioPropioExternoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Campañas de la empresa elegida (RUC de apimaestra) para el avance por cosechador.</summary>
+    Task<JsonElement> ReporteAvanceCosechadorCampaniasAsync(RucRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Avance por grupo y supervisor: jarra blanca, jarra verde y descarte.</summary>
+    Task<JsonElement> ReporteAvanceGrupoAsync(ReporteAvanceGrupoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Excel de la tabla "Detalle por grupo" con los mismos filtros del reporte.</summary>
+    Task<ArchivoGenerado> ExportarAvanceGrupoExcelAsync(ReporteAvanceGrupoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Opciones de grupo y cosechador para el rango de fechas de la empresa elegida.</summary>
+    Task<JsonElement> ReporteAvanceCosechadorFiltrosAsync(ReporteAvanceCosechadorFiltrosRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Excel de la tabla "Detalle por cosechador" con los mismos filtros del reporte.</summary>
+    Task<ArchivoGenerado> ExportarAvanceCosechadorExcelAsync(ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Avance por cosechador: jarra blanca, jarra verde y descarte por cosechador y por dia.</summary>
+    Task<JsonElement> ReporteAvanceCosechadorAsync(ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default);
 }

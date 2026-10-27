@@ -82,4 +82,44 @@ public sealed class ReportesRepositoryImpl(ApplicationDbContext context) : BaseR
             Agregar(command, "@idCampana", request.IdProyecto);
             Agregar(command, "@origenes", request.Origenes);
         }, cancellationToken);
+
+    public Task<JsonElement> ReporteAvanceCosechadorAsync(ContextoUsuario contexto, ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ReporteAvanceCosechador", command =>
+        {
+            Agregar(command, "@ruc", request.Ruc);
+            Agregar(command, "@idProyecto", request.IdProyecto);
+            Agregar(command, "@fechaDesde", request.FechaDesde);
+            Agregar(command, "@fechaHasta", NuloSiVacio(request.FechaHasta));
+            Agregar(command, "@dniSupervisor", NuloSiVacio(request.DniSupervisor));
+            Agregar(command, "@grupos", ComoJson(request.Grupos));
+            Agregar(command, "@codFundo", NuloSiVacio(request.CodFundo));
+            Agregar(command, "@dniCosechadores", ComoJson(request.DniCosechadores));
+        }, cancellationToken);
+
+    public Task<JsonElement> ReporteAvanceGrupoAsync(ContextoUsuario contexto, ReporteAvanceGrupoRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ReporteAvanceGrupo", command =>
+        {
+            Agregar(command, "@ruc", request.Ruc);
+            Agregar(command, "@idProyecto", request.IdProyecto);
+            Agregar(command, "@fechaDesde", request.FechaDesde);
+            Agregar(command, "@fechaHasta", NuloSiVacio(request.FechaHasta));
+            Agregar(command, "@grupos", ComoJson(request.Grupos));
+            Agregar(command, "@dniSupervisores", ComoJson(request.DniSupervisores));
+        }, cancellationToken);
+
+    public Task<JsonElement> ReporteAvanceCosechadorFiltrosAsync(ContextoUsuario contexto, ReporteAvanceCosechadorFiltrosRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ReporteAvanceCosechador_Filtros", command =>
+        {
+            Agregar(command, "@ruc", request.Ruc);
+            Agregar(command, "@idProyecto", request.IdProyecto);
+            Agregar(command, "@fechaDesde", request.FechaDesde);
+            Agregar(command, "@fechaHasta", NuloSiVacio(request.FechaHasta));
+            Agregar(command, "@grupos", ComoJson(request.Grupos));
+        }, cancellationToken);
+
+    /// <summary>Lista vacia = null (el SP lo entiende como "todos"); si no, arreglo JSON.</summary>
+    private static string? ComoJson(List<string>? valores)
+        => valores is { Count: > 0 } ? JsonSerializer.Serialize(valores.Select(v => v.Trim()).Where(v => v.Length > 0)) : null;
+
+    private static string? NuloSiVacio(string? valor) => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
 }

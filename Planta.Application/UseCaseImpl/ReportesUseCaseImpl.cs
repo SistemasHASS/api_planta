@@ -74,6 +74,52 @@ public sealed class ReportesUseCaseImpl(IReportesService reportes, ICurrentUser 
         return reportes.ReporteDiarioPropioExternoAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
     }
 
+    public Task<JsonElement> ReporteAvanceCosechadorCampaniasAsync(RucRequest request, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.Ruc, "ruc");
+        return reportes.CampaniasAvanceCosechadorAsync(ContextoDeUsuario.Crear(currentUser), request.Ruc, cancellationToken);
+    }
+
+    public Task<JsonElement> ReporteAvanceGrupoAsync(ReporteAvanceGrupoRequest request, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.Ruc, "ruc");
+        Requerir(request.IdProyecto, "idProyecto");
+        Requerir(request.FechaDesde, "fechaDesde");
+        return reportes.ReporteAvanceGrupoAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+    }
+
+    public Task<ArchivoGenerado> ExportarAvanceGrupoExcelAsync(ReporteAvanceGrupoRequest request, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.Ruc, "ruc");
+        Requerir(request.IdProyecto, "idProyecto");
+        Requerir(request.FechaDesde, "fechaDesde");
+        return reportes.ExportarAvanceGrupoExcelAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+    }
+
+    public Task<JsonElement> ReporteAvanceCosechadorFiltrosAsync(ReporteAvanceCosechadorFiltrosRequest request, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.Ruc, "ruc");
+        Requerir(request.IdProyecto, "idProyecto");
+        Requerir(request.FechaDesde, "fechaDesde");
+        return reportes.ReporteAvanceCosechadorFiltrosAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+    }
+
+    public Task<ArchivoGenerado> ExportarAvanceCosechadorExcelAsync(ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.Ruc, "ruc");
+        Requerir(request.IdProyecto, "idProyecto");
+        Requerir(request.FechaDesde, "fechaDesde");
+        return reportes.ExportarAvanceCosechadorExcelAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+    }
+
+    public Task<JsonElement> ReporteAvanceCosechadorAsync(ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.Ruc, "ruc");
+        Requerir(request.IdProyecto, "idProyecto");
+        Requerir(request.FechaDesde, "fechaDesde");
+        return reportes.ReporteAvanceCosechadorAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+    }
+
     private static void Requerir(string? valor, string campo)
     {
         if (string.IsNullOrWhiteSpace(valor))

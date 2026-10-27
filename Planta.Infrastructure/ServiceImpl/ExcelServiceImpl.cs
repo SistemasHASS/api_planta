@@ -9,7 +9,20 @@ namespace Planta.Infrastructure.ServiceImpl;
 /// <summary>Excel con EPPlus (licencia no comercial). Encabezado azul con letras blancas, filtro y columnas autoajustadas.</summary>
 public sealed class ExcelServiceImpl : IExcelService
 {
-    private const string ColumnaSobrePeso = "SOBRE PESO";
+    /// <summary>Columnas que se escriben como numero (y su formato). El resto va como texto.</summary>
+    private static readonly Dictionary<string, string> ColumnasNumericas = new()
+    {
+        ["SOBRE PESO"] = "0.00",
+        ["JARRA BLANCA"] = "#,##0",
+        ["JARRA VERDE"] = "#,##0",
+        ["DESCARTE"] = "#,##0",
+        ["TOTAL"] = "#,##0",
+        ["% DESCARTE"] = "0.0",
+        ["DÍAS"] = "0",
+        ["VIAJES"] = "0",
+        ["COSECHADORES"] = "0",
+        ["PROMEDIO"] = "0.0",
+    };
 
     static ExcelServiceImpl()
     {
@@ -47,10 +60,10 @@ public sealed class ExcelServiceImpl : IExcelService
                 var celda = hoja.Cells[fila, c + 1];
                 registro.TryGetProperty(columnas[c], out var valor);
 
-                if (columnas[c] == ColumnaSobrePeso && valor.ValueKind == JsonValueKind.Number && valor.TryGetDecimal(out var numero))
+                if (ColumnasNumericas.TryGetValue(columnas[c], out var formato) && valor.ValueKind == JsonValueKind.Number && valor.TryGetDecimal(out var numero))
                 {
                     celda.Value = numero;
-                    celda.Style.Numberformat.Format = "0.00";
+                    celda.Style.Numberformat.Format = formato;
                 }
                 else
                 {
