@@ -23,4 +23,10 @@ public interface IAdministracionRepository
     Task<JsonElement> SincronizarCatalogoOperativoAsync(ContextoUsuario contexto, SincronizarCatalogoOperativoRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarReglasSobrepesoAsync(ContextoUsuario contexto, SincronizarReglasSobrepesoRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarMatricesCompatibilidadAsync(ContextoUsuario contexto, SincronizarMatricesCompatibilidadRequest request, CancellationToken cancellationToken = default);
+
+    Task<JsonElement> ListarAcopioLineasAsync(ContextoUsuario contexto, ListarAcopioLineasRequest request, CancellationToken cancellationToken = default);
+    Task<JsonElement> SincronizarAcopioLineasAsync(ContextoUsuario contexto, SincronizarAcopioLineasRequest request, CancellationToken cancellationToken = default);
+
+    Task<JsonElement> ListarAcopioMaquinasAsync(ContextoUsuario contexto, ListarAcopioMaquinasRequest request, CancellationToken cancellationToken = default);
+    Task<JsonElement> SincronizarAcopioMaquinasAsync(ContextoUsuario contexto, SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default);
 }

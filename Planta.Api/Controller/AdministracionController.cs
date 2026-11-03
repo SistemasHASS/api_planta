@@ -89,4 +89,28 @@ public sealed class AdministracionController(IAdministracionUseCase administraci
     [HttpPost("matrices-compatibilidad/sincronizar")]
     public async Task<IActionResult> SincronizarMatricesCompatibilidad([FromBody] SincronizarMatricesCompatibilidadRequest request, CancellationToken ct)
         => Ok(await administracion.SincronizarMatricesCompatibilidadAsync(request, ct));
+
+    /// <summary>Líneas (activas e inactivas) de un acopio (solo administrador).</summary>
+    [HttpPost("acopio-lineas/listar")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> ListarAcopioLineas([FromBody] ListarAcopioLineasRequest request, CancellationToken ct)
+        => Ok(await administracion.ListarAcopioLineasAsync(request, ct));
+
+    /// <summary>Crea o actualiza líneas de un acopio (incluye activar/desactivar). Solo administrador.</summary>
+    [HttpPost("acopio-lineas/sincronizar")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> SincronizarAcopioLineas([FromBody] SincronizarAcopioLineasRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarAcopioLineasAsync(request, ct));
+
+    /// <summary>Máquinas (activas e inactivas) de un acopio. Solo administrador.</summary>
+    [HttpPost("acopio-maquinas/listar")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> ListarAcopioMaquinas([FromBody] ListarAcopioMaquinasRequest request, CancellationToken ct)
+        => Ok(await administracion.ListarAcopioMaquinasAsync(request, ct));
+
+    /// <summary>Crea o actualiza máquinas de un acopio (incluye activar/desactivar). Solo administrador.</summary>
+    [HttpPost("acopio-maquinas/sincronizar")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> SincronizarAcopioMaquinas([FromBody] SincronizarAcopioMaquinasRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarAcopioMaquinasAsync(request, ct));
 }

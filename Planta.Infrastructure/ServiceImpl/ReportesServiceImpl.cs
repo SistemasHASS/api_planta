@@ -130,6 +130,7 @@ public sealed class ReportesServiceImpl(IReportesRepository repository, IMaestro
                 {
                     ["GRUPO"] = Texto(g, "grupo"),
                     ["LOTE"] = Texto(g, "lote"),
+                    ["VARIEDAD"] = Texto(g, "variedad"),
                     ["DNI SUPERVISOR"] = Texto(g, "dniSupervisor"),
                     ["SUPERVISOR"] = Texto(g, "supervisor"),
                     ["COSECHADORES"] = Numero(g, "cosechadores"),

@@ -23,4 +23,14 @@ public interface IAdministracionUseCase
     Task<JsonElement> SincronizarCatalogoOperativoAsync(SincronizarCatalogoOperativoRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarReglasSobrepesoAsync(SincronizarReglasSobrepesoRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarMatricesCompatibilidadAsync(SincronizarMatricesCompatibilidadRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Líneas (activas e inactivas) de un acopio.</summary>
+    Task<JsonElement> ListarAcopioLineasAsync(ListarAcopioLineasRequest request, CancellationToken cancellationToken = default);
+    /// <summary>Crea o actualiza líneas de un acopio (incluye activar/desactivar).</summary>
+    Task<JsonElement> SincronizarAcopioLineasAsync(SincronizarAcopioLineasRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Máquinas (activas e inactivas) de un acopio.</summary>
+    Task<JsonElement> ListarAcopioMaquinasAsync(ListarAcopioMaquinasRequest request, CancellationToken cancellationToken = default);
+    /// <summary>Crea o actualiza máquinas de un acopio (incluye activar/desactivar).</summary>
+    Task<JsonElement> SincronizarAcopioMaquinasAsync(SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default);
 }

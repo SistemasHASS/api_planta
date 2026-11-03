@@ -146,4 +146,16 @@ public sealed class AdministracionServiceImpl(IAdministracionRepository reposito
 
     public Task<JsonElement> SincronizarMatricesCompatibilidadAsync(ContextoUsuario contexto, SincronizarMatricesCompatibilidadRequest request, CancellationToken cancellationToken = default)
         => repository.SincronizarMatricesCompatibilidadAsync(contexto, request, cancellationToken);
+
+    public Task<JsonElement> ListarAcopioLineasAsync(ContextoUsuario contexto, ListarAcopioLineasRequest request, CancellationToken cancellationToken = default)
+        => repository.ListarAcopioLineasAsync(contexto, request, cancellationToken);
+
+    public Task<JsonElement> SincronizarAcopioLineasAsync(ContextoUsuario contexto, SincronizarAcopioLineasRequest request, CancellationToken cancellationToken = default)
+        => repository.SincronizarAcopioLineasAsync(contexto, request, cancellationToken);
+
+    public Task<JsonElement> ListarAcopioMaquinasAsync(ContextoUsuario contexto, ListarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
+        => repository.ListarAcopioMaquinasAsync(contexto, request, cancellationToken);
+
+    public Task<JsonElement> SincronizarAcopioMaquinasAsync(ContextoUsuario contexto, SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
+        => repository.SincronizarAcopioMaquinasAsync(contexto, request, cancellationToken);
 }

@@ -149,4 +149,42 @@ public sealed class AdministracionRepositoryImpl(ApplicationDbContext context) :
             Agregar(command, "@ruc", contexto.Ruc);
             Agregar(command, "@usuario", contexto.Usuario);
         }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarAcopioLineas.sql (líneas de un acopio).</summary>
+    public Task<JsonElement> ListarAcopioLineasAsync(ContextoUsuario contexto, ListarAcopioLineasRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarAcopioLineas", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@codigoAcopio", (request.CodigoAcopio ?? "").Trim());
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_SincronizarAcopioLineas.sql (crea o actualiza líneas, incluye activar/desactivar).</summary>
+    public Task<JsonElement> SincronizarAcopioLineasAsync(ContextoUsuario contexto, SincronizarAcopioLineasRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_SincronizarAcopioLineas", command =>
+        {
+            Agregar(command, "@Json", request.Json);
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarAcopioMaquinas.sql (máquinas de un acopio).</summary>
+    public Task<JsonElement> ListarAcopioMaquinasAsync(ContextoUsuario contexto, ListarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarAcopioMaquinas", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@codigoAcopio", (request.CodigoAcopio ?? "").Trim());
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_SincronizarAcopioMaquinas.sql (crea o actualiza máquinas, incluye activar/desactivar).</summary>
+    public Task<JsonElement> SincronizarAcopioMaquinasAsync(ContextoUsuario contexto, SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_SincronizarAcopioMaquinas", command =>
+        {
+            Agregar(command, "@Json", request.Json);
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+        }, cancellationToken);
 }

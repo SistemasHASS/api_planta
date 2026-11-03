@@ -52,4 +52,16 @@ public sealed class AdministracionUseCaseImpl(IAdministracionService administrac
 
     public Task<JsonElement> SincronizarMatricesCompatibilidadAsync(SincronizarMatricesCompatibilidadRequest request, CancellationToken cancellationToken = default)
         => administracion.SincronizarMatricesCompatibilidadAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), request, cancellationToken);
+
+    public Task<JsonElement> ListarAcopioLineasAsync(ListarAcopioLineasRequest request, CancellationToken cancellationToken = default)
+        => administracion.ListarAcopioLineasAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+
+    public Task<JsonElement> SincronizarAcopioLineasAsync(SincronizarAcopioLineasRequest request, CancellationToken cancellationToken = default)
+        => administracion.SincronizarAcopioLineasAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), request, cancellationToken);
+
+    public Task<JsonElement> ListarAcopioMaquinasAsync(ListarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
+        => administracion.ListarAcopioMaquinasAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+
+    public Task<JsonElement> SincronizarAcopioMaquinasAsync(SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
+        => administracion.SincronizarAcopioMaquinasAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), request, cancellationToken);
 }
