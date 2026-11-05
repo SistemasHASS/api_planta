@@ -8,6 +8,7 @@ public interface ICurrentUser
 {
     string? UserId { get; }
     string? UserName { get; }
+    string? NombreCompleto { get; }
     string? Role { get; }
     string? IdEmpresa { get; }
     string? Ruc { get; }

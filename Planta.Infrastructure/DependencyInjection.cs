@@ -65,6 +65,7 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, JwtTokenServiceImpl>();
         services.AddScoped<ICatalogosLocalService, CatalogosLocalServiceImpl>();
         services.AddScoped<IProcesosService, ProcesosServiceImpl>();
+        services.AddScoped<IJornadasAnotadorService, JornadasAnotadorServiceImpl>();
         services.AddScoped<IReportesService, ReportesServiceImpl>();
         services.AddScoped<IPaletsService, PaletsServiceImpl>();
         services.AddScoped<IAdministracionService, AdministracionServiceImpl>();
@@ -79,6 +80,7 @@ public static class DependencyInjection
         services.AddScoped<IUsuarioAcopioRepository, UsuarioAcopioRepositoryImpl>();
         services.AddScoped<ICatalogosLocalRepository, CatalogosLocalRepositoryImpl>();
         services.AddScoped<IProcesosRepository, ProcesosRepositoryImpl>();
+        services.AddScoped<IJornadasAnotadorRepository, JornadasAnotadorRepositoryImpl>();
         services.AddScoped<IReportesRepository, ReportesRepositoryImpl>();
         services.AddScoped<IPaletsRepository, PaletsRepositoryImpl>();
         services.AddScoped<IAdministracionRepository, AdministracionRepositoryImpl>();

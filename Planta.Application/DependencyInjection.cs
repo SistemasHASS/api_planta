@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IAdministracionUseCase, AdministracionUseCaseImpl>();
         services.AddScoped<IGuiasUseCase, GuiasUseCaseImpl>();
         services.AddScoped<IGuiasManualesUseCase, GuiasManualesUseCaseImpl>();
+        services.AddScoped<IJornadasAnotadorUseCase, JornadasAnotadorUseCaseImpl>();
 
         return services;
     }

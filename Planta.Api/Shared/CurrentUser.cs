@@ -11,6 +11,7 @@ public sealed class CurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 
     public string? UserId => Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
     public string? UserName => Principal?.FindFirstValue(ClaimTypes.Name);
+    public string? NombreCompleto => Principal?.FindFirstValue(ClaimNames.NombreCompleto);
     public string? Role => Principal?.FindFirstValue(ClaimTypes.Role);
     public string? IdEmpresa => Principal?.FindFirstValue(ClaimNames.IdEmpresa);
     public string? Ruc => Principal?.FindFirstValue(ClaimNames.Ruc);

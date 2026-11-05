@@ -12,4 +12,5 @@ public static class Roles
     public const string GuiasManuales = "GMPLA";
     public const string Coordinacion = "COPLA";
     public const string Operaciones = "OPPLA";
+    public const string Anotador = "ANPLA";
 }
