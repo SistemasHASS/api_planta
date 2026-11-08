@@ -8,6 +8,9 @@ public interface IPaletsUseCase
 {
     Task<JsonElement> ListarPorProcesoAsync(PaletsPorProcesoRequest request, CancellationToken cancellationToken = default);
 
+    /// <summary>Cajas disponibles del proceso (stock por formato y tipo de empaque). El SP devuelve activo = false si la empresa no maneja el flujo de empaque.</summary>
+    Task<JsonElement> ListarStockCajasPorProcesoAsync(PaletsPorProcesoRequest request, CancellationToken cancellationToken = default);
+
     /// <summary>Crea, edita o cierra palets (el SP lee el JSON y valida segun el rol).</summary>
     Task<JsonElement> SincronizarAsync(SincronizarPaletsRequest request, CancellationToken cancellationToken = default);
 

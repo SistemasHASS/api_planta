@@ -9,6 +9,7 @@ public interface IAdministracionRepository
     Task<JsonElement> ListarMatricesCompatibilidadAsync(ContextoUsuario contexto, ListarAdministracionRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarReglasSobrepesoAsync(ContextoUsuario contexto, ListarAdministracionRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarCorrelativosDocumentosAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
+    Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarCodigosCajaDetalleAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
     /// <summary>idsJson = arreglo JSON con los id de las combinaciones a exportar (las que se ven en la tabla).</summary>
     Task<JsonElement> ExportarCodigosCajaDetalleAsync(ContextoUsuario contexto, string idsJson, CancellationToken cancellationToken = default);

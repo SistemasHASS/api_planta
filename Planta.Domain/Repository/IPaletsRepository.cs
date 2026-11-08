@@ -10,6 +10,7 @@ namespace Planta.Domain.Repository;
 public interface IPaletsRepository
 {
     Task<JsonElement> ListarPorProcesoAsync(ContextoUsuario contexto, string idProceso, CancellationToken cancellationToken = default);
+    Task<JsonElement> ListarStockCajasPorProcesoAsync(ContextoUsuario contexto, string idProceso, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, string jsonPalets, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarDPaletsAsync(ContextoUsuario contexto, string jsonDPalets, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarDPaletsPorAcopioAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);

@@ -8,6 +8,7 @@ public interface IAdministracionService
     Task<JsonElement> ListarMatricesCompatibilidadAsync(ContextoUsuario contexto, ListarAdministracionRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarReglasSobrepesoAsync(ContextoUsuario contexto, ListarAdministracionRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarCorrelativosDocumentosAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
+    Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default);
     /// <summary>Reporte "Códigos caja": el SP trae los nombres de la base propia y aquí se completan los de apimaestra y catálogos.</summary>
     Task<JsonElement> ListarCodigosCajaAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
     /// <summary>Excel de códigos caja con solo las filas cuyo id viene en la solicitud.</summary>

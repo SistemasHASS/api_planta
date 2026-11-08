@@ -17,6 +17,9 @@ public sealed class AdministracionUseCaseImpl(IAdministracionService administrac
     public Task<JsonElement> ListarCorrelativosDocumentosAsync(CancellationToken cancellationToken = default)
         => administracion.ListarCorrelativosDocumentosAsync(ContextoDeUsuario.Crear(currentUser), cancellationToken);
 
+    public Task<JsonElement> ObtenerParametroAsync(ParametroRequest request, CancellationToken cancellationToken = default)
+        => administracion.ObtenerParametroAsync(ContextoDeUsuario.Crear(currentUser), request.IdParametro, cancellationToken);
+
     public Task<JsonElement> ListarCodigosCajaAsync(CancellationToken cancellationToken = default)
         => administracion.ListarCodigosCajaAsync(ContextoDeUsuario.Crear(currentUser), cancellationToken);
 

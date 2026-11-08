@@ -14,6 +14,9 @@ public sealed class PaletsServiceImpl(IPaletsRepository repository, IMaestrosSer
     public Task<JsonElement> ListarPorProcesoAsync(ContextoUsuario contexto, string idProceso, CancellationToken cancellationToken = default)
         => repository.ListarPorProcesoAsync(contexto, idProceso, cancellationToken);
 
+    public Task<JsonElement> ListarStockCajasPorProcesoAsync(ContextoUsuario contexto, string idProceso, CancellationToken cancellationToken = default)
+        => repository.ListarStockCajasPorProcesoAsync(contexto, idProceso, cancellationToken);
+
     public Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, string jsonPalets, CancellationToken cancellationToken = default)
         => repository.SincronizarAsync(contexto, jsonPalets, cancellationToken);
 

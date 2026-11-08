@@ -154,3 +154,9 @@ public sealed class ListarAdministracionRequest
     public string? IdProyecto { get; set; }
     public string? CodigoCultivo { get; set; }
 }
+
+/// <summary>Cuerpo de api/administracion/parametro: nombre del parametro de la empresa que se quiere leer (ej. Flujo_Empaque).</summary>
+public sealed class ParametroRequest
+{
+    public string IdParametro { get; set; } = "";
+}

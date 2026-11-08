@@ -33,6 +33,15 @@ public sealed class AdministracionRepositoryImpl(ApplicationDbContext context) :
             Agregar(command, "@ruc", contexto.Ruc);
         }, cancellationToken);
 
+    /// <summary>SP: base-datos/sp/PLANTA_GetParametro.sql (parametro activo de la empresa por nombre).</summary>
+    public Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_GetParametro", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@idparametro", idParametro);
+        }, cancellationToken);
+
     /// <summary>SP: base-datos/sp/PLANTA_ListarCodigosCajaDetalle.sql (combinaciones de códigos caja con los nombres de la base propia).</summary>
     public Task<JsonElement> ListarCodigosCajaDetalleAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_ListarCodigosCajaDetalle", command =>

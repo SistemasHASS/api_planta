@@ -26,6 +26,11 @@ public sealed class AdministracionController(IAdministracionUseCase administraci
     public async Task<IActionResult> CorrelativosDocumentos(CancellationToken ct)
         => Ok(await administracion.ListarCorrelativosDocumentosAsync(ct));
 
+    /// <summary>Parametro activo de la empresa por nombre (PLANTA_Parametros). El dispositivo lo guarda al guardar Parametros.</summary>
+    [HttpPost("parametro")]
+    public async Task<IActionResult> Parametro([FromBody] ParametroRequest request, CancellationToken ct)
+        => Ok(await administracion.ObtenerParametroAsync(request, ct));
+
     /// <summary>Reporte "Códigos caja": combinaciones de PLANTA_CodigosCaja de la empresa con el nombre de cada código y la descripción completa.</summary>
     [HttpPost("codigos-caja")]
     public async Task<IActionResult> CodigosCaja(CancellationToken ct)

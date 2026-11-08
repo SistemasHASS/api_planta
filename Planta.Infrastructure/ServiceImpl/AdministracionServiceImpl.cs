@@ -19,6 +19,9 @@ public sealed class AdministracionServiceImpl(IAdministracionRepository reposito
     public Task<JsonElement> ListarCorrelativosDocumentosAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
         => repository.ListarCorrelativosDocumentosAsync(contexto, cancellationToken);
 
+    public Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default)
+        => repository.ObtenerParametroAsync(contexto, idParametro, cancellationToken);
+
     /// <summary>
     /// Reporte "Códigos caja": el SP trae cada combinación con los nombres de la base propia; aquí se completan consignatario,
     /// destino, variedad, transporte y fruta (apimaestra y catálogos) y la descripción completa, igual que el detalle de la guía.

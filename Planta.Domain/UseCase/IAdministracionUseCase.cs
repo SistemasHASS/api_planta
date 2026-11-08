@@ -9,6 +9,7 @@ public interface IAdministracionUseCase
     Task<JsonElement> ListarMatricesCompatibilidadAsync(ListarAdministracionRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarReglasSobrepesoAsync(ListarAdministracionRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarCorrelativosDocumentosAsync(CancellationToken cancellationToken = default);
+    Task<JsonElement> ObtenerParametroAsync(ParametroRequest request, CancellationToken cancellationToken = default);
     /// <summary>Reporte "Códigos caja": combinaciones de la empresa con nombres y descripción completa.</summary>
     Task<JsonElement> ListarCodigosCajaAsync(CancellationToken cancellationToken = default);
     /// <summary>Excel de códigos caja con solo las filas indicadas (las que se ven en la tabla).</summary>

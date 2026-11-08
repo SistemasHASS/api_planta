@@ -18,6 +18,11 @@ public sealed class PaletsController(IPaletsUseCase palets, IWebHostEnvironment 
     public async Task<IActionResult> PorProceso([FromBody] PaletsPorProcesoRequest request, CancellationToken ct)
         => Ok(await palets.ListarPorProcesoAsync(request, ct));
 
+    /// <summary>Cajas disponibles del proceso por formato y tipo de empaque. Solo hay datos si la empresa maneja el flujo de empaque (parametro Flujo_Empaque = SI).</summary>
+    [HttpPost("stock-cajas")]
+    public async Task<IActionResult> StockCajas([FromBody] PaletsPorProcesoRequest request, CancellationToken ct)
+        => Ok(await palets.ListarStockCajasPorProcesoAsync(request, ct));
+
     /// <summary>Crea, edita o cierra palets (el cuerpo trae el JSON de palets que lee el SP).</summary>
     [HttpPost("sincronizar")]
     public async Task<IActionResult> Sincronizar([FromBody] SincronizarPaletsRequest request, CancellationToken ct)

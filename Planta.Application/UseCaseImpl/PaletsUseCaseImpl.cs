@@ -16,6 +16,12 @@ public sealed class PaletsUseCaseImpl(IPaletsService palets, ICurrentUser curren
         return palets.ListarPorProcesoAsync(ContextoDeUsuario.Crear(currentUser), request.IdProceso, cancellationToken);
     }
 
+    public Task<JsonElement> ListarStockCajasPorProcesoAsync(PaletsPorProcesoRequest request, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.IdProceso, "idProceso");
+        return palets.ListarStockCajasPorProcesoAsync(ContextoDeUsuario.Crear(currentUser, exigirAcopio: true), request.IdProceso, cancellationToken);
+    }
+
     public Task<JsonElement> SincronizarAsync(SincronizarPaletsRequest request, CancellationToken cancellationToken = default)
     {
         Requerir(request.Palets, "palets");

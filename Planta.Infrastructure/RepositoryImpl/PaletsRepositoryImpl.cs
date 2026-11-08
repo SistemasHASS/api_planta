@@ -16,6 +16,15 @@ public sealed class PaletsRepositoryImpl(ApplicationDbContext context) : BaseRep
             Agregar(command, "@idproceso", idProceso);
         }, cancellationToken);
 
+    public Task<JsonElement> ListarStockCajasPorProcesoAsync(ContextoUsuario contexto, string idProceso, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarStockCajasPorProceso", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+            Agregar(command, "@idProceso", idProceso);
+        }, cancellationToken);
+
     public Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, string jsonPalets, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_SincronizarPalets", command =>
         {
