@@ -118,4 +118,43 @@ public sealed class AdministracionController(IAdministracionUseCase administraci
     [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> SincronizarAcopioMaquinas([FromBody] SincronizarAcopioMaquinasRequest request, CancellationToken ct)
         => Ok(await administracion.SincronizarAcopioMaquinasAsync(request, ct));
+
+    /// <summary>Kilos de pago por formato y tipo de empaque (con el peso real del formato). Solo administrador y con Flujo_Empaque activo.</summary>
+    [HttpPost("kilos-pago/listar")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> ListarKilosPago(CancellationToken ct)
+        => Ok(await administracion.ListarKilosPagoAsync(ct));
+
+    /// <summary>Guarda los kilos de pago por formato y tipo de empaque. Solo administrador y con Flujo_Empaque activo.</summary>
+    [HttpPost("kilos-pago/sincronizar")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> SincronizarKilosPago([FromBody] SincronizarKilosPagoRequest request, CancellationToken ct)
+        => Ok(await administracion.SincronizarKilosPagoAsync(request, ct));
+
+    /// <summary>Excel de control interno en pantalla: cajas y kilos de pago por jornada, empacador y producto. Solo administrador y con Flujo_Empaque activo.</summary>
+    [HttpPost("control-interno/listar")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> ListarControlInterno([FromBody] ControlInternoRequest request, CancellationToken ct)
+        => Ok(await administracion.ListarControlInternoAsync(request, ct));
+
+    /// <summary>El mismo informe como archivo Excel. Solo administrador y con Flujo_Empaque activo.</summary>
+    [HttpPost("control-interno/exportar-excel")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> ExportarControlInterno([FromBody] ControlInternoRequest request, CancellationToken ct)
+    {
+        var archivo = await administracion.ExportarControlInternoExcelAsync(request, ct);
+        return File(archivo.Contenido, archivo.TipoContenido, archivo.Nombre);
+    }
+
+    /// <summary>Historial de kilos de los empacadores en un día: cajas, kilos de pago, kilos reales y meta de tarea. Administrador (todos los acopios) y anotador (su acopio); con Flujo_Empaque activo.</summary>
+    [HttpPost("historial-kilos/listar")]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Anotador}")]
+    public async Task<IActionResult> ListarHistorialKilos([FromBody] HistorialKilosRequest request, CancellationToken ct)
+        => Ok(await administracion.ListarHistorialKilosAsync(request, ct));
+
+    /// <summary>Historial de kilos de todos los anotadores y sus empacadores en un día (solo administrador y con Flujo_Empaque activo).</summary>
+    [HttpPost("historial-kilos-admin/listar")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> ListarHistorialKilosAdmin([FromBody] HistorialKilosRequest request, CancellationToken ct)
+        => Ok(await administracion.ListarHistorialKilosAdminAsync(request, ct));
 }

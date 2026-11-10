@@ -35,6 +35,17 @@ public sealed class PaletsRepositoryImpl(ApplicationDbContext context) : BaseRep
             Agregar(command, "@Json", jsonPalets);
         }, cancellationToken);
 
+    /// <summary>SP: base-datos/sp/PLANTA_SincronizarPaletsConStock.sql (mismo JSON que PLANTA_SincronizarPalets; al eliminar un palet anula sus movimientos de stock).</summary>
+    public Task<JsonElement> SincronizarConStockAsync(ContextoUsuario contexto, string jsonPalets, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_SincronizarPaletsConStock", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@idRol", contexto.Rol);
+            Agregar(command, "@Json", jsonPalets);
+        }, cancellationToken);
+
     public Task<JsonElement> SincronizarDPaletsAsync(ContextoUsuario contexto, string jsonDPalets, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_SincronizarDPalets", command =>
         {
@@ -43,6 +54,26 @@ public sealed class PaletsRepositoryImpl(ApplicationDbContext context) : BaseRep
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
             Agregar(command, "@usuario", contexto.Usuario);
             Agregar(command, "@json", jsonDPalets);
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_SincronizarDPaletsConStock.sql (mismo JSON que PLANTA_SincronizarDPalets, validando y descontando stock).</summary>
+    public Task<JsonElement> SincronizarDPaletsConStockAsync(ContextoUsuario contexto, string jsonDPalets, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_SincronizarDPaletsConStock", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@json", jsonDPalets);
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_GetParametro.sql (parametro activo de la empresa por nombre).</summary>
+    public Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_GetParametro", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@idparametro", idParametro);
         }, cancellationToken);
 
     public Task<JsonElement> ListarDPaletsPorAcopioAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)

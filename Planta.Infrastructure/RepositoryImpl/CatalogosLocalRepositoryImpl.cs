@@ -66,6 +66,16 @@ public sealed class CatalogosLocalRepositoryImpl(ApplicationDbContext context) :
         => Consultar("PLANTA_GETAcopio_Config", cancellationToken,
             ("idempresa", contexto.IdEmpresa), ("idproyecto", idProyecto), ("json", jsonAcopios));
 
+    /// <summary>SP: base-datos/sp/PLANTA_GETAcopio_ConfigConTarea.sql (igual que PLANTA_GETAcopio_Config y ademas los kilos por tarea de cada tipo).</summary>
+    public Task<JsonElement> ListarAcopiosConTareaAsync(ContextoUsuario contexto, string idProyecto, string jsonAcopios, CancellationToken cancellationToken = default)
+        => Consultar("PLANTA_GETAcopio_ConfigConTarea", cancellationToken,
+            ("idempresa", contexto.IdEmpresa), ("idproyecto", idProyecto), ("json", jsonAcopios));
+
+    /// <summary>SP: base-datos/sp/PLANTA_GetParametro.sql (parametro activo de la empresa por nombre).</summary>
+    public Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default)
+        => Consultar("PLANTA_GetParametro", cancellationToken,
+            ("idempresa", contexto.IdEmpresa), ("ruc", contexto.Ruc), ("idparametro", idParametro));
+
     public Task<JsonElement> ListarMotivosTrasladoAsync(CancellationToken cancellationToken = default)
         => Consultar("PLANTA_ListarMotivosTraslado", cancellationToken);
 

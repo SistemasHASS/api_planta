@@ -12,6 +12,12 @@ public interface IJornadasAnotadorRepository
     /// <summary>Líneas del acopio con su situación (libre / mía / ocupada) en el proceso de la jornada abierta (PLANTA_ListarJornadasAnotadorLineas).</summary>
     Task<JsonElement> ListarLineasAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
 
+    /// <summary>Igual que ListarLineasAsync pero solo las líneas de máquinas, con la máquina, sus curos y puestos por curo (PLANTA_ListarJornadasAnotadorLineasConMaquinas, con Flujo_Empaque activo).</summary>
+    Task<JsonElement> ListarLineasConMaquinasAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
+
+    /// <summary>Parametro activo de la empresa por nombre (PLANTA_GetParametro).</summary>
+    Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default);
+
     /// <summary>Toma o suelta líneas (PLANTA_SincronizarJornadasAnotadorLineas).</summary>
     Task<JsonElement> SincronizarLineasAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 
@@ -35,6 +41,15 @@ public interface IJornadasAnotadorRepository
 
     /// <summary>Cajas por empacador en la recolección abierta del usuario (PLANTA_ListarRecoleccionesCajasResumen).</summary>
     Task<JsonElement> ListarRecoleccionesCajasResumenAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
+
+    /// <summary>Stock actual del anotador: sus cajas que Logística aún no consumió en palets, por formato y tipo de empaque (PLANTA_ListarStockAnotador).</summary>
+    Task<JsonElement> ListarStockAnotadorAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
+
+    /// <summary>Producción del día: cajas de todos los empacadores en el proceso de la jornada abierta, una fila por anotación (PLANTA_ListarProduccionDia).</summary>
+    Task<JsonElement> ListarProduccionDiaAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
+
+    /// <summary>Corrige la cantidad de un registro de cajas con su AJUSTE de stock (PLANTA_CorregirCajasRecoleccion).</summary>
+    Task<JsonElement> CorregirCajasRecoleccionAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 
     /// <summary>Registra las cajas de un empacador en la recolección abierta (PLANTA_SincronizarRecoleccionesCajas).</summary>
     Task<JsonElement> SincronizarRecoleccionesCajasAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);

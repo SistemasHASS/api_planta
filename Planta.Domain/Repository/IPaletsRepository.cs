@@ -12,7 +12,13 @@ public interface IPaletsRepository
     Task<JsonElement> ListarPorProcesoAsync(ContextoUsuario contexto, string idProceso, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarStockCajasPorProcesoAsync(ContextoUsuario contexto, string idProceso, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, string jsonPalets, CancellationToken cancellationToken = default);
+    /// <summary>Igual que SincronizarAsync pero al eliminar un palet tambien anula sus movimientos de stock (solo con el parametro Flujo_Empaque activo).</summary>
+    Task<JsonElement> SincronizarConStockAsync(ContextoUsuario contexto, string jsonPalets, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarDPaletsAsync(ContextoUsuario contexto, string jsonDPalets, CancellationToken cancellationToken = default);
+    /// <summary>Igual que SincronizarDPaletsAsync pero valida y descuenta el stock de cajas (solo con el parametro Flujo_Empaque activo).</summary>
+    Task<JsonElement> SincronizarDPaletsConStockAsync(ContextoUsuario contexto, string jsonDPalets, CancellationToken cancellationToken = default);
+    /// <summary>Parametro activo de la empresa por nombre (PLANTA_GetParametro).</summary>
+    Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarDPaletsPorAcopioAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarDPaletsPorPaletAsync(ContextoUsuario contexto, string idPalet, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarCodigosRanchoPorLugarAsync(ContextoUsuario contexto, CodigosRanchoPorLugarRequest request, CancellationToken cancellationToken = default);

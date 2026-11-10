@@ -65,6 +65,21 @@ public sealed class JornadasAnotadorController(IJornadasAnotadorUseCase jornadas
     public async Task<IActionResult> ResumenRecoleccionesCajas(CancellationToken ct)
         => Ok(await jornadas.ListarRecoleccionesCajasResumenAsync(ct));
 
+    /// <summary>Stock actual del anotador: sus cajas que Logística aún no consumió en palets, por formato y tipo de empaque.</summary>
+    [HttpPost("stock")]
+    public async Task<IActionResult> StockAnotador(CancellationToken ct)
+        => Ok(await jornadas.ListarStockAnotadorAsync(ct));
+
+    /// <summary>Producción del día: cajas de todos los empacadores en el proceso de la jornada abierta, una fila por anotación.</summary>
+    [HttpPost("produccion")]
+    public async Task<IActionResult> ProduccionDia(CancellationToken ct)
+        => Ok(await jornadas.ListarProduccionDiaAsync(ct));
+
+    /// <summary>Corrige la cantidad de cajas de una anotación de la producción del día (no deja quitar cajas que ya están en palets).</summary>
+    [HttpPost("produccion/corregir")]
+    public async Task<IActionResult> CorregirCajasRecoleccion([FromBody] CorregirCajasRecoleccionRequest request, CancellationToken ct)
+        => Ok(await jornadas.CorregirCajasRecoleccionAsync(request, ct));
+
     /// <summary>Historial de recolecciones del anotador (idRecoleccion = 0 las lista; con un id devuelve el detalle de cajas de esa recolección).</summary>
     [HttpPost("recolecciones/cajas/historial")]
     public async Task<IActionResult> HistorialRecoleccionesCajas([FromBody] ListarRecoleccionesCajasHistorialRequest request, CancellationToken ct)

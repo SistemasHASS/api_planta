@@ -17,11 +17,69 @@ public sealed class PaletsServiceImpl(IPaletsRepository repository, IMaestrosSer
     public Task<JsonElement> ListarStockCajasPorProcesoAsync(ContextoUsuario contexto, string idProceso, CancellationToken cancellationToken = default)
         => repository.ListarStockCajasPorProcesoAsync(contexto, idProceso, cancellationToken);
 
-    public Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, string jsonPalets, CancellationToken cancellationToken = default)
-        => repository.SincronizarAsync(contexto, jsonPalets, cancellationToken);
+    /// <summary>Con Flujo_Empaque activo usa PLANTA_SincronizarPaletsConStock (eliminar un palet devuelve sus cajas al stock); sin el parametro, PLANTA_SincronizarPalets de siempre.</summary>
+    public async Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, string jsonPalets, CancellationToken cancellationToken = default)
+    {
+        var (activo, errorParametro) = await LeerFlujoEmpaqueAsync(contexto, cancellationToken);
+        if (errorParametro is { } error)
+        {
+            return error;
+        }
 
-    public Task<JsonElement> SincronizarDPaletsAsync(ContextoUsuario contexto, string jsonDPalets, CancellationToken cancellationToken = default)
-        => repository.SincronizarDPaletsAsync(contexto, jsonDPalets, cancellationToken);
+        return activo
+            ? await repository.SincronizarConStockAsync(contexto, jsonPalets, cancellationToken)
+            : await repository.SincronizarAsync(contexto, jsonPalets, cancellationToken);
+    }
+
+    /// <summary>
+    /// Parametro Flujo_Empaque activo (valor SI) -> PLANTA_SincronizarDPaletsConStock (valida y descuenta el stock de cajas).
+    /// Sin el parametro -> PLANTA_SincronizarDPalets de siempre. Si no se puede leer el parametro no se guarda nada y se devuelve su error.
+    /// </summary>
+    public async Task<JsonElement> SincronizarDPaletsAsync(ContextoUsuario contexto, string jsonDPalets, CancellationToken cancellationToken = default)
+    {
+        var (activo, errorParametro) = await LeerFlujoEmpaqueAsync(contexto, cancellationToken);
+        if (errorParametro is { } error)
+        {
+            return error;
+        }
+
+        return activo
+            ? await repository.SincronizarDPaletsConStockAsync(contexto, jsonDPalets, cancellationToken)
+            : await repository.SincronizarDPaletsAsync(contexto, jsonDPalets, cancellationToken);
+    }
+
+    /// <summary>Lee el parametro Flujo_Empaque. Si no se puede leer devuelve su error (no se guarda nada); si no, si esta activo (valor SI).</summary>
+    private async Task<(bool Activo, JsonElement? Error)> LeerFlujoEmpaqueAsync(ContextoUsuario contexto, CancellationToken cancellationToken)
+    {
+        var parametro = await repository.ObtenerParametroAsync(contexto, "Flujo_Empaque", cancellationToken);
+        if (parametro.ValueKind == JsonValueKind.Object && parametro.TryGetProperty("error", out var error) && error.ValueKind == JsonValueKind.True)
+        {
+            return (false, parametro);
+        }
+
+        return (FlujoEmpaqueActivo(parametro), null);
+    }
+
+    private static bool FlujoEmpaqueActivo(JsonElement sobre)
+    {
+        if (sobre.ValueKind != JsonValueKind.Object || !sobre.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        foreach (var fila in data.EnumerateArray())
+        {
+            var valor = fila.TryGetProperty("valor", out var v) && v.ValueKind == JsonValueKind.String ? v.GetString()?.Trim() : null;
+            var activo = !fila.TryGetProperty("activo", out var a) || a.ValueKind is JsonValueKind.True or JsonValueKind.Null
+                         || (a.ValueKind == JsonValueKind.Number && a.GetInt32() != 0);
+            if (activo && string.Equals(valor, "SI", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public Task<JsonElement> ListarDPaletsPorAcopioAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
         => repository.ListarDPaletsPorAcopioAsync(contexto, cancellationToken);

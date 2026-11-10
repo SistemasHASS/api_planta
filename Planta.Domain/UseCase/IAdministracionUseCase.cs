@@ -34,4 +34,21 @@ public interface IAdministracionUseCase
     Task<JsonElement> ListarAcopioMaquinasAsync(ListarAcopioMaquinasRequest request, CancellationToken cancellationToken = default);
     /// <summary>Crea o actualiza máquinas de un acopio (incluye activar/desactivar).</summary>
     Task<JsonElement> SincronizarAcopioMaquinasAsync(SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default);
+
+
+    /// <summary>Kilos de pago por formato y tipo de empaque con el peso real del formato (solo con Flujo_Empaque activo).</summary>
+    Task<JsonElement> ListarKilosPagoAsync(CancellationToken cancellationToken = default);
+    /// <summary>Guarda los kilos de pago por formato y tipo de empaque (solo con Flujo_Empaque activo).</summary>
+    Task<JsonElement> SincronizarKilosPagoAsync(SincronizarKilosPagoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Excel de control interno en pantalla: cajas y kilos de pago por jornada, empacador y producto (solo con Flujo_Empaque activo).</summary>
+    Task<JsonElement> ListarControlInternoAsync(ControlInternoRequest request, CancellationToken cancellationToken = default);
+    /// <summary>El mismo informe como archivo Excel.</summary>
+    Task<ArchivoGenerado> ExportarControlInternoExcelAsync(ControlInternoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Historial de kilos de los empacadores en un día (solo con Flujo_Empaque activo). El anotador solo ve su acopio.</summary>
+    Task<JsonElement> ListarHistorialKilosAsync(HistorialKilosRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Historial de kilos de todos los anotadores y sus empacadores en un día (administrador, con Flujo_Empaque activo).</summary>
+    Task<JsonElement> ListarHistorialKilosAdminAsync(HistorialKilosRequest request, CancellationToken cancellationToken = default);
 }

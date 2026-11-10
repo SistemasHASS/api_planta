@@ -204,6 +204,35 @@ public sealed class JornadasAnotadorUseCaseImpl(IJornadasAnotadorService jornada
     public Task<JsonElement> ListarRecoleccionesCajasResumenAsync(CancellationToken cancellationToken = default)
         => jornadas.ListarRecoleccionesCajasResumenAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true), cancellationToken);
 
+    public Task<JsonElement> ListarStockAnotadorAsync(CancellationToken cancellationToken = default)
+        => jornadas.ListarStockAnotadorAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true), cancellationToken);
+
+    public Task<JsonElement> ListarProduccionDiaAsync(CancellationToken cancellationToken = default)
+        => jornadas.ListarProduccionDiaAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true), cancellationToken);
+
+    public Task<JsonElement> CorregirCajasRecoleccionAsync(CorregirCajasRecoleccionRequest request, CancellationToken cancellationToken = default)
+    {
+        var contexto = ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true);
+        if (request.Id <= 0) throw new BadRequestException("El campo id es obligatorio para corregir cajas.");
+        if (request.CantidadCajas < 1 || request.CantidadCajas > 99999) throw new BadRequestException("La cantidad de cajas debe ser un entero entre 1 y 99999.");
+
+        if (request.FormatoId.HasValue != request.TipoEmpaqueId.HasValue) throw new BadRequestException("Para cambiar el producto envía el formato y el tipo de empaque juntos.");
+        if (request.FormatoId <= 0 || request.TipoEmpaqueId <= 0) throw new BadRequestException("El formato y el tipo de empaque deben ser válidos.");
+
+        var json = JsonSerializer.Serialize(new[]
+        {
+            new
+            {
+                id = request.Id,
+                cantidadCajas = request.CantidadCajas,
+                formatoId = request.FormatoId,
+                tipoEmpaqueId = request.TipoEmpaqueId,
+                calibreNombre = string.IsNullOrWhiteSpace(request.CalibreNombre) ? null : request.CalibreNombre.Trim()
+            }
+        });
+        return jornadas.CorregirCajasRecoleccionAsync(contexto, json, cancellationToken);
+    }
+
     public Task<JsonElement> SincronizarRecoleccionesAsync(SincronizarJornadaAnotadorRecoleccionRequest request, CancellationToken cancellationToken = default)
     {
         var contexto = ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true);

@@ -13,8 +13,19 @@ public sealed class JornadasAnotadorServiceImpl(IJornadasAnotadorRepository repo
     public Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => repository.SincronizarAsync(contexto, json, cancellationToken);
 
-    public Task<JsonElement> ListarLineasAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
-        => repository.ListarLineasAsync(contexto, cancellationToken);
+    /// <summary>Con el parametro Flujo_Empaque activo el anotador ve las máquinas (líneas de máquina con sus curos y puestos); sin el parametro, las líneas de siempre.</summary>
+    public async Task<JsonElement> ListarLineasAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
+    {
+        var (activo, errorParametro) = FlujoEmpaqueParametro.Leer(await repository.ObtenerParametroAsync(contexto, "Flujo_Empaque", cancellationToken));
+        if (errorParametro is { } error)
+        {
+            return error;
+        }
+
+        return activo
+            ? await repository.ListarLineasConMaquinasAsync(contexto, cancellationToken)
+            : await repository.ListarLineasAsync(contexto, cancellationToken);
+    }
 
     public Task<JsonElement> SincronizarLineasAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => repository.SincronizarLineasAsync(contexto, json, cancellationToken);
@@ -42,6 +53,15 @@ public sealed class JornadasAnotadorServiceImpl(IJornadasAnotadorRepository repo
 
     public Task<JsonElement> ListarRecoleccionesCajasResumenAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
         => repository.ListarRecoleccionesCajasResumenAsync(contexto, cancellationToken);
+
+    public Task<JsonElement> ListarStockAnotadorAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
+        => repository.ListarStockAnotadorAsync(contexto, cancellationToken);
+
+    public Task<JsonElement> ListarProduccionDiaAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
+        => repository.ListarProduccionDiaAsync(contexto, cancellationToken);
+
+    public Task<JsonElement> CorregirCajasRecoleccionAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
+        => repository.CorregirCajasRecoleccionAsync(contexto, json, cancellationToken);
 
     public Task<JsonElement> SincronizarRecoleccionesAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => repository.SincronizarRecoleccionesAsync(contexto, json, cancellationToken);

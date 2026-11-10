@@ -68,6 +68,20 @@ public sealed class ListarRecoleccionesCajasHistorialRequest
     public int IdRecoleccion { get; set; }
 }
 
+/// <summary>
+/// Cuerpo de api/jornadas-anotador/produccion/corregir: corrige un registro de cajas (una anotación de un empacador) de la producción del día o del historial: la cantidad y, si se envían
+/// FormatoId y TipoEmpaqueId (siempre los dos juntos), también el formato y el tipo de empaque. CalibreNombre es el calibre del tipo de empaque elegido (el nombre sale de apimaestra).
+/// El acopio y el usuario salen del token.
+/// </summary>
+public sealed class CorregirCajasRecoleccionRequest
+{
+    public int Id { get; set; }
+    public int CantidadCajas { get; set; }
+    public int? FormatoId { get; set; }
+    public int? TipoEmpaqueId { get; set; }
+    public string? CalibreNombre { get; set; }
+}
+
 /// <summary>Cuerpo de api/jornadas-anotador/tipos-empaque/listar: tipos de empaque que la matriz de compatibilidad asocia al formato. Empresa y RUC salen del token.</summary>
 public sealed class ListarTiposEmpaquePorMatrizRequest
 {

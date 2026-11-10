@@ -41,6 +41,15 @@ public interface IJornadasAnotadorUseCase
     /// <summary>Cajas registradas por empacador en la recolección abierta del anotador.</summary>
     Task<JsonElement> ListarRecoleccionesCajasResumenAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Stock actual del anotador (sus cajas que Logística aún no consumió en palets).</summary>
+    Task<JsonElement> ListarStockAnotadorAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Producción del día: cajas de todos los empacadores en el proceso de la jornada abierta del acopio.</summary>
+    Task<JsonElement> ListarProduccionDiaAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Corrige la cantidad de cajas de una anotación de la producción del día.</summary>
+    Task<JsonElement> CorregirCajasRecoleccionAsync(CorregirCajasRecoleccionRequest request, CancellationToken cancellationToken = default);
+
     /// <summary>Inicia (nuevo) o cierra (editado) una recolección del anotador.</summary>
     Task<JsonElement> SincronizarRecoleccionesAsync(SincronizarJornadaAnotadorRecoleccionRequest request, CancellationToken cancellationToken = default);
 }

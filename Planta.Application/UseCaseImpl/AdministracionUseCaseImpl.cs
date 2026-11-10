@@ -67,4 +67,23 @@ public sealed class AdministracionUseCaseImpl(IAdministracionService administrac
 
     public Task<JsonElement> SincronizarAcopioMaquinasAsync(SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
         => administracion.SincronizarAcopioMaquinasAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), request, cancellationToken);
+
+
+    public Task<JsonElement> ListarKilosPagoAsync(CancellationToken cancellationToken = default)
+        => administracion.ListarKilosPagoAsync(ContextoDeUsuario.Crear(currentUser), cancellationToken);
+
+    public Task<JsonElement> SincronizarKilosPagoAsync(SincronizarKilosPagoRequest request, CancellationToken cancellationToken = default)
+        => administracion.SincronizarKilosPagoAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), request, cancellationToken);
+
+    public Task<JsonElement> ListarControlInternoAsync(ControlInternoRequest request, CancellationToken cancellationToken = default)
+        => administracion.ListarControlInternoAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+
+    public Task<ArchivoGenerado> ExportarControlInternoExcelAsync(ControlInternoRequest request, CancellationToken cancellationToken = default)
+        => administracion.ExportarControlInternoExcelAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), request, cancellationToken);
+
+    public Task<JsonElement> ListarHistorialKilosAsync(HistorialKilosRequest request, CancellationToken cancellationToken = default)
+        => administracion.ListarHistorialKilosAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), request, cancellationToken);
+
+    public Task<JsonElement> ListarHistorialKilosAdminAsync(HistorialKilosRequest request, CancellationToken cancellationToken = default)
+        => administracion.ListarHistorialKilosAdminAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), request, cancellationToken);
 }

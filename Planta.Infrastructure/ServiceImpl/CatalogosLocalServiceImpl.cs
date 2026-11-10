@@ -26,8 +26,23 @@ public sealed class CatalogosLocalServiceImpl(ICatalogosLocalRepository reposito
     public async Task<JsonElement> ListarVariedadesAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
         => await repository.ListarVariedadesAsync(contexto, await DeApimaestra(MaestroExterno.Variedades, contexto, cancellationToken), cancellationToken);
 
+    /// <summary>
+    /// Parametro Flujo_Empaque activo (valor SI) -> PLANTA_GETAcopio_ConfigConTarea (cada tipo de proceso trae sus kilos por tarea).
+    /// Sin el parametro -> PLANTA_GETAcopio_Config de siempre. Si no se puede leer el parametro se devuelve su error.
+    /// </summary>
     public async Task<JsonElement> ListarAcopiosAsync(ContextoUsuario contexto, string idProyecto, CancellationToken cancellationToken = default)
-        => await repository.ListarAcopiosAsync(contexto, idProyecto, await DeApimaestra(MaestroExterno.Acopios, contexto, cancellationToken), cancellationToken);
+    {
+        var (activo, errorParametro) = FlujoEmpaqueParametro.Leer(await repository.ObtenerParametroAsync(contexto, "Flujo_Empaque", cancellationToken));
+        if (errorParametro is { } error)
+        {
+            return error;
+        }
+
+        var acopios = await DeApimaestra(MaestroExterno.Acopios, contexto, cancellationToken);
+        return activo
+            ? await repository.ListarAcopiosConTareaAsync(contexto, idProyecto, acopios, cancellationToken)
+            : await repository.ListarAcopiosAsync(contexto, idProyecto, acopios, cancellationToken);
+    }
 
     public Task<JsonElement> ListarMotivosTrasladoAsync(CancellationToken cancellationToken = default)
         => repository.ListarMotivosTrasladoAsync(cancellationToken);

@@ -36,6 +36,25 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
         }, cancellationToken);
 
+    /// <summary>SP: base-datos/sp/PLANTA_ListarJornadasAnotadorLineasConMaquinas.sql (solo líneas de máquinas, con curos y puestos por curo).</summary>
+    public Task<JsonElement> ListarLineasConMaquinasAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarJornadasAnotadorLineasConMaquinas", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_GetParametro.sql (parametro activo de la empresa por nombre).</summary>
+    public Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_GetParametro", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@idparametro", idParametro);
+        }, cancellationToken);
+
     public Task<JsonElement> SincronizarLineasAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_SincronizarJornadasAnotadorLineas", command =>
         {
@@ -115,6 +134,38 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@idempresa", contexto.IdEmpresa);
             Agregar(command, "@ruc", contexto.Ruc);
             Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarStockAnotador.sql (cajas del anotador que Logística aún no consumió en palets).</summary>
+    public Task<JsonElement> ListarStockAnotadorAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarStockAnotador", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarProduccionDia.sql (cajas de todos los empacadores en el proceso de la jornada abierta).</summary>
+    public Task<JsonElement> ListarProduccionDiaAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarProduccionDia", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_CorregirCajasRecoleccion.sql (cambia la cantidad y, si se envía, el formato y el tipo de empaque de un registro de cajas y deja los AJUSTE de stock).</summary>
+    public Task<JsonElement> CorregirCajasRecoleccionAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_CorregirCajasRecoleccion", command =>
+        {
+            Agregar(command, "@Json", json);
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@rol", contexto.Rol);
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
         }, cancellationToken);
 

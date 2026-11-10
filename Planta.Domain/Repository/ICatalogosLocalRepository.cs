@@ -19,6 +19,10 @@ public interface ICatalogosLocalRepository
     Task<JsonElement> ListarConsignatariosAsync(ContextoUsuario contexto, string jsonClientes, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarVariedadesAsync(ContextoUsuario contexto, string jsonVariedades, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarAcopiosAsync(ContextoUsuario contexto, string idProyecto, string jsonAcopios, CancellationToken cancellationToken = default);
+    /// <summary>Igual que ListarAcopiosAsync pero cada tipo de proceso trae sus kilos por tarea (solo con el parametro Flujo_Empaque activo).</summary>
+    Task<JsonElement> ListarAcopiosConTareaAsync(ContextoUsuario contexto, string idProyecto, string jsonAcopios, CancellationToken cancellationToken = default);
+    /// <summary>Parametro activo de la empresa por nombre (PLANTA_GetParametro).</summary>
+    Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default);
 
     // Datos para las guias de remision
     Task<JsonElement> ListarMotivosTrasladoAsync(CancellationToken cancellationToken = default);

@@ -104,8 +104,22 @@ public sealed class AdministracionServiceImpl(IAdministracionRepository reposito
         return string.IsNullOrEmpty(codigo) || codigo == "0" ? "-" : codigo;
     }
 
-    public Task<JsonElement> SincronizarAcopioConfigAsync(ContextoUsuario contexto, SincronizarAcopioConfigRequest request, CancellationToken cancellationToken = default)
-        => repository.SincronizarAcopioConfigAsync(contexto, request, cancellationToken);
+    /// <summary>
+    /// Parametro Flujo_Empaque activo (valor SI) -> PLANTA_SincronizarAcopio_ConfigConTarea (guarda tambien los kilos por tarea).
+    /// Sin el parametro -> PLANTA_SincronizarAcopio_Config de siempre. Si no se puede leer el parametro no se guarda nada y se devuelve su error.
+    /// </summary>
+    public async Task<JsonElement> SincronizarAcopioConfigAsync(ContextoUsuario contexto, SincronizarAcopioConfigRequest request, CancellationToken cancellationToken = default)
+    {
+        var (activo, errorParametro) = FlujoEmpaqueParametro.Leer(await repository.ObtenerParametroAsync(contexto, "Flujo_Empaque", cancellationToken));
+        if (errorParametro is { } error)
+        {
+            return error;
+        }
+
+        return activo
+            ? await repository.SincronizarAcopioConfigConTareaAsync(contexto, request, cancellationToken)
+            : await repository.SincronizarAcopioConfigAsync(contexto, request, cancellationToken);
+    }
 
     /// <summary>Usuarios de la apimaestra (aplicacion PLANTA) con el acopio y la serie de guia que tienen asignados en la base propia.</summary>
     public async Task<JsonElement> ListarUsuariosAcopioAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
@@ -159,6 +173,113 @@ public sealed class AdministracionServiceImpl(IAdministracionRepository reposito
     public Task<JsonElement> ListarAcopioMaquinasAsync(ContextoUsuario contexto, ListarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
         => repository.ListarAcopioMaquinasAsync(contexto, request, cancellationToken);
 
-    public Task<JsonElement> SincronizarAcopioMaquinasAsync(ContextoUsuario contexto, SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
-        => repository.SincronizarAcopioMaquinasAsync(contexto, request, cancellationToken);
+    /// <summary>Con el parametro Flujo_Empaque activo cada máquina deja también su línea (la que ve el anotador); sin el parametro, como siempre.</summary>
+    public async Task<JsonElement> SincronizarAcopioMaquinasAsync(ContextoUsuario contexto, SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
+    {
+        var (activo, errorParametro) = FlujoEmpaqueParametro.Leer(await repository.ObtenerParametroAsync(contexto, "Flujo_Empaque", cancellationToken));
+        if (errorParametro is { } error)
+        {
+            return error;
+        }
+
+        return activo
+            ? await repository.SincronizarAcopioMaquinasConLineasAsync(contexto, request, cancellationToken)
+            : await repository.SincronizarAcopioMaquinasAsync(contexto, request, cancellationToken);
+    }
+
+
+    public Task<JsonElement> ListarKilosPagoAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
+        => repository.ListarKilosPagoAsync(contexto, cancellationToken);
+
+    public Task<JsonElement> SincronizarKilosPagoAsync(ContextoUsuario contexto, SincronizarKilosPagoRequest request, CancellationToken cancellationToken = default)
+        => repository.SincronizarKilosPagoAsync(contexto, request, cancellationToken);
+
+    public Task<JsonElement> ListarControlInternoAsync(ContextoUsuario contexto, ControlInternoRequest request, CancellationToken cancellationToken = default)
+        => repository.ListarControlInternoAsync(contexto, ValidarRangoControlInterno(request), cancellationToken);
+
+    public async Task<ArchivoGenerado> ExportarControlInternoExcelAsync(ContextoUsuario contexto, ControlInternoRequest request, CancellationToken cancellationToken = default)
+    {
+        request = ValidarRangoControlInterno(request);
+        var sobre = await repository.ListarControlInternoAsync(contexto, request, cancellationToken);
+        if (sobre.TryGetProperty("error", out var error) && error.ValueKind == JsonValueKind.True)
+        {
+            var mensaje = sobre.TryGetProperty("mensaje", out var m) && m.ValueKind == JsonValueKind.String ? m.GetString() : null;
+            throw new BadRequestException(mensaje ?? "No se pudo obtener el control interno.");
+        }
+
+        if (!sobre.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object
+            || !data.TryGetProperty("detalle", out var detalle) || detalle.ValueKind != JsonValueKind.Array || detalle.GetArrayLength() == 0)
+        {
+            throw new BadRequestException("No hubo movimiento de empacadores en ese rango de fechas.");
+        }
+
+        var planta = string.IsNullOrWhiteSpace(request.CodigoAcopio) ? "Todas las plantas" : request.CodigoAcopio!.Replace(",", ", ");
+        var bytes = excel.GenerarControlInterno(data, request.FechaDesde, request.FechaHasta, planta, contexto.Usuario);
+        var nombre = $"control_interno_{request.FechaDesde.Replace("-", string.Empty)}_{request.FechaHasta.Replace("-", string.Empty)}"
+            + (string.IsNullOrWhiteSpace(request.CodigoAcopio) ? string.Empty : $"_{request.CodigoAcopio!.Replace(",", "-").Replace(" ", string.Empty)}") + ".xlsx";
+        return new ArchivoGenerado(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", nombre);
+    }
+
+    /// <summary>Las fechas deben venir como AAAA-MM-DD y la de inicio no puede ser posterior a la de fin; el acopio vacío es "todas".</summary>
+    private static ControlInternoRequest ValidarRangoControlInterno(ControlInternoRequest request)
+    {
+        var desde = (request.FechaDesde ?? string.Empty).Trim();
+        var hasta = (request.FechaHasta ?? string.Empty).Trim();
+        if (desde.Length == 0 || hasta.Length == 0)
+        {
+            throw new BadRequestException("Indica la fecha de inicio y la de fin.");
+        }
+
+        if (!DateOnly.TryParseExact(desde, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d)
+            || !DateOnly.TryParseExact(hasta, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var h))
+        {
+            throw new BadRequestException("Las fechas deben venir como AAAA-MM-DD.");
+        }
+
+        if (d > h)
+        {
+            throw new BadRequestException("La fecha de inicio no puede ser posterior a la de fin.");
+        }
+
+        var acopio = request.CodigoAcopio?.Trim();
+        return new ControlInternoRequest { FechaDesde = desde, FechaHasta = hasta, CodigoAcopio = string.IsNullOrEmpty(acopio) ? null : acopio };
+    }
+
+    public Task<JsonElement> ListarHistorialKilosAsync(ContextoUsuario contexto, HistorialKilosRequest request, CancellationToken cancellationToken = default)
+    {
+        var fecha = (request.Fecha ?? string.Empty).Trim();
+        if (fecha.Length == 0)
+        {
+            throw new BadRequestException("Selecciona una fecha.");
+        }
+
+        if (!DateOnly.TryParseExact(fecha, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _))
+        {
+            throw new BadRequestException("La fecha debe venir como AAAA-MM-DD.");
+        }
+
+        // Los acopios son un filtro libre (vacío = todos); lo que cada rol ve lo limita el repositorio: el anotador solo lo que él registró.
+        var acopio = request.CodigoAcopio?.Trim();
+
+        return repository.ListarHistorialKilosAsync(contexto, new HistorialKilosRequest { Fecha = fecha, CodigoAcopio = string.IsNullOrEmpty(acopio) ? null : acopio }, cancellationToken);
+    }
+
+    public Task<JsonElement> ListarHistorialKilosAdminAsync(ContextoUsuario contexto, HistorialKilosRequest request, CancellationToken cancellationToken = default)
+    {
+        var fecha = (request.Fecha ?? string.Empty).Trim();
+        if (fecha.Length == 0)
+        {
+            throw new BadRequestException("Selecciona una fecha.");
+        }
+
+        if (!DateOnly.TryParseExact(fecha, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _))
+        {
+            throw new BadRequestException("La fecha debe venir como AAAA-MM-DD.");
+        }
+
+        // Los acopios son un filtro libre (vacío = todos); el administrador ve lo de todos los anotadores.
+        var acopio = request.CodigoAcopio?.Trim();
+
+        return repository.ListarHistorialKilosAdminAsync(contexto, new HistorialKilosRequest { Fecha = fecha, CodigoAcopio = string.IsNullOrEmpty(acopio) ? null : acopio }, cancellationToken);
+    }
 }
