@@ -205,6 +205,95 @@ public sealed class ReportesServiceImpl(IReportesRepository repository, IMaestro
         return new ArchivoGenerado(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"avance-cosechador-{desde}_{hasta}.xlsx");
     }
 
+    public Task<JsonElement> ProcesosPlanillaEmpaqueAsync(ContextoUsuario contexto, PlanillaEmpaqueProcesosRequest request, CancellationToken cancellationToken = default)
+    {
+        var fecha = (request.Fecha ?? string.Empty).Trim();
+        if (fecha.Length == 0)
+        {
+            throw new BadRequestException("Selecciona una fecha.");
+        }
+
+        if (!DateOnly.TryParseExact(fecha, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _))
+        {
+            throw new BadRequestException("La fecha debe venir como AAAA-MM-DD.");
+        }
+
+        // El acopio vacío es "todas las plantas".
+        return repository.ProcesosPlanillaEmpaqueAsync(contexto, new PlanillaEmpaqueProcesosRequest { Fecha = fecha, CodigoAcopio = request.CodigoAcopio?.Trim() }, cancellationToken);
+    }
+
+    public Task<JsonElement> AnotadoresPlanillaEmpaqueAsync(ContextoUsuario contexto, PlanillaEmpaqueAnotadoresRequest request, CancellationToken cancellationToken = default)
+        => repository.AnotadoresPlanillaEmpaqueAsync(contexto, new PlanillaEmpaqueAnotadoresRequest
+        {
+            CodigoAcopio = (request.CodigoAcopio ?? string.Empty).Trim(),
+            IdProceso = (request.IdProceso ?? string.Empty).Trim(),
+        }, cancellationToken);
+
+    public async Task<ArchivoGenerado> ExportarPlanillaProduccionExcelAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default)
+    {
+        request = LimpiarPlanillaEmpaque(request);
+        var sobre = await repository.PlanillaEmpaqueProduccionAsync(contexto, request, cancellationToken);
+        var data = DataDePlanilla(sobre, "No se pudo obtener la planilla de producción.");
+        var armado = PlanillaEmpaqueArmador.Produccion(data)
+            ?? throw new BadRequestException(SinMovimientoPlanilla(request, "No hay cajas registradas en ese proceso."));
+
+        armado.Planilla.Logo = await LogoDeEmpresaAsync(webRootPath, contexto.Ruc, cancellationToken);
+        var bytes = excel.GenerarPlanillaEmpaque(armado.Planilla);
+        return new ArchivoGenerado(bytes, TipoContenidoExcel, PlanillaEmpaqueArmador.NombreArchivo("produccion_empaque", armado, request.IdUsuarioAnotador));
+    }
+
+    public async Task<ArchivoGenerado> ExportarPlanillaTareoExcelAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default)
+    {
+        request = LimpiarPlanillaEmpaque(request);
+        var sobre = await repository.PlanillaEmpaqueTareoAsync(contexto, request, cancellationToken);
+        var data = DataDePlanilla(sobre, "No se pudo obtener el tareo.");
+        var armado = PlanillaEmpaqueArmador.Tareo(data)
+            ?? throw new BadRequestException(SinMovimientoPlanilla(request, "Todavía no hay empacadores asignados en ese proceso."));
+
+        armado.Planilla.Logo = await LogoDeEmpresaAsync(webRootPath, contexto.Ruc, cancellationToken);
+        var bytes = excel.GenerarPlanillaEmpaque(armado.Planilla);
+        return new ArchivoGenerado(bytes, TipoContenidoExcel, PlanillaEmpaqueArmador.NombreArchivo("tareo", armado, request.IdUsuarioAnotador));
+    }
+
+    /// <summary>El logo de la empresa del usuario (wwwroot/assets/logos/{RUC}.jpg), el mismo que usa la ficha de composición del palet. Sin archivo, null: la planilla sale sin logo.</summary>
+    private static async Task<byte[]?> LogoDeEmpresaAsync(string? webRootPath, string? ruc, CancellationToken cancellationToken)
+    {
+        var rucLimpio = ruc?.Trim() ?? string.Empty;
+        if (string.IsNullOrEmpty(webRootPath) || rucLimpio.Length == 0 || rucLimpio != Path.GetFileName(rucLimpio))
+        {
+            return null;
+        }
+
+        var ruta = Path.Combine(webRootPath, "assets", "logos", $"{rucLimpio}.jpg");
+        return File.Exists(ruta) ? await File.ReadAllBytesAsync(ruta, cancellationToken) : null;
+    }
+
+    private const string TipoContenidoExcel = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+    private static PlanillaEmpaqueRequest LimpiarPlanillaEmpaque(PlanillaEmpaqueRequest request)
+        => new()
+        {
+            CodigoAcopio = (request.CodigoAcopio ?? string.Empty).Trim(),
+            IdProceso = (request.IdProceso ?? string.Empty).Trim(),
+            IdUsuarioAnotador = request.IdUsuarioAnotador?.Trim(),
+        };
+
+    /// <summary>El data del SP; si el SP devolvió error se lanza con su mensaje.</summary>
+    private static JsonElement DataDePlanilla(JsonElement sobre, string mensajePorDefecto)
+    {
+        if (sobre.TryGetProperty("error", out var error) && error.ValueKind == JsonValueKind.True)
+        {
+            var mensaje = sobre.TryGetProperty("mensaje", out var m) && m.ValueKind == JsonValueKind.String ? m.GetString() : null;
+            throw new BadRequestException(string.IsNullOrWhiteSpace(mensaje) ? mensajePorDefecto : mensaje);
+        }
+
+        return sobre.TryGetProperty("data", out var data) ? data : default;
+    }
+
+    /// <summary>El aviso cuando el proceso no tiene datos; si se pidió un anotador, dice que es de ese anotador.</summary>
+    private static string SinMovimientoPlanilla(PlanillaEmpaqueRequest request, string general)
+        => string.IsNullOrEmpty(request.IdUsuarioAnotador) ? general : "El anotador elegido no tiene datos en este proceso.";
+
     private static string Texto(JsonElement fila, string propiedad)
         => fila.TryGetProperty(propiedad, out var v) && v.ValueKind != JsonValueKind.Null ? v.ToString().Trim() : "";
 

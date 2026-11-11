@@ -7,7 +7,7 @@ using Planta.Domain.Service;
 namespace Planta.Infrastructure.ServiceImpl;
 
 /// <summary>Excel con EPPlus (licencia no comercial). Encabezado azul con letras blancas, filtro y columnas autoajustadas.</summary>
-public sealed class ExcelServiceImpl : IExcelService
+public sealed partial class ExcelServiceImpl : IExcelService
 {
     /// <summary>Columnas que se escriben como numero (y su formato). El resto va como texto.</summary>
     private static readonly Dictionary<string, string> ColumnasNumericas = new()

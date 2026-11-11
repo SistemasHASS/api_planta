@@ -16,8 +16,6 @@ public interface IAdministracionRepository
     Task<JsonElement> SincronizarAcopioConfigAsync(ContextoUsuario contexto, SincronizarAcopioConfigRequest request, CancellationToken cancellationToken = default);
     /// <summary>Igual que SincronizarAcopioConfigAsync pero guarda tambien los kilos por tarea de cada tipo (solo con el parametro Flujo_Empaque activo).</summary>
     Task<JsonElement> SincronizarAcopioConfigConTareaAsync(ContextoUsuario contexto, SincronizarAcopioConfigRequest request, CancellationToken cancellationToken = default);
-    /// <summary>Igual que SincronizarAcopioMaquinasAsync y ademas deja cada máquina con su línea (PLANTA_SincronizarAcopioMaquinasConLineas, con Flujo_Empaque activo).</summary>
-    Task<JsonElement> SincronizarAcopioMaquinasConLineasAsync(ContextoUsuario contexto, SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default);
     /// <summary>jsonUsuarios = lista de usuarios de la apimaestra (texto JSON); el SP les agrega el acopio y la serie.</summary>
     Task<JsonElement> ListarUsuariosAcopioAsync(string jsonUsuarios, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarUsuariosAsync(ContextoUsuario contexto, SincronizarUsuariosRequest request, CancellationToken cancellationToken = default);

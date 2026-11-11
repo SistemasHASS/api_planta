@@ -5,16 +5,16 @@ using Planta.Infrastructure.Persistence;
 
 namespace Planta.Infrastructure.RepositoryImpl;
 
-/// <summary>SP: base-datos/sp/PLANTA_*JornadasAnotador.sql. Solo llama al SP con sus parametros y devuelve su respuesta.</summary>
+/// <summary>SP: base-datos/sp/PLANTA_*JornadasAnotador.sql. Solo llama al SP: el JSON del cliente va en @Json y lo del token (empresa, ruc, usuario, rol, acopio, nombre) como parametros.</summary>
 public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context) : BaseRepository(context), IJornadasAnotadorRepository
 {
-    public Task<JsonElement> ListarAsync(ContextoUsuario contexto, ListarJornadasAnotadorRequest request, CancellationToken cancellationToken = default)
+    public Task<JsonElement> ListarAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_ListarJornadasAnotador", command =>
         {
             Agregar(command, "@idempresa", contexto.IdEmpresa);
             Agregar(command, "@ruc", contexto.Ruc);
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
-            Agregar(command, "@soloAbierta", request.SoloAbierta);
+            Agregar(command, "@Json", json);
         }, cancellationToken);
 
     public Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
@@ -25,6 +25,8 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@ruc", contexto.Ruc);
             Agregar(command, "@usuario", contexto.Usuario);
             Agregar(command, "@rol", contexto.Rol);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+            Agregar(command, "@nombreUsuario", contexto.NombreUsuario);
         }, cancellationToken);
 
     public Task<JsonElement> ListarLineasAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
@@ -36,25 +38,6 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
         }, cancellationToken);
 
-    /// <summary>SP: base-datos/sp/PLANTA_ListarJornadasAnotadorLineasConMaquinas.sql (solo líneas de máquinas, con curos y puestos por curo).</summary>
-    public Task<JsonElement> ListarLineasConMaquinasAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
-        => EjecutarSobreAsync("PLANTA_ListarJornadasAnotadorLineasConMaquinas", command =>
-        {
-            Agregar(command, "@idempresa", contexto.IdEmpresa);
-            Agregar(command, "@ruc", contexto.Ruc);
-            Agregar(command, "@usuario", contexto.Usuario);
-            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
-        }, cancellationToken);
-
-    /// <summary>SP: base-datos/sp/PLANTA_GetParametro.sql (parametro activo de la empresa por nombre).</summary>
-    public Task<JsonElement> ObtenerParametroAsync(ContextoUsuario contexto, string idParametro, CancellationToken cancellationToken = default)
-        => EjecutarSobreAsync("PLANTA_GetParametro", command =>
-        {
-            Agregar(command, "@idempresa", contexto.IdEmpresa);
-            Agregar(command, "@ruc", contexto.Ruc);
-            Agregar(command, "@idparametro", idParametro);
-        }, cancellationToken);
-
     public Task<JsonElement> SincronizarLineasAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_SincronizarJornadasAnotadorLineas", command =>
         {
@@ -63,13 +46,15 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@ruc", contexto.Ruc);
             Agregar(command, "@usuario", contexto.Usuario);
             Agregar(command, "@rol", contexto.Rol);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+            Agregar(command, "@nombreUsuario", contexto.NombreUsuario);
         }, cancellationToken);
 
-    public Task<JsonElement> BuscarTrabajadorAsync(ContextoUsuario contexto, string numeroDocumento, CancellationToken cancellationToken = default)
+    public Task<JsonElement> BuscarTrabajadorAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_BuscarTrabajador", command =>
         {
             Agregar(command, "@ruc", contexto.Ruc);
-            Agregar(command, "@numeroDocumento", numeroDocumento);
+            Agregar(command, "@Json", json);
         }, cancellationToken);
 
     public Task<JsonElement> ListarPuestosAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
@@ -88,15 +73,15 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@ruc", contexto.Ruc);
             Agregar(command, "@usuario", contexto.Usuario);
             Agregar(command, "@rol", contexto.Rol);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
         }, cancellationToken);
 
-    public Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(ContextoUsuario contexto, string codigoCultivo, int formatoId, CancellationToken cancellationToken = default)
+    public Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_ListarTiposEmpaquePorMatriz", command =>
         {
             Agregar(command, "@idempresa", contexto.IdEmpresa);
             Agregar(command, "@ruc", contexto.Ruc);
-            Agregar(command, "@codigoCultivo", codigoCultivo);
-            Agregar(command, "@formatoId", formatoId);
+            Agregar(command, "@Json", json);
         }, cancellationToken);
 
     public Task<JsonElement> SincronizarRecoleccionesCajasAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
@@ -107,6 +92,7 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@ruc", contexto.Ruc);
             Agregar(command, "@usuario", contexto.Usuario);
             Agregar(command, "@rol", contexto.Rol);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
         }, cancellationToken);
 
     public Task<JsonElement> ListarRecoleccionesAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
@@ -118,14 +104,14 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
         }, cancellationToken);
 
-    public Task<JsonElement> ListarRecoleccionesCajasHistorialAsync(ContextoUsuario contexto, int idRecoleccion, CancellationToken cancellationToken = default)
+    public Task<JsonElement> ListarRecoleccionesCajasHistorialAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_ListarRecoleccionesCajasHistorial", command =>
         {
             Agregar(command, "@idempresa", contexto.IdEmpresa);
             Agregar(command, "@ruc", contexto.Ruc);
             Agregar(command, "@usuario", contexto.Usuario);
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
-            Agregar(command, "@idRecoleccion", idRecoleccion);
+            Agregar(command, "@Json", json);
         }, cancellationToken);
 
     public Task<JsonElement> ListarRecoleccionesCajasResumenAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
@@ -177,5 +163,17 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@ruc", contexto.Ruc);
             Agregar(command, "@usuario", contexto.Usuario);
             Agregar(command, "@rol", contexto.Rol);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+            Agregar(command, "@nombreUsuario", contexto.NombreUsuario);
+        }, cancellationToken);
+
+    public Task<JsonElement> ListarMovimientosStockAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarMovimientosStock", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+            Agregar(command, "@Json", json);
         }, cancellationToken);
 }

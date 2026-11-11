@@ -1,3 +1,5 @@
+using System.Data;
+using System.Globalization;
 using System.Text.Json;
 using Planta.Domain.Dtos;
 using Planta.Domain.Repository;
@@ -122,4 +124,46 @@ public sealed class ReportesRepositoryImpl(ApplicationDbContext context) : BaseR
         => valores is { Count: > 0 } ? JsonSerializer.Serialize(valores.Select(v => v.Trim()).Where(v => v.Length > 0)) : null;
 
     private static string? NuloSiVacio(string? valor) => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarProcesosPlanillaEmpaque.sql (los procesos de una fecha, con sus cajas y supervisores; el SP valida Flujo_Empaque). La fecha ya viene validada (AAAA-MM-DD).</summary>
+    public Task<JsonElement> ProcesosPlanillaEmpaqueAsync(ContextoUsuario contexto, PlanillaEmpaqueProcesosRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarProcesosPlanillaEmpaque", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@fecha", DateTime.ParseExact(request.Fecha, "yyyy-MM-dd", CultureInfo.InvariantCulture), DbType.Date);
+            Agregar(command, "@codigoAcopio", NuloSiVacio(request.CodigoAcopio));
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarAnotadoresPlanillaEmpaque.sql (los anotadores de un proceso: los que registraron cajas o tomaron una línea).</summary>
+    public Task<JsonElement> AnotadoresPlanillaEmpaqueAsync(ContextoUsuario contexto, PlanillaEmpaqueAnotadoresRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarAnotadoresPlanillaEmpaque", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@codigoAcopio", request.CodigoAcopio);
+            Agregar(command, "@idProceso", request.IdProceso);
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarPlanillaEmpaqueProduccion.sql (las cajas de cada empacador por recolección; anotador vacío = todos).</summary>
+    public Task<JsonElement> PlanillaEmpaqueProduccionAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarPlanillaEmpaqueProduccion", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@codigoAcopio", request.CodigoAcopio);
+            Agregar(command, "@idProceso", request.IdProceso);
+            Agregar(command, "@idUsuarioAnotador", NuloSiVacio(request.IdUsuarioAnotador));
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarPlanillaEmpaqueTareo.sql (los empacadores que cada anotador asignó a un puesto; anotador vacío = todos).</summary>
+    public Task<JsonElement> PlanillaEmpaqueTareoAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarPlanillaEmpaqueTareo", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@codigoAcopio", request.CodigoAcopio);
+            Agregar(command, "@idProceso", request.IdProceso);
+            Agregar(command, "@idUsuarioAnotador", NuloSiVacio(request.IdUsuarioAnotador));
+        }, cancellationToken);
 }

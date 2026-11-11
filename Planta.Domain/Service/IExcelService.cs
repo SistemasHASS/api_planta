@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Planta.Domain.Dtos;
 
 namespace Planta.Domain.Service;
 
@@ -15,4 +16,10 @@ public interface IExcelService
     /// cada producto ocupa dos columnas (cajas y kilos de pago) y hay una fila de totales.
     /// </summary>
     byte[] GenerarControlInterno(JsonElement data, string desde, string hasta, string planta, string generadoPor);
+
+    /// <summary>
+    /// Excel de la planilla de empaque con el formato de la empresa (logo, cabecera, 21 personas por hoja): una hoja por cada página de <paramref name="planilla"/>.
+    /// Sirve para la planilla de producción (con cajas por recolección) y para el tareo (sin cajas).
+    /// </summary>
+    byte[] GenerarPlanillaEmpaque(PlanillaEmpaque planilla);
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Planta.Domain.Constants;
 using Planta.Domain.Dtos;
@@ -13,7 +14,7 @@ namespace Planta.Api.Controller;
 [ApiController]
 [Route("api/reportes")]
 [Authorize(Roles = $"{Roles.Admin},{Roles.Monitor}")]
-public sealed class ReportesController(IReportesUseCase reportes) : ControllerBase
+public sealed class ReportesController(IReportesUseCase reportes, IWebHostEnvironment entorno) : ControllerBase
 {
     /// <summary>Reporte diario: KPIs de pallets/cajas/kg, produccion por variedad, kg por acopio y avance por consignatario.</summary>
     [HttpPost("reporte-diario")]
@@ -95,4 +96,30 @@ public sealed class ReportesController(IReportesUseCase reportes) : ControllerBa
     [HttpPost("reporte-avance-cosechador")]
     public async Task<IActionResult> ReporteAvanceCosechador([FromBody] ReporteAvanceCosechadorRequest request, CancellationToken ct)
         => Ok(await reportes.ReporteAvanceCosechadorAsync(request, ct));
+
+    /// <summary>Los procesos de una fecha para elegir de cuál sacar la planilla de empaque (con Flujo_Empaque activo). Acopio vacío = todas las plantas.</summary>
+    [HttpPost("planilla-empaque/procesos")]
+    public async Task<IActionResult> ProcesosPlanillaEmpaque([FromBody] PlanillaEmpaqueProcesosRequest request, CancellationToken ct)
+        => Ok(await reportes.ProcesosPlanillaEmpaqueAsync(request, ct));
+
+    /// <summary>Los anotadores de un proceso, para sacar la planilla de uno solo.</summary>
+    [HttpPost("planilla-empaque/anotadores")]
+    public async Task<IActionResult> AnotadoresPlanillaEmpaque([FromBody] PlanillaEmpaqueAnotadoresRequest request, CancellationToken ct)
+        => Ok(await reportes.AnotadoresPlanillaEmpaqueAsync(request, ct));
+
+    /// <summary>Excel de la planilla de producción del proceso (cajas por recolección) con el formato de la empresa.</summary>
+    [HttpPost("planilla-empaque/produccion")]
+    public async Task<IActionResult> ExportarPlanillaProduccionExcel([FromBody] PlanillaEmpaqueRequest request, CancellationToken ct)
+    {
+        var archivo = await reportes.ExportarPlanillaProduccionExcelAsync(request, entorno.WebRootPath, ct);
+        return File(archivo.Contenido, archivo.TipoContenido, archivo.Nombre);
+    }
+
+    /// <summary>Excel del tareo / asistencia del proceso (los empacadores asignados, hayan anotado cajas o no) con el formato de la empresa.</summary>
+    [HttpPost("planilla-empaque/tareo")]
+    public async Task<IActionResult> ExportarPlanillaTareoExcel([FromBody] PlanillaEmpaqueRequest request, CancellationToken ct)
+    {
+        var archivo = await reportes.ExportarPlanillaTareoExcelAsync(request, entorno.WebRootPath, ct);
+        return File(archivo.Contenido, archivo.TipoContenido, archivo.Nombre);
+    }
 }

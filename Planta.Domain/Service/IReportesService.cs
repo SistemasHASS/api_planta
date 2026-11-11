@@ -45,4 +45,16 @@ public interface IReportesService
 
     /// <summary>Avance por cosechador. El RUC debe ser el de una empresa listada por apimaestra.</summary>
     Task<JsonElement> ReporteAvanceCosechadorAsync(ContextoUsuario contexto, ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Los procesos de una fecha para elegir de cuál sacar la planilla de empaque (el SP valida Flujo_Empaque).</summary>
+    Task<JsonElement> ProcesosPlanillaEmpaqueAsync(ContextoUsuario contexto, PlanillaEmpaqueProcesosRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Los anotadores de un proceso, para sacar la planilla de uno solo.</summary>
+    Task<JsonElement> AnotadoresPlanillaEmpaqueAsync(ContextoUsuario contexto, PlanillaEmpaqueAnotadoresRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Planilla de producción del proceso (cajas por recolección) con el formato de la empresa. <paramref name="webRootPath"/> es donde están los logos (assets/logos/{ruc}.jpg).</summary>
+    Task<ArchivoGenerado> ExportarPlanillaProduccionExcelAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default);
+
+    /// <summary>Tareo / asistencia del proceso (los empacadores asignados, hayan anotado cajas o no) con el formato de la empresa.</summary>
+    Task<ArchivoGenerado> ExportarPlanillaTareoExcelAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default);
 }

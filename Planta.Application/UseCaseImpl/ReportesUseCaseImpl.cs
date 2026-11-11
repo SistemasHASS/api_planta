@@ -120,6 +120,30 @@ public sealed class ReportesUseCaseImpl(IReportesService reportes, ICurrentUser 
         return reportes.ReporteAvanceCosechadorAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
     }
 
+    public Task<JsonElement> ProcesosPlanillaEmpaqueAsync(PlanillaEmpaqueProcesosRequest request, CancellationToken cancellationToken = default)
+        => reportes.ProcesosPlanillaEmpaqueAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+
+    public Task<JsonElement> AnotadoresPlanillaEmpaqueAsync(PlanillaEmpaqueAnotadoresRequest request, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.CodigoAcopio, "codigoAcopio");
+        Requerir(request.IdProceso, "idProceso");
+        return reportes.AnotadoresPlanillaEmpaqueAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+    }
+
+    public Task<ArchivoGenerado> ExportarPlanillaProduccionExcelAsync(PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.CodigoAcopio, "codigoAcopio");
+        Requerir(request.IdProceso, "idProceso");
+        return reportes.ExportarPlanillaProduccionExcelAsync(ContextoDeUsuario.Crear(currentUser), request, webRootPath, cancellationToken);
+    }
+
+    public Task<ArchivoGenerado> ExportarPlanillaTareoExcelAsync(PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default)
+    {
+        Requerir(request.CodigoAcopio, "codigoAcopio");
+        Requerir(request.IdProceso, "idProceso");
+        return reportes.ExportarPlanillaTareoExcelAsync(ContextoDeUsuario.Crear(currentUser), request, webRootPath, cancellationToken);
+    }
+
     private static void Requerir(string? valor, string campo)
     {
         if (string.IsNullOrWhiteSpace(valor))

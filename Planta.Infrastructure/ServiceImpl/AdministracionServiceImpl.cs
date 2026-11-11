@@ -173,20 +173,8 @@ public sealed class AdministracionServiceImpl(IAdministracionRepository reposito
     public Task<JsonElement> ListarAcopioMaquinasAsync(ContextoUsuario contexto, ListarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
         => repository.ListarAcopioMaquinasAsync(contexto, request, cancellationToken);
 
-    /// <summary>Con el parametro Flujo_Empaque activo cada máquina deja también su línea (la que ve el anotador); sin el parametro, como siempre.</summary>
-    public async Task<JsonElement> SincronizarAcopioMaquinasAsync(ContextoUsuario contexto, SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
-    {
-        var (activo, errorParametro) = FlujoEmpaqueParametro.Leer(await repository.ObtenerParametroAsync(contexto, "Flujo_Empaque", cancellationToken));
-        if (errorParametro is { } error)
-        {
-            return error;
-        }
-
-        return activo
-            ? await repository.SincronizarAcopioMaquinasConLineasAsync(contexto, request, cancellationToken)
-            : await repository.SincronizarAcopioMaquinasAsync(contexto, request, cancellationToken);
-    }
-
+    public Task<JsonElement> SincronizarAcopioMaquinasAsync(ContextoUsuario contexto, SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default)
+        => repository.SincronizarAcopioMaquinasAsync(contexto, request, cancellationToken);
 
     public Task<JsonElement> ListarKilosPagoAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
         => repository.ListarKilosPagoAsync(contexto, cancellationToken);

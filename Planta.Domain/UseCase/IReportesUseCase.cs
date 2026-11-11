@@ -50,4 +50,16 @@ public interface IReportesUseCase
 
     /// <summary>Avance por cosechador: jarra blanca, jarra verde y descarte por cosechador y por dia.</summary>
     Task<JsonElement> ReporteAvanceCosechadorAsync(ReporteAvanceCosechadorRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Los procesos de una fecha para elegir de cuál sacar la planilla de empaque (vacío en acopio = todas las plantas).</summary>
+    Task<JsonElement> ProcesosPlanillaEmpaqueAsync(PlanillaEmpaqueProcesosRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Los anotadores de un proceso, para sacar la planilla de uno solo.</summary>
+    Task<JsonElement> AnotadoresPlanillaEmpaqueAsync(PlanillaEmpaqueAnotadoresRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Excel de la planilla de producción del proceso (todos los anotadores o uno) con el formato de la empresa. <paramref name="webRootPath"/> es donde están los logos (assets/logos/{ruc}.jpg).</summary>
+    Task<ArchivoGenerado> ExportarPlanillaProduccionExcelAsync(PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default);
+
+    /// <summary>Excel del tareo / asistencia del proceso (todos los anotadores o uno) con el formato de la empresa.</summary>
+    Task<ArchivoGenerado> ExportarPlanillaTareoExcelAsync(PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default);
 }
