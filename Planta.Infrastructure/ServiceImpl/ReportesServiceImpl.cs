@@ -207,19 +207,26 @@ public sealed class ReportesServiceImpl(IReportesRepository repository, IMaestro
 
     public Task<JsonElement> ProcesosPlanillaEmpaqueAsync(ContextoUsuario contexto, PlanillaEmpaqueProcesosRequest request, CancellationToken cancellationToken = default)
     {
-        var fecha = (request.Fecha ?? string.Empty).Trim();
-        if (fecha.Length == 0)
+        var desde = (request.FechaDesde ?? string.Empty).Trim();
+        var hasta = (request.FechaHasta ?? string.Empty).Trim();
+        if (desde.Length == 0 || hasta.Length == 0)
         {
-            throw new BadRequestException("Selecciona una fecha.");
+            throw new BadRequestException("Indica la fecha de inicio y la de fin.");
         }
 
-        if (!DateOnly.TryParseExact(fecha, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _))
+        if (!DateOnly.TryParseExact(desde, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d)
+            || !DateOnly.TryParseExact(hasta, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var h))
         {
-            throw new BadRequestException("La fecha debe venir como AAAA-MM-DD.");
+            throw new BadRequestException("Las fechas deben venir como AAAA-MM-DD.");
+        }
+
+        if (d > h)
+        {
+            throw new BadRequestException("La fecha de inicio no puede ser posterior a la de fin.");
         }
 
         // El acopio vacío es "todas las plantas".
-        return repository.ProcesosPlanillaEmpaqueAsync(contexto, new PlanillaEmpaqueProcesosRequest { Fecha = fecha, CodigoAcopio = request.CodigoAcopio?.Trim() }, cancellationToken);
+        return repository.ProcesosPlanillaEmpaqueAsync(contexto, new PlanillaEmpaqueProcesosRequest { FechaDesde = desde, FechaHasta = hasta, CodigoAcopio = request.CodigoAcopio?.Trim() }, cancellationToken);
     }
 
     public Task<JsonElement> AnotadoresPlanillaEmpaqueAsync(ContextoUsuario contexto, PlanillaEmpaqueAnotadoresRequest request, CancellationToken cancellationToken = default)

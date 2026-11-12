@@ -131,15 +131,15 @@ public sealed class AdministracionController(IAdministracionUseCase administraci
     public async Task<IActionResult> SincronizarKilosPago([FromBody] SincronizarKilosPagoRequest request, CancellationToken ct)
         => Ok(await administracion.SincronizarKilosPagoAsync(request, ct));
 
-    /// <summary>Excel de control interno en pantalla: cajas y kilos de pago por jornada, empacador y producto. Solo administrador y con Flujo_Empaque activo.</summary>
+    /// <summary>Excel de control interno en pantalla: cajas y kilos de pago por jornada, empacador y producto. Administrador y monitor, con Flujo_Empaque activo.</summary>
     [HttpPost("control-interno/listar")]
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Monitor}")]
     public async Task<IActionResult> ListarControlInterno([FromBody] ControlInternoRequest request, CancellationToken ct)
         => Ok(await administracion.ListarControlInternoAsync(request, ct));
 
-    /// <summary>El mismo informe como archivo Excel. Solo administrador y con Flujo_Empaque activo.</summary>
+    /// <summary>El mismo informe como archivo Excel. Administrador y monitor, con Flujo_Empaque activo.</summary>
     [HttpPost("control-interno/exportar-excel")]
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Monitor}")]
     public async Task<IActionResult> ExportarControlInterno([FromBody] ControlInternoRequest request, CancellationToken ct)
     {
         var archivo = await administracion.ExportarControlInternoExcelAsync(request, ct);
@@ -152,9 +152,9 @@ public sealed class AdministracionController(IAdministracionUseCase administraci
     public async Task<IActionResult> ListarHistorialKilos([FromBody] HistorialKilosRequest request, CancellationToken ct)
         => Ok(await administracion.ListarHistorialKilosAsync(request, ct));
 
-    /// <summary>Historial de kilos de todos los anotadores y sus empacadores en un día (solo administrador y con Flujo_Empaque activo).</summary>
+    /// <summary>Historial de kilos de todos los anotadores y sus empacadores en un día (administrador y monitor, con Flujo_Empaque activo).</summary>
     [HttpPost("historial-kilos-admin/listar")]
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Monitor}")]
     public async Task<IActionResult> ListarHistorialKilosAdmin([FromBody] HistorialKilosRequest request, CancellationToken ct)
         => Ok(await administracion.ListarHistorialKilosAdminAsync(request, ct));
 }

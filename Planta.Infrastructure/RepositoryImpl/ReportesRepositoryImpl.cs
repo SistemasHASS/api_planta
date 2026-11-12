@@ -1,6 +1,7 @@
 using System.Data;
 using System.Globalization;
 using System.Text.Json;
+using Planta.Domain.Constants;
 using Planta.Domain.Dtos;
 using Planta.Domain.Repository;
 using Planta.Infrastructure.Persistence;
@@ -123,16 +124,25 @@ public sealed class ReportesRepositoryImpl(ApplicationDbContext context) : BaseR
     private static string? ComoJson(List<string>? valores)
         => valores is { Count: > 0 } ? JsonSerializer.Serialize(valores.Select(v => v.Trim()).Where(v => v.Length > 0)) : null;
 
+    /// <summary>El administrador y el monitor solo ven procesos CERRADOS en Tareo y Cajas Empaque; el anotador ve abiertos y cerrados.</summary>
+    private static bool PlanillaSoloCerrados(ContextoUsuario contexto) => !string.Equals(contexto.Rol, Roles.Anotador, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>El anotador solo trabaja con el acopio de su token; los demás usan el que piden (vacío = todas las plantas en la lista de procesos).</summary>
+    private static string? PlanillaAcopio(ContextoUsuario contexto, string? pedido)
+        => string.Equals(contexto.Rol, Roles.Anotador, StringComparison.OrdinalIgnoreCase) ? contexto.CodigoAcopio : pedido;
+
     private static string? NuloSiVacio(string? valor) => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
 
-    /// <summary>SP: base-datos/sp/PLANTA_ListarProcesosPlanillaEmpaque.sql (los procesos de una fecha, con sus cajas y supervisores; el SP valida Flujo_Empaque). La fecha ya viene validada (AAAA-MM-DD).</summary>
+    /// <summary>SP: base-datos/sp/PLANTA_ListarProcesosPlanillaEmpaque.sql (los procesos de un rango de fechas, con sus cajas y supervisores; el SP valida Flujo_Empaque). Las fechas ya vienen validadas (AAAA-MM-DD).</summary>
     public Task<JsonElement> ProcesosPlanillaEmpaqueAsync(ContextoUsuario contexto, PlanillaEmpaqueProcesosRequest request, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_ListarProcesosPlanillaEmpaque", command =>
         {
             Agregar(command, "@idempresa", contexto.IdEmpresa);
             Agregar(command, "@ruc", contexto.Ruc);
-            Agregar(command, "@fecha", DateTime.ParseExact(request.Fecha, "yyyy-MM-dd", CultureInfo.InvariantCulture), DbType.Date);
-            Agregar(command, "@codigoAcopio", NuloSiVacio(request.CodigoAcopio));
+            Agregar(command, "@fechaDesde", DateTime.ParseExact(request.FechaDesde, "yyyy-MM-dd", CultureInfo.InvariantCulture), DbType.Date);
+            Agregar(command, "@fechaHasta", DateTime.ParseExact(request.FechaHasta, "yyyy-MM-dd", CultureInfo.InvariantCulture), DbType.Date);
+            Agregar(command, "@codigoAcopio", NuloSiVacio(PlanillaAcopio(contexto, request.CodigoAcopio)));
+            Agregar(command, "@soloCerrados", PlanillaSoloCerrados(contexto), DbType.Boolean);
         }, cancellationToken);
 
     /// <summary>SP: base-datos/sp/PLANTA_ListarAnotadoresPlanillaEmpaque.sql (los anotadores de un proceso: los que registraron cajas o tomaron una línea).</summary>
@@ -141,8 +151,9 @@ public sealed class ReportesRepositoryImpl(ApplicationDbContext context) : BaseR
         {
             Agregar(command, "@idempresa", contexto.IdEmpresa);
             Agregar(command, "@ruc", contexto.Ruc);
-            Agregar(command, "@codigoAcopio", request.CodigoAcopio);
+            Agregar(command, "@codigoAcopio", PlanillaAcopio(contexto, request.CodigoAcopio));
             Agregar(command, "@idProceso", request.IdProceso);
+            Agregar(command, "@soloCerrados", PlanillaSoloCerrados(contexto), DbType.Boolean);
         }, cancellationToken);
 
     /// <summary>SP: base-datos/sp/PLANTA_ListarPlanillaEmpaqueProduccion.sql (las cajas de cada empacador por recolección; anotador vacío = todos).</summary>
@@ -151,9 +162,10 @@ public sealed class ReportesRepositoryImpl(ApplicationDbContext context) : BaseR
         {
             Agregar(command, "@idempresa", contexto.IdEmpresa);
             Agregar(command, "@ruc", contexto.Ruc);
-            Agregar(command, "@codigoAcopio", request.CodigoAcopio);
+            Agregar(command, "@codigoAcopio", PlanillaAcopio(contexto, request.CodigoAcopio));
             Agregar(command, "@idProceso", request.IdProceso);
             Agregar(command, "@idUsuarioAnotador", NuloSiVacio(request.IdUsuarioAnotador));
+            Agregar(command, "@soloCerrados", PlanillaSoloCerrados(contexto), DbType.Boolean);
         }, cancellationToken);
 
     /// <summary>SP: base-datos/sp/PLANTA_ListarPlanillaEmpaqueTareo.sql (los empacadores que cada anotador asignó a un puesto; anotador vacío = todos).</summary>
@@ -162,8 +174,9 @@ public sealed class ReportesRepositoryImpl(ApplicationDbContext context) : BaseR
         {
             Agregar(command, "@idempresa", contexto.IdEmpresa);
             Agregar(command, "@ruc", contexto.Ruc);
-            Agregar(command, "@codigoAcopio", request.CodigoAcopio);
+            Agregar(command, "@codigoAcopio", PlanillaAcopio(contexto, request.CodigoAcopio));
             Agregar(command, "@idProceso", request.IdProceso);
             Agregar(command, "@idUsuarioAnotador", NuloSiVacio(request.IdUsuarioAnotador));
+            Agregar(command, "@soloCerrados", PlanillaSoloCerrados(contexto), DbType.Boolean);
         }, cancellationToken);
 }
