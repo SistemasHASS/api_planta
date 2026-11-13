@@ -20,4 +20,10 @@ public interface IProcesosRepository
     Task<JsonElement> ListarPersonalLogisticoDisponibleAsync(ContextoUsuario contexto, PersonalDisponibleRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarTipoProcesoEmpacadoPorAcopioAsync(ContextoUsuario contexto, string idProyecto, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, SincronizarProcesoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Jornadas de un proceso con lo trabajado (PLANTA_ListarJornadasProceso).</summary>
+    Task<JsonElement> ListarJornadasAsync(ContextoUsuario contexto, JornadasProcesoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Reabre una jornada cerrada (PLANTA_ReabrirJornadaAnotador); <paramref name="json"/> es [{"id":N}].</summary>
+    Task<JsonElement> ReabrirJornadaAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 }

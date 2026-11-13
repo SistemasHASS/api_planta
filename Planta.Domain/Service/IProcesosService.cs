@@ -13,4 +13,7 @@ public interface IProcesosService
     Task<JsonElement> ListarPersonalLogisticoDisponibleAsync(ContextoUsuario contexto, PersonalDisponibleRequest request, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarTipoProcesoEmpacadoPorAcopioAsync(ContextoUsuario contexto, string idProyecto, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, SincronizarProcesoRequest request, CancellationToken cancellationToken = default);
+
+    Task<JsonElement> ListarJornadasAsync(ContextoUsuario contexto, JornadasProcesoRequest request, CancellationToken cancellationToken = default);
+    Task<JsonElement> ReabrirJornadaAsync(ContextoUsuario contexto, ReabrirJornadaRequest request, CancellationToken cancellationToken = default);
 }

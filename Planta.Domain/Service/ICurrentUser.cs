@@ -15,4 +15,6 @@ public interface ICurrentUser
     string? DocumentoIdentidad { get; }
     string? CodigoAcopio { get; }
     string? SerieGuia { get; }
+    /// <summary>Jornada elegida por el anotador (header X-Id-Jornada); null si no se envió.</summary>
+    int? IdJornada { get; }
 }

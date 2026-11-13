@@ -38,4 +38,14 @@ public sealed class ProcesosController(IProcesosUseCase procesos) : ControllerBa
     [HttpPost("sincronizar")]
     public async Task<IActionResult> Sincronizar([FromBody] SincronizarProcesoRequest request, CancellationToken ct)
         => Ok(await procesos.SincronizarAsync(request, ct));
+
+    /// <summary>Jornadas de un proceso (estado, quién la abrió, lo trabajado), para verlas y reabrirlas desde la ventana de palets del proceso.</summary>
+    [HttpPost("jornadas/listar")]
+    public async Task<IActionResult> JornadasProceso([FromBody] JornadasProcesoRequest request, CancellationToken ct)
+        => Ok(await procesos.JornadasProcesoAsync(request, ct));
+
+    /// <summary>Vuelve a abrir una jornada cerrada (solo administrador, con el proceso abierto).</summary>
+    [HttpPost("jornadas/reabrir")]
+    public async Task<IActionResult> ReabrirJornada([FromBody] ReabrirJornadaRequest request, CancellationToken ct)
+        => Ok(await procesos.ReabrirJornadaAsync(request, ct));
 }

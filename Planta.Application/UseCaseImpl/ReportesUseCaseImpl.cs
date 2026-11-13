@@ -151,4 +151,10 @@ public sealed class ReportesUseCaseImpl(IReportesService reportes, ICurrentUser 
             throw new BadRequestException($"El campo '{campo}' es requerido.");
         }
     }
+
+    public Task<JsonElement> HistoricoEmpacadoresAsync(HistoricoEmpacadoresRequest request, CancellationToken cancellationToken = default)
+        => reportes.HistoricoEmpacadoresAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
+
+    public Task<JsonElement> HistoricoEmpacadorDetalleAsync(HistoricoEmpacadorDetalleRequest request, CancellationToken cancellationToken = default)
+        => reportes.HistoricoEmpacadorDetalleAsync(ContextoDeUsuario.Crear(currentUser), request, cancellationToken);
 }

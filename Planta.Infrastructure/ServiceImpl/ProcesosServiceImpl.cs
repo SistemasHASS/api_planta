@@ -26,4 +26,11 @@ public sealed class ProcesosServiceImpl(IProcesosRepository repository) : IProce
 
     public Task<JsonElement> SincronizarAsync(ContextoUsuario contexto, SincronizarProcesoRequest request, CancellationToken cancellationToken = default)
         => repository.SincronizarAsync(contexto, request, cancellationToken);
+
+    public Task<JsonElement> ListarJornadasAsync(ContextoUsuario contexto, JornadasProcesoRequest request, CancellationToken cancellationToken = default)
+        => repository.ListarJornadasAsync(contexto, request, cancellationToken);
+
+    /// <summary>Arma el JSON que lee el SP. Las reglas (rol administrador, proceso abierto) las aplica el SP.</summary>
+    public Task<JsonElement> ReabrirJornadaAsync(ContextoUsuario contexto, ReabrirJornadaRequest request, CancellationToken cancellationToken = default)
+        => repository.ReabrirJornadaAsync(contexto, JsonSerializer.Serialize(new[] { new { id = request.Id } }), cancellationToken);
 }

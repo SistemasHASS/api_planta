@@ -340,4 +340,46 @@ public sealed class ReportesServiceImpl(IReportesRepository repository, IMaestro
 
     private static string? ComoJson(List<string>? valores)
         => valores is { Count: > 0 } ? JsonSerializer.Serialize(valores) : null;
+
+    /// <summary>Valida y limpia el rango AAAA-MM-DD (inclusive) que usan las consultas del histórico.</summary>
+    private static (string Desde, string Hasta) RangoFechas(string? fechaDesde, string? fechaHasta)
+    {
+        var desde = (fechaDesde ?? string.Empty).Trim();
+        var hasta = (fechaHasta ?? string.Empty).Trim();
+        if (desde.Length == 0 || hasta.Length == 0)
+        {
+            throw new BadRequestException("Indica la fecha de inicio y la de fin.");
+        }
+
+        if (!DateOnly.TryParseExact(desde, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var d)
+            || !DateOnly.TryParseExact(hasta, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var h))
+        {
+            throw new BadRequestException("Las fechas deben venir como AAAA-MM-DD.");
+        }
+
+        if (d > h)
+        {
+            throw new BadRequestException("La fecha de inicio no puede ser posterior a la de fin.");
+        }
+
+        return (desde, hasta);
+    }
+
+    public Task<JsonElement> HistoricoEmpacadoresAsync(ContextoUsuario contexto, HistoricoEmpacadoresRequest request, CancellationToken cancellationToken = default)
+    {
+        var (desde, hasta) = RangoFechas(request.FechaDesde, request.FechaHasta);
+        return repository.HistoricoEmpacadoresAsync(contexto, new HistoricoEmpacadoresRequest { FechaDesde = desde, FechaHasta = hasta, CodigoAcopio = request.CodigoAcopio?.Trim() }, cancellationToken);
+    }
+
+    public Task<JsonElement> HistoricoEmpacadorDetalleAsync(ContextoUsuario contexto, HistoricoEmpacadorDetalleRequest request, CancellationToken cancellationToken = default)
+    {
+        var (desde, hasta) = RangoFechas(request.FechaDesde, request.FechaHasta);
+        var documento = (request.NumeroDocumento ?? string.Empty).Trim();
+        if (documento.Length == 0)
+        {
+            throw new BadRequestException("Indica el empacador.");
+        }
+
+        return repository.HistoricoEmpacadorDetalleAsync(contexto, new HistoricoEmpacadorDetalleRequest { NumeroDocumento = documento, FechaDesde = desde, FechaHasta = hasta, CodigoAcopio = request.CodigoAcopio?.Trim() }, cancellationToken);
+    }
 }

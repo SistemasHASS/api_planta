@@ -57,4 +57,10 @@ public interface IReportesService
 
     /// <summary>Tareo / asistencia del proceso (los empacadores asignados, hayan anotado cajas o no) con el formato de la empresa.</summary>
     Task<ArchivoGenerado> ExportarPlanillaTareoExcelAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default);
+
+    /// <summary>Los empacadores asignados a un puesto en un rango de fechas de proceso.</summary>
+    Task<JsonElement> HistoricoEmpacadoresAsync(ContextoUsuario contexto, HistoricoEmpacadoresRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Las asignaciones de un empacador (jornada, proceso, línea o curo, puesto y cajas).</summary>
+    Task<JsonElement> HistoricoEmpacadorDetalleAsync(ContextoUsuario contexto, HistoricoEmpacadorDetalleRequest request, CancellationToken cancellationToken = default);
 }

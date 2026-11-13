@@ -15,7 +15,8 @@ public static class ContextoDeUsuario
             exigirUsuarioYRol ? Requerir(usuario.UserName, "el usuario") : usuario.UserName?.Trim() ?? string.Empty,
             exigirUsuarioYRol ? Requerir(usuario.Role, "el rol") : usuario.Role?.Trim() ?? string.Empty,
             exigirAcopio ? Requerir(usuario.CodigoAcopio, "el codigo de acopio") : usuario.CodigoAcopio?.Trim() ?? string.Empty,
-            usuario.NombreCompleto?.Trim() ?? string.Empty);
+            usuario.NombreCompleto?.Trim() ?? string.Empty,
+            usuario.IdJornada);
         return contexto;
     }
 

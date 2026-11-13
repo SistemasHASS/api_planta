@@ -47,4 +47,10 @@ public interface IReportesRepository
 
     /// <summary>Los empacadores que cada anotador asignó a un puesto (PLANTA_ListarPlanillaEmpaqueTareo).</summary>
     Task<JsonElement> PlanillaEmpaqueTareoAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Los empacadores asignados a un puesto en un rango de fechas (PLANTA_ListarHistoricoEmpacadores).</summary>
+    Task<JsonElement> HistoricoEmpacadoresAsync(ContextoUsuario contexto, HistoricoEmpacadoresRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Las asignaciones de un empacador (PLANTA_ListarHistoricoEmpacadorDetalle).</summary>
+    Task<JsonElement> HistoricoEmpacadorDetalleAsync(ContextoUsuario contexto, HistoricoEmpacadorDetalleRequest request, CancellationToken cancellationToken = default);
 }

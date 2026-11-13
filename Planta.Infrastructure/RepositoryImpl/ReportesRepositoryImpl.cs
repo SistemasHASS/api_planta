@@ -179,4 +179,27 @@ public sealed class ReportesRepositoryImpl(ApplicationDbContext context) : BaseR
             Agregar(command, "@idUsuarioAnotador", NuloSiVacio(request.IdUsuarioAnotador));
             Agregar(command, "@soloCerrados", PlanillaSoloCerrados(contexto), DbType.Boolean);
         }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarHistoricoEmpacadores.sql (los empacadores asignados a un puesto en un rango de fechas de proceso, con sus totales). Las fechas ya vienen validadas (AAAA-MM-DD).</summary>
+    public Task<JsonElement> HistoricoEmpacadoresAsync(ContextoUsuario contexto, HistoricoEmpacadoresRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarHistoricoEmpacadores", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@fechaDesde", DateTime.ParseExact(request.FechaDesde, "yyyy-MM-dd", CultureInfo.InvariantCulture), DbType.Date);
+            Agregar(command, "@fechaHasta", DateTime.ParseExact(request.FechaHasta, "yyyy-MM-dd", CultureInfo.InvariantCulture), DbType.Date);
+            Agregar(command, "@codigoAcopio", NuloSiVacio(PlanillaAcopio(contexto, request.CodigoAcopio)));
+        }, cancellationToken);
+
+    /// <summary>SP: base-datos/sp/PLANTA_ListarHistoricoEmpacadorDetalle.sql (cada asignación de un empacador: jornada, proceso, línea o curo, puesto y cajas).</summary>
+    public Task<JsonElement> HistoricoEmpacadorDetalleAsync(ContextoUsuario contexto, HistoricoEmpacadorDetalleRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarHistoricoEmpacadorDetalle", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@numeroDocumento", request.NumeroDocumento);
+            Agregar(command, "@fechaDesde", DateTime.ParseExact(request.FechaDesde, "yyyy-MM-dd", CultureInfo.InvariantCulture), DbType.Date);
+            Agregar(command, "@fechaHasta", DateTime.ParseExact(request.FechaHasta, "yyyy-MM-dd", CultureInfo.InvariantCulture), DbType.Date);
+            Agregar(command, "@codigoAcopio", NuloSiVacio(PlanillaAcopio(contexto, request.CodigoAcopio)));
+        }, cancellationToken);
 }

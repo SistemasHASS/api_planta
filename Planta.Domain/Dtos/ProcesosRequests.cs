@@ -42,3 +42,16 @@ public sealed class SincronizarProcesoRequest
     public string JsonDprocesoLogisticos { get; set; } = "[]";
     public string JsonDprocesoSupervisores { get; set; } = "[]";
 }
+
+/// <summary>Cuerpo de api/procesos/jornadas/listar: las jornadas de un proceso. El administrador elige el acopio; los demás usan el de su token.</summary>
+public sealed class JornadasProcesoRequest
+{
+    public string CodigoAcopio { get; set; } = "";
+    public string IdProceso { get; set; } = "";
+}
+
+/// <summary>Cuerpo de api/procesos/jornadas/reabrir: la jornada que se vuelve a abrir (solo administrador).</summary>
+public sealed class ReabrirJornadaRequest
+{
+    public int Id { get; set; }
+}

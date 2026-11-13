@@ -18,4 +18,5 @@ public sealed class CurrentUser(IHttpContextAccessor accessor) : ICurrentUser
     public string? DocumentoIdentidad => Principal?.FindFirstValue(ClaimNames.DocumentoIdentidad);
     public string? CodigoAcopio => Principal?.FindFirstValue(ClaimNames.CodigoAcopio);
     public string? SerieGuia => Principal?.FindFirstValue(ClaimNames.SerieGuia);
+    public int? IdJornada => int.TryParse(accessor.HttpContext?.Request.Headers["X-Id-Jornada"].ToString(), out var id) && id > 0 ? id : null;
 }

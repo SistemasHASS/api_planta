@@ -16,4 +16,10 @@ public interface IProcesosUseCase
 
     /// <summary>Crea, cierra, reabre o edita un proceso con su personal (segun request.Modo).</summary>
     Task<JsonElement> SincronizarAsync(SincronizarProcesoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Jornadas de un proceso: el administrador de cualquier acopio; los demás, del suyo.</summary>
+    Task<JsonElement> JornadasProcesoAsync(JornadasProcesoRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>Vuelve a abrir una jornada cerrada (solo administrador; el SP valida las reglas).</summary>
+    Task<JsonElement> ReabrirJornadaAsync(ReabrirJornadaRequest request, CancellationToken cancellationToken = default);
 }

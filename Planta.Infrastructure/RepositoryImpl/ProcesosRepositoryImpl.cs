@@ -90,4 +90,23 @@ public sealed class ProcesosRepositoryImpl(ApplicationDbContext context) : BaseR
             Agregar(command, "@jsonDprocesoLogisticos", request.JsonDprocesoLogisticos);
             Agregar(command, "@jsonDprocesoSupervisores", request.JsonDprocesoSupervisores);
         }, cancellationToken);
+
+    public Task<JsonElement> ListarJornadasAsync(ContextoUsuario contexto, JornadasProcesoRequest request, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarJornadasProceso", command =>
+        {
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@codigoAcopio", request.CodigoAcopio);
+            Agregar(command, "@idProceso", request.IdProceso);
+        }, cancellationToken);
+
+    public Task<JsonElement> ReabrirJornadaAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ReabrirJornadaAnotador", command =>
+        {
+            Agregar(command, "@Json", json);
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@rol", contexto.Rol);
+        }, cancellationToken);
 }

@@ -65,4 +65,29 @@ public sealed class ProcesosUseCaseImpl(IProcesosService procesos, ICurrentUser 
             throw new BadRequestException($"El campo '{campo}' es requerido.");
         }
     }
+
+    public Task<JsonElement> JornadasProcesoAsync(JornadasProcesoRequest request, CancellationToken cancellationToken = default)
+    {
+        var contexto = ContextoDeUsuario.Crear(currentUser);
+        // Solo el administrador mira otros acopios; los demás, el suyo.
+        var esAdmin = string.Equals(contexto.Rol, Roles.Admin, StringComparison.OrdinalIgnoreCase);
+        var consulta = new JornadasProcesoRequest
+        {
+            CodigoAcopio = esAdmin ? request.CodigoAcopio : contexto.CodigoAcopio,
+            IdProceso = request.IdProceso,
+        };
+        Requerir(consulta.CodigoAcopio, "codigoAcopio");
+        Requerir(consulta.IdProceso, "idProceso");
+        return procesos.ListarJornadasAsync(contexto, consulta, cancellationToken);
+    }
+
+    public Task<JsonElement> ReabrirJornadaAsync(ReabrirJornadaRequest request, CancellationToken cancellationToken = default)
+    {
+        if (request.Id <= 0)
+        {
+            throw new BadRequestException("Indica la jornada.");
+        }
+
+        return procesos.ReabrirJornadaAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), request, cancellationToken);
+    }
 }
