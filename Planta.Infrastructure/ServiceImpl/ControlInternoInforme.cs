@@ -9,7 +9,7 @@ namespace Planta.Infrastructure.ServiceImpl;
 /// </summary>
 internal sealed class ControlInternoInforme
 {
-    internal sealed record Columna(string Clave, string Formato, string TipoEmpaque, string Categoria, string CalibreId, string Calibre, bool FueraDeMatriz);
+    internal sealed record Columna(string Clave, string Formato, string TipoEmpaqueGrupoNombre, bool FueraDeMatriz);
 
     internal sealed class Fila
     {
@@ -36,8 +36,7 @@ internal sealed class ControlInternoInforme
             foreach (var c in columnas.EnumerateArray())
             {
                 informe.Columnas.Add(new Columna(
-                    Texto(c, "clave"), Texto(c, "formato"), Texto(c, "tipoEmpaque"), Texto(c, "categoria"),
-                    Texto(c, "calibreId"), Texto(c, "calibre"),
+                    Texto(c, "clave"), Texto(c, "formato"), Texto(c, "tipoEmpaqueGrupoNombre"),
                     c.TryGetProperty("fueraDeMatriz", out var f) && f.ValueKind == JsonValueKind.True));
             }
         }
@@ -57,7 +56,7 @@ internal sealed class ControlInternoInforme
                 var anotador = Texto(d, "anotador");
                 fila.Anotadores.Add(anotador.Length == 0 ? "(sin anotador)" : anotador);
 
-                var producto = $"{Texto(d, "formatoId")}-{Texto(d, "tipoEmpaqueId")}-{Texto(d, "categoriaId")}";
+                var producto = $"{Texto(d, "formatoId")}-{Texto(d, "tipoEmpaqueGrupoId")}";
                 var cajas = d.TryGetProperty("cajas", out var cj) && cj.TryGetInt64(out var n) ? n : 0;
                 var kilos = d.TryGetProperty("kilos", out var kg) && kg.TryGetDecimal(out var k) ? k : 0m;
                 fila.Cajas[producto] = fila.Cajas.GetValueOrDefault(producto) + cajas;

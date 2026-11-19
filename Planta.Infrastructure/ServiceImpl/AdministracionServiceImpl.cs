@@ -149,6 +149,7 @@ public sealed class AdministracionServiceImpl(IAdministracionRepository reposito
         "PLANTA_Conductores", "PLANTA_Vehiculos", "PLANTA_Transportistas", "PLANTA_Supervisores", "PLANTA_PersonalLogistica",
         "PLANTA_TipoProcesoEmpacado", "PLANTA_GrupoCliente", "PLANTA_Formatos", "PLANTA_Presentacion", "PLANTA_TiposCaja", "PLANTA_TiposClamshell",
         "PLANTA_LugaresProduccion", "PLANTA_CodigosRancho", "PLANTA_Categorias", "PLANTA_TiposEmpaque", "PLANTA_TiposEmpaqueGuia",
+        "PLANTA_TiposEmpaqueGrupo",
     };
 
     public Task<JsonElement> SincronizarCatalogoOperativoAsync(ContextoUsuario contexto, SincronizarCatalogoOperativoRequest request, CancellationToken cancellationToken = default)

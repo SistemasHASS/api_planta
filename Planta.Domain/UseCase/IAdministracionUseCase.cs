@@ -36,9 +36,9 @@ public interface IAdministracionUseCase
     Task<JsonElement> SincronizarAcopioMaquinasAsync(SincronizarAcopioMaquinasRequest request, CancellationToken cancellationToken = default);
 
 
-    /// <summary>Kilos de pago por formato y tipo de empaque con el peso real del formato (solo con Flujo_Empaque activo).</summary>
+    /// <summary>Kilos de pago por formato y tipo de empaque agrupador con el peso real del formato (solo con Flujo_Empaque activo).</summary>
     Task<JsonElement> ListarKilosPagoAsync(CancellationToken cancellationToken = default);
-    /// <summary>Guarda los kilos de pago por formato y tipo de empaque (solo con Flujo_Empaque activo).</summary>
+    /// <summary>Guarda los kilos de pago por formato y tipo de empaque agrupador (solo con Flujo_Empaque activo).</summary>
     Task<JsonElement> SincronizarKilosPagoAsync(SincronizarKilosPagoRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>Excel de control interno en pantalla: cajas y kilos de pago por jornada, empacador y producto (solo con Flujo_Empaque activo).</summary>

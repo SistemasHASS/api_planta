@@ -32,7 +32,7 @@ public sealed record PaginaPlanilla
     /// <summary>Si no está vacía reemplaza a VARIEDAD tal cual (la usa el tareo, que no tiene variedad).</summary>
     public string Cabecera { get; init; } = string.Empty;
 
-    /// <summary>Formato, tipo de empaque y peso por caja: "4.4 oz Jumbo 0.125kg".</summary>
+    /// <summary>Formato, tipo de empaque agrupador y peso por caja: "4.4 oz Jumbo 0.125kg".</summary>
     public string Variedad { get; init; } = string.Empty;
 
     /// <summary>La máquina de donde vienen las cajas; vacío en las líneas manuales.</summary>

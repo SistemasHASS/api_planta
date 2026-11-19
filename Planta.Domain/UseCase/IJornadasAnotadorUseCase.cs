@@ -26,7 +26,7 @@ public interface IJornadasAnotadorUseCase
     /// <summary>Asigna (nuevo), mueve (mover), quita (editado) o vacía (vaciar) los empacadores de los puestos.</summary>
     Task<JsonElement> SincronizarPuestosAsync(string json, CancellationToken cancellationToken = default);
 
-    /// <summary>Tipos de empaque que la matriz de compatibilidad asocia al formato.</summary>
+    /// <summary>Tipos de empaque agrupadores que la matriz de compatibilidad permite para el formato.</summary>
     Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(string json, CancellationToken cancellationToken = default);
 
     /// <summary>Registra (nuevo) o anula las cajas de un empacador en la recolección abierta del anotador.</summary>

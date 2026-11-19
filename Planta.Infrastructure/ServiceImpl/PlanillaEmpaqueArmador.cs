@@ -203,8 +203,8 @@ internal static partial class PlanillaEmpaqueArmador
 
     // ───────────────────────── textos ─────────────────────────
 
-    /// <summary>El producto entero, formato y tipo juntos, con el peso por caja: "4.4 oz Jumbo 0.125kg". El tipo no se repite si el formato ya lo dice.</summary>
-    private static string VariedadDe(string formato, string tipoEmpaque, double pesoPorCaja)
+    /// <summary>El producto entero, formato y tipo de empaque agrupador juntos, con el peso por caja: "4.4 oz Jumbo 0.125kg". El agrupador no se repite si el formato ya lo dice.</summary>
+    private static string VariedadDe(string formato, string agrupador, double pesoPorCaja)
     {
         var partes = new List<string>();
         formato = formato.Trim();
@@ -213,7 +213,7 @@ internal static partial class PlanillaEmpaqueArmador
             partes.Add(formato);
         }
 
-        var tipo = tipoEmpaque.Trim();
+        var tipo = agrupador.Trim();
         if (tipo.Length > 0 && !formato.ToUpperInvariant().Contains(tipo.ToUpperInvariant(), StringComparison.Ordinal))
         {
             partes.Add(tipo);
@@ -370,7 +370,7 @@ internal static partial class PlanillaEmpaqueArmador
         public string Anotador { get; init; } = string.Empty;
         public string DniAnotador { get; init; } = string.Empty;
         public string Formato { get; init; } = string.Empty;
-        public string TipoEmpaque { get; init; } = string.Empty;
+        public string Agrupador { get; init; } = string.Empty;
         public double Peso { get; init; }
         public bool EsMaquina { get; init; }
         public string Maquina { get; init; } = string.Empty;
@@ -378,7 +378,7 @@ internal static partial class PlanillaEmpaqueArmador
     }
 
     /// <summary>
-    /// La planilla de producción. Una hoja por anotador + formato + tipo de empaque + origen: abajo va el anotador que registró a esas personas (su nombre
+    /// La planilla de producción. Una hoja por anotador + formato + tipo de empaque agrupador + origen: abajo va el anotador que registró a esas personas (su nombre
     /// y su documento) y arriba el LOTE, que dice de qué máquina vienen las cajas (en las líneas manuales va vacío: no vienen de ninguna).
     /// Devuelve null si no hay cajas.
     /// </summary>
@@ -398,7 +398,7 @@ internal static partial class PlanillaEmpaqueArmador
             var idAnotador = Texto(f, "idUsuarioAnotador");
             var esMaquina = Booleano(f, "esMaquina");
             var maquina = esMaquina ? Texto(f, "maquina") : string.Empty;
-            var clave = $"{idAnotador}|{Texto(f, "formatoId")}|{Texto(f, "tipoEmpaqueId")}|{esMaquina}|{maquina.ToLowerInvariant()}";
+            var clave = $"{idAnotador}|{Texto(f, "formatoId")}|{Texto(f, "tipoEmpaqueGrupoId")}|{esMaquina}|{maquina.ToLowerInvariant()}";
             if (!grupos.TryGetValue(clave, out var grupo))
             {
                 grupo = new GrupoProduccion
@@ -407,7 +407,7 @@ internal static partial class PlanillaEmpaqueArmador
                     Anotador = Texto(f, "anotador"),
                     DniAnotador = Texto(f, "dniAnotador"),
                     Formato = Texto(f, "formato"),
-                    TipoEmpaque = Texto(f, "tipoEmpaque"),
+                    Agrupador = Texto(f, "tipoEmpaqueGrupoNombre"),
                     Peso = Numero(f, "pesoPorCaja"),
                     EsMaquina = esMaquina,
                     Maquina = maquina,
@@ -444,7 +444,7 @@ internal static partial class PlanillaEmpaqueArmador
                     return c;
                 }
 
-                c = CompararTexto(a.TipoEmpaque, b.TipoEmpaque);
+                c = CompararTexto(a.Agrupador, b.Agrupador);
                 if (c != 0)
                 {
                     return c;
@@ -462,7 +462,7 @@ internal static partial class PlanillaEmpaqueArmador
             var personas = Ordenadas(g.Personas);
             var columnas = personas.Select(p => CompactarRecolecciones(p.Cajas).Usadas).DefaultIfEmpty(0).Max();
 
-            var baseNombre = g.Formato + " - " + g.TipoEmpaque;
+            var baseNombre = g.Formato + " - " + g.Agrupador;
             if (variosAnotadores)
             {
                 baseNombre = ApellidoDe(g.Anotador) + " · " + baseNombre;
@@ -475,7 +475,7 @@ internal static partial class PlanillaEmpaqueArmador
 
             var plantilla = new PaginaPlanilla
             {
-                Variedad = VariedadDe(g.Formato, g.TipoEmpaque, g.Peso),
+                Variedad = VariedadDe(g.Formato, g.Agrupador, g.Peso),
                 Lote = g.Maquina,
                 Anotador = g.Anotador,
                 AnotadorDni = g.DniAnotador,

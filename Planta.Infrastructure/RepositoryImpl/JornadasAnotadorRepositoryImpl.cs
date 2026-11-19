@@ -154,7 +154,7 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
         }, cancellationToken);
 
-    /// <summary>SP: base-datos/sp/PLANTA_CorregirCajasRecoleccion.sql (cambia la cantidad y, si se envía, el formato y el tipo de empaque de un registro de cajas y deja los AJUSTE de stock).</summary>
+    /// <summary>SP: base-datos/sp/PLANTA_CorregirCajasRecoleccion.sql (cambia la cantidad y, si se envía, el formato y el tipo de empaque agrupador de un registro de cajas y deja los AJUSTE de stock).</summary>
     public Task<JsonElement> CorregirCajasRecoleccionAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_CorregirCajasRecoleccion", command =>
         {

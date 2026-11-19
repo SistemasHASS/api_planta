@@ -211,7 +211,7 @@ public sealed class AdministracionRepositoryImpl(ApplicationDbContext context) :
             Agregar(command, "@usuario", contexto.Usuario);
         }, cancellationToken);
 
-    /// <summary>SP: base-datos/sp/PLANTA_ListarKilosPago.sql (combinaciones de la matriz por formato, tipo de empaque y categoría, con el calibre, el peso real del formato y los kilos de pago; el SP valida Flujo_Empaque).</summary>
+    /// <summary>SP: base-datos/sp/PLANTA_ListarKilosPago.sql (combinaciones de la matriz por formato y tipo de empaque agrupador, con el peso real del formato y los kilos de pago; el SP valida Flujo_Empaque).</summary>
     public Task<JsonElement> ListarKilosPagoAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_ListarKilosPago", command =>
         {

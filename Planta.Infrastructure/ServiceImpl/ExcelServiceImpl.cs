@@ -148,8 +148,7 @@ public sealed partial class ExcelServiceImpl : IExcelService
 
             var producto = hoja.Cells[filaProductos, col, filaProductos, col + 1];
             producto.Merge = true;
-            var categoriaCalibre = string.Join(" · ", new[] { c.Categoria, c.Calibre }.Where(t => t.Length > 0));
-            hoja.Cells[filaProductos, col].Value = string.Join("\n", new[] { c.Formato.ToUpperInvariant(), c.TipoEmpaque.ToUpperInvariant(), categoriaCalibre.ToUpperInvariant() }.Where(t => t.Length > 0));
+            hoja.Cells[filaProductos, col].Value = string.Join("\n", new[] { c.Formato.ToUpperInvariant(), c.TipoEmpaqueGrupoNombre.ToUpperInvariant() }.Where(t => t.Length > 0));
             PintarCabecera(producto, color);
 
             hoja.Cells[filaMedidas, col].Value = "CAJAS";

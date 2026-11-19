@@ -50,7 +50,7 @@ public sealed class JornadasAnotadorController(IJornadasAnotadorUseCase jornadas
     public async Task<IActionResult> SincronizarPuestos([FromBody] JsonElement body, CancellationToken ct)
         => Ok(await jornadas.SincronizarPuestosAsync(body.GetRawText(), ct));
 
-    /// <summary>Tipos de empaque que la matriz de compatibilidad asocia al formato elegido. JSON: [{ "codigoCultivo", "formatoId" }].</summary>
+    /// <summary>Tipos de empaque AGRUPADORES (PLANTA_TiposEmpaqueGrupo) que la matriz de compatibilidad permite para el formato elegido; devuelve [{ id (= tipoEmpaqueGrupoId), codigo, nombre }]. JSON: [{ "codigoCultivo", "formatoId" }].</summary>
     [HttpPost("tipos-empaque/listar")]
     public async Task<IActionResult> ListarTiposEmpaque([FromBody] JsonElement body, CancellationToken ct)
         => Ok(await jornadas.ListarTiposEmpaquePorMatrizAsync(body.GetRawText(), ct));
@@ -65,7 +65,7 @@ public sealed class JornadasAnotadorController(IJornadasAnotadorUseCase jornadas
     public async Task<IActionResult> ResumenRecoleccionesCajas(CancellationToken ct)
         => Ok(await jornadas.ListarRecoleccionesCajasResumenAsync(ct));
 
-    /// <summary>Stock actual del anotador: sus cajas que Logística aún no consumió en palets, por formato y tipo de empaque.</summary>
+    /// <summary>Stock actual del anotador: sus cajas que Logística aún no consumió en palets, por formato y tipo de empaque agrupador.</summary>
     [HttpPost("stock")]
     public async Task<IActionResult> StockAnotador(CancellationToken ct)
         => Ok(await jornadas.ListarStockAnotadorAsync(ct));
@@ -75,7 +75,7 @@ public sealed class JornadasAnotadorController(IJornadasAnotadorUseCase jornadas
     public async Task<IActionResult> ProduccionDia(CancellationToken ct)
         => Ok(await jornadas.ListarProduccionDiaAsync(ct));
 
-    /// <summary>Corrige la cantidad (y, si se envía, el formato y el tipo de empaque) de una anotación; exige la observación (motivo). JSON: [{ "id", "cantidadCajas", "formatoId", "tipoEmpaqueId", "calibreNombre", "observaciones" }].</summary>
+    /// <summary>Corrige la cantidad (y, si se envía, el formato y el tipo de empaque agrupador) de una anotación; exige la observación (motivo). JSON: [{ "id", "cantidadCajas", "formatoId", "tipoEmpaqueGrupoId", "observaciones" }].</summary>
     [HttpPost("produccion/corregir")]
     public async Task<IActionResult> CorregirCajasRecoleccion([FromBody] JsonElement body, CancellationToken ct)
         => Ok(await jornadas.CorregirCajasRecoleccionAsync(body.GetRawText(), ct));
@@ -90,7 +90,7 @@ public sealed class JornadasAnotadorController(IJornadasAnotadorUseCase jornadas
     public async Task<IActionResult> ListarMovimientosStock([FromBody] JsonElement body, CancellationToken ct)
         => Ok(await jornadas.ListarMovimientosStockAsync(body.GetRawText(), ct));
 
-    /// <summary>modo "nuevo" registra las cajas de un empacador; "anular" lo quita de la recolección. JSON: [{ "id", "modo", "idLinea" | "idMaquina", "curo", "puesto", "formatoId", "tipoEmpaqueId", "cantidadCajas", "calibreNombre" }].</summary>
+    /// <summary>modo "nuevo" registra las cajas de un empacador; "anular" lo quita de la recolección. JSON: [{ "id", "modo", "idLinea" | "idMaquina", "curo", "puesto", "formatoId", "tipoEmpaqueGrupoId", "cantidadCajas" }].</summary>
     [HttpPost("recolecciones/cajas/sincronizar")]
     public async Task<IActionResult> SincronizarRecoleccionesCajas([FromBody] JsonElement body, CancellationToken ct)
         => Ok(await jornadas.SincronizarRecoleccionesCajasAsync(body.GetRawText(), ct));

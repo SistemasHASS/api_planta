@@ -43,6 +43,7 @@ public sealed class CatalogosLocalRepositoryImpl(ApplicationDbContext context) :
             CatalogoPorCultivo.TiposEmpaqueGuia => "PLANTA_ListarTiposEmpaqueGuia",
             CatalogoPorCultivo.Categorias => "PLANTA_ListarCategorias",
             CatalogoPorCultivo.TiposEmpaque => "PLANTA_ListarTiposEmpaque",
+            CatalogoPorCultivo.TiposEmpaqueGrupo => "PLANTA_ListarTiposEmpaqueGrupo",
             _ => throw new ArgumentOutOfRangeException(nameof(catalogo))
         };
 

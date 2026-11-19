@@ -25,7 +25,7 @@ public interface IJornadasAnotadorRepository
     /// <summary>Asigna, mueve o quita empacadores de los puestos (PLANTA_SincronizarJornadasAnotadorPuestos).</summary>
     Task<JsonElement> SincronizarPuestosAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 
-    /// <summary>Tipos de empaque asociados al formato en la matriz de compatibilidad (PLANTA_ListarTiposEmpaquePorMatriz).</summary>
+    /// <summary>Tipos de empaque agrupadores permitidos para el formato por la matriz de compatibilidad (PLANTA_ListarTiposEmpaquePorMatriz).</summary>
     Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 
     /// <summary>Recolecciones de cajas de la jornada abierta del acopio (PLANTA_ListarJornadasAnotadorRecolecciones).</summary>
@@ -40,7 +40,7 @@ public interface IJornadasAnotadorRepository
     /// <summary>Cajas por empacador en la recolección abierta del usuario (PLANTA_ListarRecoleccionesCajasResumen).</summary>
     Task<JsonElement> ListarRecoleccionesCajasResumenAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
 
-    /// <summary>Stock actual del anotador: sus cajas que Logística aún no consumió en palets, por formato y tipo de empaque (PLANTA_ListarStockAnotador).</summary>
+    /// <summary>Stock actual del anotador: sus cajas que Logística aún no consumió en palets, por formato y tipo de empaque agrupador (PLANTA_ListarStockAnotador).</summary>
     Task<JsonElement> ListarStockAnotadorAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
 
     /// <summary>Producción del día: cajas de todos los empacadores en el proceso de la jornada abierta, una fila por anotación (PLANTA_ListarProduccionDia).</summary>

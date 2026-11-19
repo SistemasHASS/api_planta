@@ -119,13 +119,13 @@ public sealed class AdministracionController(IAdministracionUseCase administraci
     public async Task<IActionResult> SincronizarAcopioMaquinas([FromBody] SincronizarAcopioMaquinasRequest request, CancellationToken ct)
         => Ok(await administracion.SincronizarAcopioMaquinasAsync(request, ct));
 
-    /// <summary>Kilos de pago por formato y tipo de empaque (con el peso real del formato). Solo administrador y con Flujo_Empaque activo.</summary>
+    /// <summary>Kilos de pago por formato y tipo de empaque agrupador (con el peso real del formato). Solo administrador y con Flujo_Empaque activo.</summary>
     [HttpPost("kilos-pago/listar")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> ListarKilosPago(CancellationToken ct)
         => Ok(await administracion.ListarKilosPagoAsync(ct));
 
-    /// <summary>Guarda los kilos de pago por formato y tipo de empaque. Solo administrador y con Flujo_Empaque activo.</summary>
+    /// <summary>Guarda los kilos de pago por formato y tipo de empaque agrupador. Solo administrador y con Flujo_Empaque activo.</summary>
     [HttpPost("kilos-pago/sincronizar")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> SincronizarKilosPago([FromBody] SincronizarKilosPagoRequest request, CancellationToken ct)

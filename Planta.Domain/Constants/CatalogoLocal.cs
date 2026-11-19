@@ -22,5 +22,6 @@ public enum CatalogoPorCultivo
     Presentaciones,
     TiposEmpaqueGuia,
     Categorias,
-    TiposEmpaque
+    TiposEmpaque,
+    TiposEmpaqueGrupo
 }
