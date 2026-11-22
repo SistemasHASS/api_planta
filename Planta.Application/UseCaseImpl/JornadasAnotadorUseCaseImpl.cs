@@ -38,8 +38,8 @@ public sealed class JornadasAnotadorUseCaseImpl(IJornadasAnotadorService jornada
     public Task<JsonElement> CopiarJornadaAnteriorAsync(string json, CancellationToken cancellationToken = default)
         => jornadas.CopiarJornadaAnteriorAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true), json, cancellationToken);
 
-    public Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(string json, CancellationToken cancellationToken = default)
-        => jornadas.ListarTiposEmpaquePorMatrizAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), json, cancellationToken);
+    public Task<JsonElement> ListarTiposEmpaquePorFormatoAsync(string json, CancellationToken cancellationToken = default)
+        => jornadas.ListarTiposEmpaquePorFormatoAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true), json, cancellationToken);
 
     public Task<JsonElement> SincronizarRecoleccionesCajasAsync(string json, CancellationToken cancellationToken = default)
         => jornadas.SincronizarRecoleccionesCajasAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true), json, cancellationToken);

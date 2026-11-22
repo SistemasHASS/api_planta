@@ -32,8 +32,8 @@ public interface IJornadasAnotadorUseCase
     /// <summary>Trae a la jornada abierta las líneas y los empacadores del anotador en una jornada anterior. JSON: { "idJornadaOrigen" }.</summary>
     Task<JsonElement> CopiarJornadaAnteriorAsync(string json, CancellationToken cancellationToken = default);
 
-    /// <summary>Tipos de empaque agrupadores que la matriz de compatibilidad permite para el formato.</summary>
-    Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(string json, CancellationToken cancellationToken = default);
+    /// <summary>Tipos de empaque agrupadores configurados para el formato en Kilos de pago.</summary>
+    Task<JsonElement> ListarTiposEmpaquePorFormatoAsync(string json, CancellationToken cancellationToken = default);
 
     /// <summary>Registra (nuevo) o anula las cajas de un empacador en la recolección abierta del anotador.</summary>
     Task<JsonElement> SincronizarRecoleccionesCajasAsync(string json, CancellationToken cancellationToken = default);

@@ -60,10 +60,10 @@ public sealed class JornadasAnotadorController(IJornadasAnotadorUseCase jornadas
     public async Task<IActionResult> CopiarJornadaAnterior([FromBody] JsonElement body, CancellationToken ct)
         => Ok(await jornadas.CopiarJornadaAnteriorAsync(body.GetRawText(), ct));
 
-    /// <summary>Tipos de empaque AGRUPADORES (PLANTA_TiposEmpaqueGrupo) que la matriz de compatibilidad permite para el formato elegido; devuelve [{ id (= tipoEmpaqueGrupoId), codigo, nombre }]. JSON: [{ "codigoCultivo", "formatoId" }].</summary>
+    /// <summary>Tipos de empaque AGRUPADORES (PLANTA_TiposEmpaqueGrupo) configurados para el formato elegido en Kilos de pago (PLANTA_KilosPago); devuelve [{ id (= tipoEmpaqueGrupoId), codigo, nombre }]. JSON: [{ "codigoCultivo", "formatoId" }].</summary>
     [HttpPost("tipos-empaque/listar")]
     public async Task<IActionResult> ListarTiposEmpaque([FromBody] JsonElement body, CancellationToken ct)
-        => Ok(await jornadas.ListarTiposEmpaquePorMatrizAsync(body.GetRawText(), ct));
+        => Ok(await jornadas.ListarTiposEmpaquePorFormatoAsync(body.GetRawText(), ct));
 
     /// <summary>Recolecciones de cajas de la jornada abierta del acopio (la pantalla se queda con la abierta del usuario).</summary>
     [HttpPost("recolecciones/listar")]

@@ -104,8 +104,8 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@nombreUsuario", contexto.NombreUsuario);
         }, cancellationToken);
 
-    public Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
-        => EjecutarSobreAsync("PLANTA_ListarTiposEmpaquePorMatriz", command =>
+    public Task<JsonElement> ListarTiposEmpaquePorFormatoAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarTiposEmpaquePorFormato", command =>
         {
             Agregar(command, "@idempresa", contexto.IdEmpresa);
             Agregar(command, "@ruc", contexto.Ruc);

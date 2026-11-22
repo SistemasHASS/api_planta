@@ -31,8 +31,8 @@ public interface IJornadasAnotadorRepository
     /// <summary>Trae a la jornada abierta las líneas y los empacadores que el anotador tenía en una jornada anterior (PLANTA_CopiarJornadaAnotadorAnterior).</summary>
     Task<JsonElement> CopiarJornadaAnteriorAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 
-    /// <summary>Tipos de empaque agrupadores permitidos para el formato por la matriz de compatibilidad (PLANTA_ListarTiposEmpaquePorMatriz).</summary>
-    Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
+    /// <summary>Tipos de empaque agrupadores configurados para el formato en Kilos de pago (PLANTA_ListarTiposEmpaquePorFormato).</summary>
+    Task<JsonElement> ListarTiposEmpaquePorFormatoAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 
     /// <summary>Recolecciones de cajas de la jornada abierta del acopio (PLANTA_ListarJornadasAnotadorRecolecciones).</summary>
     Task<JsonElement> ListarRecoleccionesAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
