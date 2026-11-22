@@ -26,6 +26,12 @@ public interface IJornadasAnotadorUseCase
     /// <summary>Asigna (nuevo), mueve (mover), quita (editado) o vacía (vaciar) los empacadores de los puestos.</summary>
     Task<JsonElement> SincronizarPuestosAsync(string json, CancellationToken cancellationToken = default);
 
+    /// <summary>Jornadas anteriores del acopio (últimos 7 días) de las que el anotador puede traer sus líneas y empacadores.</summary>
+    Task<JsonElement> ListarJornadasAnterioresAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Trae a la jornada abierta las líneas y los empacadores del anotador en una jornada anterior. JSON: { "idJornadaOrigen" }.</summary>
+    Task<JsonElement> CopiarJornadaAnteriorAsync(string json, CancellationToken cancellationToken = default);
+
     /// <summary>Tipos de empaque agrupadores que la matriz de compatibilidad permite para el formato.</summary>
     Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(string json, CancellationToken cancellationToken = default);
 

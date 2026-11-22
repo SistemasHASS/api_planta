@@ -50,6 +50,16 @@ public sealed class JornadasAnotadorController(IJornadasAnotadorUseCase jornadas
     public async Task<IActionResult> SincronizarPuestos([FromBody] JsonElement body, CancellationToken ct)
         => Ok(await jornadas.SincronizarPuestosAsync(body.GetRawText(), ct));
 
+    /// <summary>Jornadas anteriores del acopio (últimos 7 días) en las que el anotador tuvo líneas, con lo que podría traer; `bloqueado` = ya registró cajas en la jornada abierta.</summary>
+    [HttpPost("anteriores/listar")]
+    public async Task<IActionResult> ListarJornadasAnteriores(CancellationToken ct)
+        => Ok(await jornadas.ListarJornadasAnterioresAsync(ct));
+
+    /// <summary>Trae a la jornada abierta las líneas y los empacadores que el anotador tenía en una jornada anterior (no reemplaza nada; no permite si ya registró cajas). JSON: { "idJornadaOrigen" }.</summary>
+    [HttpPost("anteriores/copiar")]
+    public async Task<IActionResult> CopiarJornadaAnterior([FromBody] JsonElement body, CancellationToken ct)
+        => Ok(await jornadas.CopiarJornadaAnteriorAsync(body.GetRawText(), ct));
+
     /// <summary>Tipos de empaque AGRUPADORES (PLANTA_TiposEmpaqueGrupo) que la matriz de compatibilidad permite para el formato elegido; devuelve [{ id (= tipoEmpaqueGrupoId), codigo, nombre }]. JSON: [{ "codigoCultivo", "formatoId" }].</summary>
     [HttpPost("tipos-empaque/listar")]
     public async Task<IActionResult> ListarTiposEmpaque([FromBody] JsonElement body, CancellationToken ct)

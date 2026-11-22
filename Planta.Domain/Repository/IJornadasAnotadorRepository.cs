@@ -25,6 +25,12 @@ public interface IJornadasAnotadorRepository
     /// <summary>Asigna, mueve o quita empacadores de los puestos (PLANTA_SincronizarJornadasAnotadorPuestos).</summary>
     Task<JsonElement> SincronizarPuestosAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 
+    /// <summary>Jornadas anteriores del acopio de las que el anotador puede traer sus líneas y empacadores (PLANTA_ListarJornadasAnotadorAnteriores).</summary>
+    Task<JsonElement> ListarJornadasAnterioresAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
+
+    /// <summary>Trae a la jornada abierta las líneas y los empacadores que el anotador tenía en una jornada anterior (PLANTA_CopiarJornadaAnotadorAnterior).</summary>
+    Task<JsonElement> CopiarJornadaAnteriorAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
+
     /// <summary>Tipos de empaque agrupadores permitidos para el formato por la matriz de compatibilidad (PLANTA_ListarTiposEmpaquePorMatriz).</summary>
     Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 

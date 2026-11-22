@@ -81,6 +81,29 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
         }, cancellationToken);
 
+    public Task<JsonElement> ListarJornadasAnterioresAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_ListarJornadasAnotadorAnteriores", command =>
+        {
+            Agregar(command, "@idJornadaElegida", contexto.IdJornada, DbType.Int32);
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+        }, cancellationToken);
+
+    public Task<JsonElement> CopiarJornadaAnteriorAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_CopiarJornadaAnotadorAnterior", command =>
+        {
+            Agregar(command, "@idJornadaElegida", contexto.IdJornada, DbType.Int32);
+            Agregar(command, "@Json", json);
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@rol", contexto.Rol);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+            Agregar(command, "@nombreUsuario", contexto.NombreUsuario);
+        }, cancellationToken);
+
     public Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_ListarTiposEmpaquePorMatriz", command =>
         {

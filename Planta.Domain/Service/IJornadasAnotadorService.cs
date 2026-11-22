@@ -12,6 +12,8 @@ public interface IJornadasAnotadorService
     Task<JsonElement> BuscarTrabajadorAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarPuestosAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarPuestosAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
+    Task<JsonElement> ListarJornadasAnterioresAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
+    Task<JsonElement> CopiarJornadaAnteriorAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarTiposEmpaquePorMatrizAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarRecoleccionesCajasAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarRecoleccionesAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
