@@ -285,11 +285,11 @@ internal static partial class PlanillaEmpaqueArmador
 
     private static PlanillaEmpaque Cabecera(Proceso proceso, IEnumerable<PaginaPlanilla> paginas)
     {
-        var acopio = proceso.CodigoAcopio.Trim();
-        var nombre = proceso.AcopioNombre.Trim();
-        if (nombre.Length > 0 && !string.Equals(nombre, acopio, StringComparison.OrdinalIgnoreCase))
+        // PLANTA EMPACADORA lleva solo el nombre del acopio; si no tiene nombre, el código.
+        var acopio = proceso.AcopioNombre.Trim();
+        if (acopio.Length == 0)
         {
-            acopio = (acopio + " " + nombre).Trim();
+            acopio = proceso.CodigoAcopio.Trim();
         }
 
         var turno = proceso.Turno.Trim();
@@ -355,7 +355,7 @@ internal static partial class PlanillaEmpaqueArmador
                 {
                     Hoja = nombres.Unico(nombrar(bf, bc, variasHojas)),
                     InicioRecoleccion = (bc * RecoleccionesPorHoja) + 1,
-                    IndiceInicio = (bf * PersonasPorHoja) + 1,
+                    IndiceInicio = 1, // cada hoja numera a sus personas del 1 al 21
                     Personas = filas,
                 });
             }
@@ -380,9 +380,10 @@ internal static partial class PlanillaEmpaqueArmador
     /// <summary>
     /// La planilla de producción. Una hoja por anotador + formato + tipo de empaque agrupador + origen: abajo va el anotador que registró a esas personas (su nombre
     /// y su documento) y arriba el LOTE, que dice de qué máquina vienen las cajas (en las líneas manuales va vacío: no vienen de ninguna).
-    /// Devuelve null si no hay cajas.
+    /// Cada hoja lleva a todos los empacadores que el tareo asignó a ese origen (las líneas manuales, o la máquina del LOTE), en el orden del tareo, hayan hecho
+    /// cajas de ese producto o no (los que no hicieron salen con TOTAL 0). Sin tareo, salen solo los que hicieron cajas. Devuelve null si no hay cajas.
     /// </summary>
-    internal static Armado? Produccion(JsonElement data)
+    internal static Armado? Produccion(JsonElement data, JsonElement tareo = default)
     {
         var proceso = LeerProceso(data);
         var filas = LeerDetalle(data);
@@ -423,6 +424,22 @@ internal static partial class PlanillaEmpaqueArmador
             persona.Cajas[recoleccion] = persona.Cajas.GetValueOrDefault(recoleccion) + Entero(f, "cajas");
         }
 
+        // Los empacadores del tareo que no hicieron cajas de este producto también salen, en el sitio donde el tareo los puso.
+        foreach (var t in LeerDetalle(tareo))
+        {
+            var idAnotador = Texto(t, "idUsuarioAnotador");
+            var esMaquina = Booleano(t, "esMaquina");
+            var maquina = esMaquina ? Texto(t, "maquina") : string.Empty;
+            var sitio = Sitio.De(esMaquina, Texto(t, "maquina"), Entero(t, "curo"), Entero(t, "numeroLinea"), Entero(t, "puesto"));
+            foreach (var g in grupos.Values)
+            {
+                if (g.IdAnotador == idAnotador && g.EsMaquina == esMaquina && string.Equals(g.Maquina, maquina, StringComparison.OrdinalIgnoreCase))
+                {
+                    Persona(g.Personas, Texto(t, "dni")).Visto(Texto(t, "empacador"), sitio);
+                }
+            }
+        }
+
         var lista = grupos.Values
             .OrderBy(g => g, Comparer<GrupoProduccion>.Create((a, b) =>
             {
@@ -454,11 +471,21 @@ internal static partial class PlanillaEmpaqueArmador
             }))
             .ToList();
 
+        // Las cajas de cada producto (anotador + formato + agrupador, todos sus orígenes): van en la última hoja de ese producto.
+        static string ProductoDe(GrupoProduccion g) => $"{g.IdAnotador}|{g.Formato.ToLowerInvariant()}|{g.Agrupador.ToLowerInvariant()}";
+        var cajasDelProducto = new Dictionary<string, int>();
+        foreach (var g in lista)
+        {
+            var suma = g.Personas.Values.Sum(p => p.Cajas.Values.Where(c => c > 0).Sum());
+            cajasDelProducto[ProductoDe(g)] = cajasDelProducto.GetValueOrDefault(ProductoDe(g)) + suma;
+        }
+
         var nombres = new NombresDeHoja();
         var variosAnotadores = anotadores.Count > 1;
         var paginas = new List<PaginaPlanilla>();
-        foreach (var g in lista)
+        for (var indiceGrupo = 0; indiceGrupo < lista.Count; indiceGrupo++)
         {
+            var g = lista[indiceGrupo];
             var personas = Ordenadas(g.Personas);
             var columnas = personas.Select(p => CompactarRecolecciones(p.Cajas).Usadas).DefaultIfEmpty(0).Max();
 
@@ -479,9 +506,18 @@ internal static partial class PlanillaEmpaqueArmador
                 Lote = g.Maquina,
                 Anotador = g.Anotador,
                 AnotadorDni = g.DniAnotador,
+                ConTotal = true,
             };
-            paginas.AddRange(PaginasDeGrupo(personas, columnas, plantilla, nombres,
-                (bf, bc, varias) => varias ? $"{baseNombre} {bf + 1}.{bc + 1}" : baseNombre));
+            var paginasDelGrupo = PaginasDeGrupo(personas, columnas, plantilla, nombres,
+                (bf, bc, varias) => varias ? $"{baseNombre} {bf + 1}.{bc + 1}" : baseNombre);
+
+            // Los grupos de un mismo producto salen seguidos: el último de ellos cierra con el TOTAL CAJAS.
+            if (indiceGrupo == lista.Count - 1 || ProductoDe(lista[indiceGrupo + 1]) != ProductoDe(g))
+            {
+                paginasDelGrupo[^1] = paginasDelGrupo[^1] with { ConTotalProducto = true, TotalProducto = cajasDelProducto[ProductoDe(g)] };
+            }
+
+            paginas.AddRange(paginasDelGrupo);
         }
 
         return new Armado(Cabecera(proceso, paginas), proceso, AnotadorUnico(filas.Select(f => Texto(f, "anotador"))));

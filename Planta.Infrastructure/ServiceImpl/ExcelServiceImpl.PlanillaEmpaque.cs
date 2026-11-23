@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Drawing;
 using OfficeOpenXml;
 using OfficeOpenXml.Drawing;
@@ -28,8 +29,10 @@ public sealed partial class ExcelServiceImpl
         using var paquete = new ExcelPackage();
         var medidas = planilla.Logo is { Length: > 0 } ? DimensionesDeImagen(planilla.Logo) : null;
 
+        var numeroHoja = 0;
         foreach (var pagina in planilla.Paginas)
         {
+            numeroHoja++;
             var hoja = paquete.Workbook.Worksheets.Add(pagina.Hoja);
             DibujarHojaPlanilla(hoja);
             if (medidas is { } m)
@@ -37,7 +40,7 @@ public sealed partial class ExcelServiceImpl
                 PonerLogoPlanilla(hoja, planilla.Logo!, m.Ancho, m.Alto);
             }
 
-            LlenarPaginaPlanilla(hoja, planilla, pagina);
+            LlenarPaginaPlanilla(hoja, planilla, pagina, numeroHoja);
         }
 
         // Que no queden hojas agrupadas: solo la primera seleccionada.
@@ -89,7 +92,7 @@ public sealed partial class ExcelServiceImpl
             hoja.Cells[celda].Value = valor;
         }
 
-        // Impresión: A4 horizontal, todo en una sola página, centrada y con el área B1:AA36.
+        // Impresión: A4 horizontal, todo en una sola página, centrada y con el área B1:AA37.
         var impresion = hoja.PrinterSettings;
         impresion.Orientation = eOrientation.Landscape;
         impresion.PaperSize = ePaperSize.A4;
@@ -104,7 +107,7 @@ public sealed partial class ExcelServiceImpl
         impresion.BottomMargin = 0.354166666666667m;
         impresion.HeaderMargin = 0.313888888888889m;
         impresion.FooterMargin = 0.313888888888889m;
-        impresion.PrintArea = hoja.Cells["B1:AA36"];
+        impresion.PrintArea = hoja.Cells["B1:AA37"];
     }
 
     private static void AplicarEstiloPlanilla(ExcelRange rango, PlanillaEmpaqueFormato.Estilo e)
@@ -226,7 +229,7 @@ public sealed partial class ExcelServiceImpl
         return null;
     }
 
-    private static void LlenarPaginaPlanilla(ExcelWorksheet hoja, PlanillaEmpaque planilla, PaginaPlanilla pagina)
+    private static void LlenarPaginaPlanilla(ExcelWorksheet hoja, PlanillaEmpaque planilla, PaginaPlanilla pagina, int numeroHoja)
     {
         hoja.Cells["D6"].Value = planilla.Acopio;
         hoja.Cells["D7"].Value = planilla.Fecha;
@@ -243,11 +246,11 @@ public sealed partial class ExcelServiceImpl
         var variedad = pagina.Variedad.Trim();
         hoja.Cells["U10"].Value = cabecera.Length > 0 ? cabecera : variedad.Length > 0 ? "VARIEDAD: " + variedad : "VARIEDAD:";
 
-        // El que anota firma abajo, con su documento al lado de CODIGO.
+        // El que anota firma abajo: su nombre en SUPERVISOR y, justo debajo, su documento en CODIGO.
         hoja.Cells["D36"].Value = pagina.Anotador;
         if (pagina.AnotadorDni.Trim().Length > 0)
         {
-            hoja.Cells["Y36"].Value = pagina.AnotadorDni.Trim();
+            hoja.Cells["D37"].Value = pagina.AnotadorDni.Trim();
         }
 
         var inicio = Math.Max(pagina.InicioRecoleccion, 1);
@@ -256,6 +259,7 @@ public sealed partial class ExcelServiceImpl
             hoja.Cells[FilaNumerosRecoleccion, PrimeraColumnaRecoleccion + i].Value = inicio + i;
         }
 
+        var totalHoja = 0;
         for (var i = 0; i < pagina.Personas.Count; i++)
         {
             var persona = pagina.Personas[i];
@@ -276,10 +280,30 @@ public sealed partial class ExcelServiceImpl
                 }
             }
 
-            if (total > 0)
+            totalHoja += total;
+
+            // En la planilla de producción todo el que sale en la lista lleva su TOTAL, aunque sea 0; en el tareo no hay cajas y la columna queda en blanco.
+            if (total > 0 || pagina.ConTotal)
             {
                 hoja.Cells[fila, ColumnaTotalPlanilla].Value = total;
             }
+        }
+
+        // El número de la hoja (1, 2, 3...) en el libro, arriba a la izquierda del logo.
+        hoja.Cells["W1"].Value = "HOJA N° " + numeroHoja.ToString(CultureInfo.InvariantCulture);
+
+        // Solo la última hoja de cada producto lleva el TOTAL CAJAS: la suma de todas las hojas de ese producto.
+        if (pagina.ConTotalProducto)
+        {
+            hoja.Cells["V37"].Value = "TOTAL CAJAS:";
+            hoja.Cells["Y37"].Value = pagina.TotalProducto;
+        }
+
+        // Donde antes iba CODIGO va el TOTAL de la hoja: la suma de cajas de la columna TOTAL.
+        if (pagina.ConTotal)
+        {
+            hoja.Cells["V36"].Value = "TOTAL:";
+            hoja.Cells["Y36"].Value = totalHoja;
         }
     }
 }

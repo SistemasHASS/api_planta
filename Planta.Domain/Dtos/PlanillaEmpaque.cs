@@ -41,13 +41,22 @@ public sealed record PaginaPlanilla
     /// <summary>Nombre del anotador (va junto a SUPERVISOR, en el pie).</summary>
     public string Anotador { get; init; } = string.Empty;
 
-    /// <summary>Su documento (va junto a CODIGO, en el pie).</summary>
+    /// <summary>Su documento (va en CODIGO, justo debajo de SUPERVISOR, en el pie).</summary>
     public string AnotadorDni { get; init; } = string.Empty;
+
+    /// <summary>True solo en la última hoja de cada producto (anotador + formato + tipo de empaque agrupador) de la producción: el pie lleva TOTAL CAJAS.</summary>
+    public bool ConTotalProducto { get; init; }
+
+    /// <summary>Las cajas de todas las hojas de ese producto juntas (solo cuenta si ConTotalProducto).</summary>
+    public int TotalProducto { get; init; }
+
+    /// <summary>True en la planilla de producción: cada persona lleva su TOTAL (0 si no hizo cajas) y el pie lleva TOTAL con la suma de la hoja; el tareo no.</summary>
+    public bool ConTotal { get; init; }
 
     /// <summary>Número de la primera columna de recolección de esta hoja: 1, 21, 41...</summary>
     public int InicioRecoleccion { get; init; } = 1;
 
-    /// <summary>Número de la primera persona de esta hoja (CANT.): 1, 22, 43...</summary>
+    /// <summary>Número de la primera persona de esta hoja (CANT.): siempre 1, cada hoja numera del 1 al 21</summary>
     public int IndiceInicio { get; init; } = 1;
 
     public IReadOnlyList<PersonaPlanilla> Personas { get; init; } = [];

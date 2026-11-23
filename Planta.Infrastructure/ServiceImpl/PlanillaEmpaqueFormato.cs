@@ -2,7 +2,7 @@ namespace Planta.Infrastructure.ServiceImpl;
 
 /// <summary>
 /// Formato de la planilla de empaque (el que antes venía en la plantilla de Excel): fuentes, colores, bordes, celdas combinadas, anchos y alturas.
-/// Equivale a planilla_empaque_formato.go de la API Go: las dos describen exactamente la misma hoja (columnas B..AA, filas 1..36).
+/// Equivale a planilla_empaque_formato.go de la API Go: las dos describen exactamente la misma hoja (columnas B..AA, filas 1..37).
 /// </summary>
 internal static class PlanillaEmpaqueFormato
 {
@@ -25,7 +25,10 @@ internal static class PlanillaEmpaqueFormato
         new(new Estilo("Times New Roman", 10f, false, false, "000000", "", "RTB", "", "", false, 0, false),
             ["V1:V4", "D2", "O2:O4", "C3:C4", "AA3:AA4", "Z12:Z34"]),
         new(new Estilo("Arial", 14f, true, false, "1F497D", "", "LRTB", "center", "center", true, 0, false),
-            ["W1", "B2", "E2", "B4", "E4", "P4", "W4"]),
+            ["B2", "E2", "B4", "E4", "P4", "W4"]),
+        // W1 es la caja del logo: el número de hoja va a la izquierda, al lado del logo.
+        new(new Estilo("Arial", 14f, true, false, "1F497D", "", "LRTB", "left", "center", false, 0, false),
+            ["W1"]),
         new(new Estilo("Times New Roman", 10f, false, false, "000000", "", "T", "", "", false, 0, false),
             ["X1:Z1"]),
         new(new Estilo("Times New Roman", 10f, false, false, "000000", "", "RT", "", "", false, 0, false),
@@ -35,7 +38,7 @@ internal static class PlanillaEmpaqueFormato
         new(new Estilo("Times New Roman", 10f, false, false, "000000", "", "LB", "", "", false, 0, false),
             ["W2"]),
         new(new Estilo("Times New Roman", 10f, false, false, "000000", "", "B", "", "", false, 0, false),
-            ["X2:Z2", "X9:AA9", "E36:H36"]),
+            ["X2:Z2", "X9:AA9", "E36:H36", "E37:H37"]),
         new(new Estilo("Times New Roman", 10f, false, false, "000000", "", "RB", "", "", false, 0, false),
             ["AA2"]),
         new(new Estilo("Arial", 14f, true, false, "1F497D", "93CDDD", "LRTB", "center", "center", true, 0, false),
@@ -105,17 +108,19 @@ internal static class PlanillaEmpaqueFormato
         new(new Estilo("Calibri", 14f, true, false, "1F497D", "", "", "center", "center", true, 0, false),
             ["Y35:AA35"]),
         new(new Estilo("Arial", 18f, true, false, "1F497D", "", "", "center", "top", false, 0, false),
-            ["B36"]),
+            ["B36", "B37"]),
         new(new Estilo("Baskerville Old Face", 24f, true, false, "000000", "", "B", "left", "top", false, 0, false),
-            ["D36"]),
+            ["D36", "D37"]),
         new(new Estilo("Arial", 18f, true, false, "1F497D", "", "B", "left", "top", false, 0, false),
             ["I36:N36", "Z36:AA36"]),
         new(new Estilo("Arial", 18f, true, false, "1F497D", "", "", "left", "top", false, 0, false),
-            ["O36:V36", "Y36"]),
+            ["O36:V36", "V37"]),
+        new(new Estilo("Arial", 18f, true, false, "1F497D", "", "", "center", "center", false, 0, false),
+            ["Y36", "Y37"]),
     ];
 
     /// <summary>Las celdas combinadas.</summary>
-    internal static readonly string[] Combinadas = ["B1:V1", "W1:AA2", "B2:D2", "E2:O2", "P2:V2", "B3:C3", "E3:O3", "P3:V3", "W3:AA3", "B4:C4", "E4:O4", "P4:V4", "W4:AA4", "B6:C6", "U6:AA6", "B7:C7", "U7:AA7", "B9:D9", "U9:V9", "W9:AA9", "B10:D10", "U10:AA10", "B12:B13", "C12:C13", "D12:D13", "E12:Z12", "Y13:Z13", "Y14:Z14", "Y15:Z15", "Y16:Z16", "Y17:Z17", "Y18:Z18", "Y19:Z19", "Y20:Z20", "Y21:Z21", "Y22:Z22", "Y23:Z23", "Y24:Z24", "Y25:Z25", "Y26:Z26", "Y27:Z27", "Y28:Z28", "Y29:Z29", "Y30:Z30", "Y31:Z31", "Y32:Z32", "Y33:Z33", "Y34:Z34", "B36:C36", "D36:H36", "V36:X36"];
+    internal static readonly string[] Combinadas = ["B1:V1", "W1:AA2", "B2:D2", "E2:O2", "P2:V2", "B3:C3", "E3:O3", "P3:V3", "W3:AA3", "B4:C4", "E4:O4", "P4:V4", "W4:AA4", "B6:C6", "U6:AA6", "B7:C7", "U7:AA7", "B9:D9", "U9:V9", "W9:AA9", "B10:D10", "U10:AA10", "B12:B13", "C12:C13", "D12:D13", "E12:Z12", "Y13:Z13", "Y14:Z14", "Y15:Z15", "Y16:Z16", "Y17:Z17", "Y18:Z18", "Y19:Z19", "Y20:Z20", "Y21:Z21", "Y22:Z22", "Y23:Z23", "Y24:Z24", "Y25:Z25", "Y26:Z26", "Y27:Z27", "Y28:Z28", "Y29:Z29", "Y30:Z30", "Y31:Z31", "Y32:Z32", "Y33:Z33", "Y34:Z34", "B36:C36", "D36:H36", "B37:C37", "D37:H37", "V36:X36", "V37:X37"];
 
     /// <summary>Ancho (en caracteres) de las columnas, de la primera a la última (base 1).</summary>
     internal static readonly (int Desde, int Hasta, double Ancho)[] AnchosColumnas =
@@ -169,6 +174,7 @@ internal static class PlanillaEmpaqueFormato
         [34] = 51.6,
         [35] = 18,
         [36] = 30.6,
+        [37] = 30.6,
     };
 
     /// <summary>Lo que no cambia de una planilla a otra (títulos, rótulos, razón social y RUC).</summary>
@@ -196,6 +202,6 @@ internal static class PlanillaEmpaqueFormato
         ("AA12", "FIRMA"),
         ("Y13", "TOTAL"),
         ("B36", "SUPERVISOR:"),
-        ("V36", "CODIGO:"),
+        ("B37", "CODIGO:"),
     ];
 }

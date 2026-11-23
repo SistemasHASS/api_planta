@@ -241,12 +241,31 @@ public sealed class ReportesServiceImpl(IReportesRepository repository, IMaestro
         request = LimpiarPlanillaEmpaque(request);
         var sobre = await repository.PlanillaEmpaqueProduccionAsync(contexto, request, cancellationToken);
         var data = DataDePlanilla(sobre, "No se pudo obtener la planilla de producción.");
-        var armado = PlanillaEmpaqueArmador.Produccion(data)
+        var armado = PlanillaEmpaqueArmador.Produccion(data, await TareoDePlanillaAsync(contexto, request, cancellationToken))
             ?? throw new BadRequestException(SinMovimientoPlanilla(request, "No hay cajas registradas en ese proceso."));
 
         armado.Planilla.Logo = await LogoDeEmpresaAsync(webRootPath, contexto.Ruc, cancellationToken);
         var bytes = excel.GenerarPlanillaEmpaque(armado.Planilla);
         return new ArchivoGenerado(bytes, TipoContenidoExcel, PlanillaEmpaqueArmador.NombreArchivo("produccion_empaque", armado, request.IdUsuarioAnotador));
+    }
+
+    /// <summary>El tareo del proceso: de ahí sale la lista y el orden de los empacadores de cada hoja de la producción. Si no se puede leer, la producción sale solo con quienes hicieron cajas.</summary>
+    private async Task<JsonElement> TareoDePlanillaAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var sobre = await repository.PlanillaEmpaqueTareoAsync(contexto, request, cancellationToken);
+            if (sobre.TryGetProperty("error", out var error) && error.ValueKind == JsonValueKind.True)
+            {
+                return default;
+            }
+
+            return sobre.TryGetProperty("data", out var data) ? data : default;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return default;
+        }
     }
 
     public async Task<ArchivoGenerado> ExportarPlanillaTareoExcelAsync(ContextoUsuario contexto, PlanillaEmpaqueRequest request, string? webRootPath, CancellationToken cancellationToken = default)
