@@ -58,6 +58,7 @@ public interface IJornadasAnotadorUseCase
 
     /// <summary>Corrige la cantidad (y el producto) de una anotación de la producción del día, con su observación.</summary>
     Task<JsonElement> CorregirCajasRecoleccionAsync(string json, CancellationToken cancellationToken = default);
+    Task<JsonElement> EliminarCajasProductoAsync(string json, CancellationToken cancellationToken = default);
 
     /// <summary>Inicia (nuevo) o cierra (editado) una recolección del anotador.</summary>
     Task<JsonElement> SincronizarRecoleccionesAsync(string json, CancellationToken cancellationToken = default);

@@ -177,6 +177,19 @@ public sealed class JornadasAnotadorRepositoryImpl(ApplicationDbContext context)
             Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
         }, cancellationToken);
 
+    /// <summary>SP: base-datos/sp/PLANTA_EliminarCajasProducto.sql (modo consultar: cajas registradas / libres / en palets de un producto; modo ejecutar: elimina las libres).</summary>
+    public Task<JsonElement> EliminarCajasProductoAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
+        => EjecutarSobreAsync("PLANTA_EliminarCajasProducto", command =>
+        {
+            Agregar(command, "@idJornadaElegida", contexto.IdJornada, DbType.Int32);
+            Agregar(command, "@Json", json);
+            Agregar(command, "@idempresa", contexto.IdEmpresa);
+            Agregar(command, "@ruc", contexto.Ruc);
+            Agregar(command, "@usuario", contexto.Usuario);
+            Agregar(command, "@rol", contexto.Rol);
+            Agregar(command, "@codigoAcopio", contexto.CodigoAcopio);
+        }, cancellationToken);
+
     /// <summary>SP: base-datos/sp/PLANTA_CorregirCajasRecoleccion.sql (cambia la cantidad y, si se envía, el formato y el tipo de empaque agrupador de un registro de cajas y deja los AJUSTE de stock).</summary>
     public Task<JsonElement> CorregirCajasRecoleccionAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => EjecutarSobreAsync("PLANTA_CorregirCajasRecoleccion", command =>

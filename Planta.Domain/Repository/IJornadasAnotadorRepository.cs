@@ -55,6 +55,9 @@ public interface IJornadasAnotadorRepository
     /// <summary>Corrige la cantidad de un registro de cajas con su AJUSTE de stock (PLANTA_CorregirCajasRecoleccion).</summary>
     Task<JsonElement> CorregirCajasRecoleccionAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 
+    /// <summary>Consulta (modo consultar) o elimina (modo ejecutar) las cajas libres de un producto de la producción del día (PLANTA_EliminarCajasProducto).</summary>
+    Task<JsonElement> EliminarCajasProductoAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
+
     /// <summary>Registra las cajas de un empacador en la recolección abierta (PLANTA_SincronizarRecoleccionesCajas).</summary>
     Task<JsonElement> SincronizarRecoleccionesCajasAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 

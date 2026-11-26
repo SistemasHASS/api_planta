@@ -85,10 +85,15 @@ public sealed class JornadasAnotadorController(IJornadasAnotadorUseCase jornadas
     public async Task<IActionResult> ProduccionDia(CancellationToken ct)
         => Ok(await jornadas.ListarProduccionDiaAsync(ct));
 
-    /// <summary>Corrige la cantidad (y, si se envía, el formato y el tipo de empaque agrupador) de una anotación; exige la observación (motivo). JSON: [{ "id", "cantidadCajas", "formatoId", "tipoEmpaqueGrupoId", "observaciones" }].</summary>
+    /// <summary>Corrige la cantidad (y, si se envía, el formato y el tipo de empaque agrupador) de una anotación o la elimina ("anular": true); la observación (motivo) es opcional. JSON: [{ "id", "cantidadCajas", "formatoId", "tipoEmpaqueGrupoId", "anular", "observaciones" }].</summary>
     [HttpPost("produccion/corregir")]
     public async Task<IActionResult> CorregirCajasRecoleccion([FromBody] JsonElement body, CancellationToken ct)
         => Ok(await jornadas.CorregirCajasRecoleccionAsync(body.GetRawText(), ct));
+
+    /// <summary>"consultar" devuelve las cajas registradas / libres / en palets de un producto de la producción del día; "ejecutar" elimina solo las libres. JSON: { "modo", "formatoId", "tipoEmpaqueGrupoId", "observaciones" }.</summary>
+    [HttpPost("produccion/eliminar-producto")]
+    public async Task<IActionResult> EliminarCajasProducto([FromBody] JsonElement body, CancellationToken ct)
+        => Ok(await jornadas.EliminarCajasProductoAsync(body.GetRawText(), ct));
 
     /// <summary>Historial de recolecciones del anotador (idRecoleccion = 0 las lista; con un id devuelve el detalle de esa recolección). JSON: [{ "idRecoleccion" }].</summary>
     [HttpPost("recolecciones/cajas/historial")]

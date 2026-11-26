@@ -65,6 +65,9 @@ public sealed class JornadasAnotadorUseCaseImpl(IJornadasAnotadorService jornada
     public Task<JsonElement> CorregirCajasRecoleccionAsync(string json, CancellationToken cancellationToken = default)
         => jornadas.CorregirCajasRecoleccionAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true), json, cancellationToken);
 
+    public Task<JsonElement> EliminarCajasProductoAsync(string json, CancellationToken cancellationToken = default)
+        => jornadas.EliminarCajasProductoAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true), json, cancellationToken);
+
     public Task<JsonElement> SincronizarRecoleccionesAsync(string json, CancellationToken cancellationToken = default)
         => jornadas.SincronizarRecoleccionesAsync(ContextoDeUsuario.Crear(currentUser, exigirUsuarioYRol: true, exigirAcopio: true), json, cancellationToken);
 

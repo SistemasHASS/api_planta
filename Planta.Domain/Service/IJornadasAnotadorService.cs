@@ -23,5 +23,6 @@ public interface IJornadasAnotadorService
     Task<JsonElement> ListarStockAnotadorAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
     Task<JsonElement> ListarProduccionDiaAsync(ContextoUsuario contexto, CancellationToken cancellationToken = default);
     Task<JsonElement> CorregirCajasRecoleccionAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
+    Task<JsonElement> EliminarCajasProductoAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
     Task<JsonElement> SincronizarRecoleccionesAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default);
 }

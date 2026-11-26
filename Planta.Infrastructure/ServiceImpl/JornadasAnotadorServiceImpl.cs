@@ -59,6 +59,9 @@ public sealed class JornadasAnotadorServiceImpl(IJornadasAnotadorRepository repo
     public Task<JsonElement> CorregirCajasRecoleccionAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => repository.CorregirCajasRecoleccionAsync(contexto, json, cancellationToken);
 
+    public Task<JsonElement> EliminarCajasProductoAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
+        => repository.EliminarCajasProductoAsync(contexto, json, cancellationToken);
+
     public Task<JsonElement> SincronizarRecoleccionesAsync(ContextoUsuario contexto, string json, CancellationToken cancellationToken = default)
         => repository.SincronizarRecoleccionesAsync(contexto, json, cancellationToken);
 
